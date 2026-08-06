@@ -1,0 +1,150 @@
+ㅂ
+
+Agenda
+
+▷
+
+C# AgendaViewModel.cs
+
+▷
+
+C# CalendarioViewModel.cs
+
+▷
+
+C# EditarCitaViewModel.cs
+
+▷
+
+C# Nueva CitaViewModel.cs
+
+Archivos
+
+▷
+
+C# Imagenes PacienteViewMode
+
+▷
+
+C# SubirlmagenViewModel.cs
+
+Base
+
+▷ +
+
+C# MainViewModel.cs
+
+▷ C# RelayCommand.cs
+
+▷
+
+C# ViewModelBase.cs
+
+Configuracion
+
+▷ + C# BitacoraViewModel.cs
+
+▷
+
++ C# ConfiguracionViewModel.cs
+
+Dashboard
+
+C# DashboardViewModel.cs
+
+Login
+
+▷
+
+AC# LoginViewModel.cs
+
+Odontograma
+
+▷ AC# Odontograma ViewModel.cs
+
+▷
+
+AC# Pieza DentalViewModel.cs
+
+▷
+
+Pacientes
+
+C# EditarPacienteViewModel.cs
+
+▷
+
+C# HistorialPacienteViewModel.
+
+▷ C# Lista PacientesViewModel.cs
+
+▷ AC# Nuevo PacienteViewModel.cs
+
+▷
+
+C# PacienteViewModel.cs
+
+Pagos
+
+AC# Estado CuentaViewModel.cs
+
+▷
+
+▷
+
+C# NuevoPagoViewModel.cs
+
+▷
+
+C# PagosViewModel.cs
+Personal
+
+AC# Doctores ViewModel.cs
+
+AC# EditarDoctorViewModel.cs
+
+AC# Nuevo DoctorViewModel.cs
+
+Reportes
+
+▷
+
++ C# ReporteIngresosViewModel.
+
+▷
+
++ C# ReportePacientesViewModel
+
+▷
+
++
+
+C# ReportesViewModel.cs
+
+▷
+
++ C# Reporte TratamientosViewMo
+
+Tratamientos
+
+AC# Catalogo Tratamientos View
+
+AC# EditarTratamientoViewMode
+
+AC# Nuevo TratamientoViewMod
+
+C# TratamientosViewModel.cs
+
+Usuarios
+
+C# CambiarPasswordViewMode
+
+▷
+
++ C# EditarUsuarioViewModel.cs
+
+▷
+
+C# Nuevo UsuarioViewModel.cs
+
+AC# UsuariosViewModel.cs

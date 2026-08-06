@@ -11,9 +11,9 @@ using ClinicaDentalMario.Models;
 namespace ClinicaDentalMario.ViewModel.Dashboard
 {
     public class DashboardViewModel : ViewModelBase
-    {/*
-        private ObservableCollection<Cita> _citasHoy = new ObservableCollection<Cita>();
-        public ObservableCollection<Cita> CitasHoy
+    {
+        private ObservableCollection<CitaModel> _citasHoy = new ObservableCollection<CitaModel>();
+        public ObservableCollection<CitaModel> CitasHoy
         {
             get => _citasHoy;
             set => SetProperty(ref _citasHoy, value);
@@ -45,17 +45,14 @@ namespace ClinicaDentalMario.ViewModel.Dashboard
             CargarDashboardCommand.Execute(null);
         }
 
-         /* private async Task CargarDashboardAsync()
+        private async Task CargarDashboardAsync()
         {
             EstaCargando = true;
 
-            // Aquí consumiremos:
-            [cite_start]// 1. CitasRepository -> SELECT * FROM Agenda.vwAgendaHoy [cite: 485, 486]
-            [cite_start]// 2. PagosRepository -> SELECT * FROM Facturacion.vwIngresosDiarios [cite: 494]
-
-            await Task.Delay(500);
+            // Aquí consumiremos las vistas SQL como vwAgendaHoy y vwIngresosDiarios
+            await Task.Delay(500); // Simulando carga
 
             EstaCargando = false;
-        }*/
+        }
     }
 }

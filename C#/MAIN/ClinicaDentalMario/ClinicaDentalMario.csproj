@@ -10,13 +10,23 @@
 
   <ItemGroup>
     <Folder Include="Core\" />
-    <Folder Include="Repositories\" />
-    <Folder Include="ViewModel\Configuracion\" />
+    <Folder Include="Scripts\" />
     <Folder Include="Views\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Dapper" Version="2.1.79" />
+    <PackageReference Include="Dapper.Contrib" Version="2.0.78" />
+    <PackageReference Include="Dapper.SqlBuilder" Version="2.1.66" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Scripts\Script0.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,1373 @@
+/****** Cannot script Unresolved Entities : Server[@Name='DESKTOP-Q9H380M']/Database[@Name='ClinicaDentalMario']/UnresolvedEntity[@Name='deleted'] ******/
+GO
+/****** Cannot script Unresolved Entities : Server[@Name='DESKTOP-Q9H380M']/Database[@Name='ClinicaDentalMario']/UnresolvedEntity[@Name='inserted'] ******/
+GO
+USE [ClinicaDentalMario]
+GO
+/****** Object:  Schema [Agenda]    Script Date: 6/8/2026 12:37:04 ******/
+CREATE SCHEMA [Agenda]
+GO
+/****** Object:  Schema [Archivos]    Script Date: 6/8/2026 12:37:04 ******/
+CREATE SCHEMA [Archivos]
+GO
+/****** Object:  Schema [Catalogos]    Script Date: 6/8/2026 12:37:04 ******/
+CREATE SCHEMA [Catalogos]
+GO
+/****** Object:  Schema [Facturacion]    Script Date: 6/8/2026 12:37:04 ******/
+CREATE SCHEMA [Facturacion]
+GO
+/****** Object:  Schema [Odontologia]    Script Date: 6/8/2026 12:37:04 ******/
+CREATE SCHEMA [Odontologia]
+GO
+/****** Object:  Schema [Pacientes]    Script Date: 6/8/2026 12:37:04 ******/
+CREATE SCHEMA [Pacientes]
+GO
+/****** Object:  Schema [Personal]    Script Date: 6/8/2026 12:37:04 ******/
+CREATE SCHEMA [Personal]
+GO
+/****** Object:  Schema [Seguridad]    Script Date: 6/8/2026 12:37:04 ******/
+CREATE SCHEMA [Seguridad]
+GO
+/****** Object:  UserDefinedFunction [Agenda].[fnProximaCita]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Función: Próxima Cita de un Paciente
+CREATE   FUNCTION [Agenda].[fnProximaCita] (@IdPaciente INT)
+RETURNS DATETIME
+AS
+BEGIN
+    DECLARE @Proxima DATETIME;
+    SELECT TOP 1 @Proxima = FechaHora FROM Agenda.Citas 
+    WHERE IdPaciente = @IdPaciente AND FechaHora >= GETDATE() AND IdEstado = (SELECT IdEstado FROM Catalogos.EstadosCita WHERE Nombre = 'Confirmada' OR Nombre = 'Pendiente')
+    ORDER BY FechaHora ASC;
+    RETURN @Proxima;
+END;
+
+GO
+/****** Object:  UserDefinedFunction [Odontologia].[fnCantidadTratamientosPaciente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Función: Cantidad de Tratamientos por Paciente
+CREATE   FUNCTION [Odontologia].[fnCantidadTratamientosPaciente] (@IdPaciente INT)
+RETURNS INT
+AS
+BEGIN
+    DECLARE @Cantidad INT;
+    SELECT @Cantidad = COUNT(*) FROM Odontologia.TratamientosPaciente WHERE IdPaciente = @IdPaciente;
+    RETURN @Cantidad;
+END;
+
+GO
+/****** Object:  UserDefinedFunction [Odontologia].[fnSaldoPendiente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Función: Saldo Pendiente por Tratamiento
+CREATE   FUNCTION [Odontologia].[fnSaldoPendiente] (@IdTratamientoPaciente INT)
+RETURNS DECIMAL(10,2)
+AS
+BEGIN
+    DECLARE @Costo DECIMAL(10,2), @Abonado DECIMAL(10,2);
+    SELECT @Costo = CostoTotal FROM Odontologia.TratamientosPaciente WHERE Id = @IdTratamientoPaciente;
+    SET @Abonado = Odontologia.fnTotalAbonado(@IdTratamientoPaciente);
+    RETURN ISNULL(@Costo, 0) - @Abonado;
+END;
+
+GO
+/****** Object:  UserDefinedFunction [Odontologia].[fnTotalAbonado]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Función: Total Abonado por Tratamiento
+CREATE   FUNCTION [Odontologia].[fnTotalAbonado] (@IdTratamientoPaciente INT)
+RETURNS DECIMAL(10,2)
+AS
+BEGIN
+    DECLARE @Total DECIMAL(10,2);
+    SELECT @Total = ISNULL(SUM(Monto), 0) FROM Odontologia.Pagos WHERE IdTratamientoPaciente = @IdTratamientoPaciente;
+    RETURN @Total;
+END;
+
+GO
+/****** Object:  UserDefinedFunction [Pacientes].[fnCalcularEdad]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- ==============================================================================
+-- 🟨 PARTE 2: FUNCIONES ESCALARES
+-- ==============================================================================
+
+-- Función: Calcular Edad
+CREATE   FUNCTION [Pacientes].[fnCalcularEdad] (@FechaNacimiento DATE)
+RETURNS INT
+AS
+BEGIN
+    IF @FechaNacimiento IS NULL RETURN NULL;
+    DECLARE @Edad INT = DATEDIFF(YEAR, @FechaNacimiento, GETDATE());
+    IF (MONTH(@FechaNacimiento) > MONTH(GETDATE()) OR 
+       (MONTH(@FechaNacimiento) = MONTH(GETDATE()) AND DAY(@FechaNacimiento) > DAY(GETDATE())))
+        SET @Edad = @Edad - 1;
+    RETURN @Edad;
+END;
+
+GO
+/****** Object:  UserDefinedFunction [Pacientes].[fnNombreCompletoPaciente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Función: Obtener Nombre Completo
+CREATE   FUNCTION [Pacientes].[fnNombreCompletoPaciente] (@IdPaciente INT)
+RETURNS NVARCHAR(150)
+AS
+BEGIN
+    DECLARE @Nombre NVARCHAR(150);
+    SELECT @Nombre = NombreCompleto FROM Pacientes.Pacientes WHERE IdPaciente = @IdPaciente;
+    RETURN @Nombre;
+END;
+
+GO
+/****** Object:  Table [Personal].[Doctores]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Personal].[Doctores](
+	[IdDoctor] [int] IDENTITY(1,1) NOT NULL,
+	[NombreCompleto] [nvarchar](150) NOT NULL,
+	[Especialidad] [varchar](80) NULL,
+	[Telefono] [varchar](20) NULL,
+	[Correo] [varchar](120) NULL,
+	[Direccion] [nvarchar](250) NULL,
+	[NumeroJVPO] [varchar](30) NULL,
+	[Activo] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdDoctor] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [Pacientes].[Pacientes]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Pacientes].[Pacientes](
+	[IdPaciente] [int] IDENTITY(1,1) NOT NULL,
+	[NombreCompleto] [nvarchar](150) NOT NULL,
+	[Direccion] [nvarchar](250) NULL,
+	[FechaNacimiento] [date] NULL,
+	[Sexo] [varchar](20) NULL,
+	[DUI] [varchar](20) NULL,
+	[Telefono] [varchar](20) NULL,
+	[NombreEncargado] [nvarchar](150) NULL,
+	[ContactoEmergencia] [nvarchar](150) NULL,
+	[TelefonoEmergencia] [varchar](20) NULL,
+	[FechaRegistro] [datetime] NULL,
+	[Activo] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdPaciente] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [Catalogos].[EstadosCita]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Catalogos].[EstadosCita](
+	[IdEstado] [int] IDENTITY(1,1) NOT NULL,
+	[Nombre] [varchar](40) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdEstado] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [Agenda].[Citas]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Agenda].[Citas](
+	[IdCita] [int] IDENTITY(1,1) NOT NULL,
+	[IdPaciente] [int] NOT NULL,
+	[IdDoctor] [int] NOT NULL,
+	[IdEstado] [int] NOT NULL,
+	[FechaHora] [datetime] NOT NULL,
+	[Observaciones] [nvarchar](max) NULL,
+	[FechaRegistro] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdCita] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  View [Agenda].[vwAgendaSemana]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Vista: Agenda de la Semana
+CREATE   VIEW [Agenda].[vwAgendaSemana] AS
+SELECT c.IdCita, p.NombreCompleto AS Paciente, d.NombreCompleto AS Doctor, 
+       c.FechaHora, e.Nombre AS Estado, c.Observaciones
+FROM Agenda.Citas c
+INNER JOIN Pacientes.Pacientes p ON c.IdPaciente = p.IdPaciente
+INNER JOIN Personal.Doctores d ON c.IdDoctor = d.IdDoctor
+INNER JOIN Catalogos.EstadosCita e ON c.IdEstado = e.IdEstado
+WHERE c.FechaHora >= CAST(GETDATE() AS DATE) 
+  AND c.FechaHora <= DATEADD(day, 7, CAST(GETDATE() AS DATE));
+
+GO
+/****** Object:  Table [Catalogos].[CatalogoTratamientos]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Catalogos].[CatalogoTratamientos](
+	[IdTratamiento] [int] IDENTITY(1,1) NOT NULL,
+	[Nombre] [varchar](120) NOT NULL,
+	[Descripcion] [varchar](255) NULL,
+	[PrecioBase] [decimal](10, 2) NOT NULL,
+	[DuracionMinutos] [int] NULL,
+	[Activo] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdTratamiento] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  View [Catalogos].[vwTratamientos]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Vista: Catálogo de Tratamientos Activos
+CREATE   VIEW [Catalogos].[vwTratamientos] AS
+SELECT IdTratamiento, Nombre, Descripcion, PrecioBase, DuracionMinutos
+FROM Catalogos.CatalogoTratamientos
+WHERE Activo = 1;
+
+GO
+/****** Object:  Table [Odontologia].[TratamientosPaciente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Odontologia].[TratamientosPaciente](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[IdPaciente] [int] NOT NULL,
+	[IdDoctor] [int] NOT NULL,
+	[IdTratamiento] [int] NOT NULL,
+	[CostoTotal] [decimal](10, 2) NOT NULL,
+	[Estado] [varchar](30) NULL,
+	[FechaInicio] [datetime] NULL,
+	[FechaFin] [datetime] NULL,
+	[Observaciones] [nvarchar](max) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  View [Odontologia].[vwTratamientosPendientes]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Vista: Tratamientos Pendientes o en Progreso
+CREATE   VIEW [Odontologia].[vwTratamientosPendientes] AS
+SELECT tp.Id AS IdTratamientoPaciente, p.NombreCompleto AS Paciente, 
+       ct.Nombre AS Tratamiento, tp.CostoTotal, tp.Estado, tp.FechaInicio
+FROM Odontologia.TratamientosPaciente tp
+INNER JOIN Pacientes.Pacientes p ON tp.IdPaciente = p.IdPaciente
+INNER JOIN Catalogos.CatalogoTratamientos ct ON tp.IdTratamiento = ct.IdTratamiento
+WHERE tp.Estado IN ('Pendiente', 'En progreso');
+
+GO
+/****** Object:  Table [Odontologia].[Pagos]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Odontologia].[Pagos](
+	[IdPago] [int] IDENTITY(1,1) NOT NULL,
+	[IdTratamientoPaciente] [int] NOT NULL,
+	[FechaPago] [datetime] NULL,
+	[Monto] [decimal](10, 2) NOT NULL,
+	[MetodoPago] [varchar](50) NULL,
+	[Observacion] [varchar](255) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdPago] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  View [Odontologia].[vwPagos]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Vista: Todos los Pagos
+CREATE   VIEW [Odontologia].[vwPagos] AS
+SELECT pg.IdPago, p.NombreCompleto AS Paciente, ct.Nombre AS Tratamiento, 
+       pg.FechaPago, pg.Monto, pg.MetodoPago, pg.Observacion
+FROM Odontologia.Pagos pg
+INNER JOIN Odontologia.TratamientosPaciente tp ON pg.IdTratamientoPaciente = tp.Id
+INNER JOIN Pacientes.Pacientes p ON tp.IdPaciente = p.IdPaciente
+INNER JOIN Catalogos.CatalogoTratamientos ct ON tp.IdTratamiento = ct.IdTratamiento;
+
+GO
+/****** Object:  View [Facturacion].[vwIngresosDiarios]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Vista: Ingresos Diarios
+CREATE   VIEW [Facturacion].[vwIngresosDiarios] AS
+SELECT CAST(FechaPago AS DATE) AS Fecha, SUM(Monto) AS TotalIngresos
+FROM Odontologia.Pagos
+GROUP BY CAST(FechaPago AS DATE);
+
+GO
+/****** Object:  View [Facturacion].[vwIngresosMensuales]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Vista: Ingresos Mensuales
+CREATE   VIEW [Facturacion].[vwIngresosMensuales] AS
+SELECT YEAR(FechaPago) AS Anio, MONTH(FechaPago) AS Mes, SUM(Monto) AS TotalIngresos
+FROM Odontologia.Pagos
+GROUP BY YEAR(FechaPago), MONTH(FechaPago);
+
+GO
+/****** Object:  Table [Pacientes].[HistorialClinico]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Pacientes].[HistorialClinico](
+	[IdHistorial] [int] IDENTITY(1,1) NOT NULL,
+	[IdPaciente] [int] NOT NULL,
+	[IdDoctor] [int] NOT NULL,
+	[MotivoConsulta] [nvarchar](max) NULL,
+	[AntecedentesMedicos] [nvarchar](max) NULL,
+	[AntecedentesOdontologicos] [nvarchar](max) NULL,
+	[Diagnostico] [nvarchar](max) NULL,
+	[PlanTratamiento] [nvarchar](max) NULL,
+	[Observaciones] [nvarchar](max) NULL,
+	[FechaConsulta] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdHistorial] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  View [Pacientes].[vwHistorialPaciente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Vista: Historial Clínico Integral
+CREATE   VIEW [Pacientes].[vwHistorialPaciente] AS
+SELECT hc.IdHistorial, p.NombreCompleto AS Paciente, d.NombreCompleto AS Doctor,
+       hc.MotivoConsulta, hc.AntecedentesMedicos, hc.AntecedentesOdontologicos,
+       hc.Diagnostico, hc.PlanTratamiento, hc.FechaConsulta
+FROM Pacientes.HistorialClinico hc
+INNER JOIN Pacientes.Pacientes p ON hc.IdPaciente = p.IdPaciente
+INNER JOIN Personal.Doctores d ON hc.IdDoctor = d.IdDoctor;
+
+GO
+/****** Object:  View [Pacientes].[vwSaldoPacientes]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Vista: Saldo Total de Pacientes (Costo Total - Pagado)
+CREATE   VIEW [Pacientes].[vwSaldoPacientes] AS
+SELECT p.IdPaciente, p.NombreCompleto, 
+       ISNULL(SUM(tp.CostoTotal), 0) AS TotalCargos,
+       ISNULL((SELECT SUM(Monto) FROM Odontologia.Pagos pg 
+               INNER JOIN Odontologia.TratamientosPaciente t2 ON pg.IdTratamientoPaciente = t2.Id 
+               WHERE t2.IdPaciente = p.IdPaciente), 0) AS TotalPagado
+FROM Pacientes.Pacientes p
+LEFT JOIN Odontologia.TratamientosPaciente tp ON p.IdPaciente = tp.IdPaciente
+GROUP BY p.IdPaciente, p.NombreCompleto;
+
+GO
+/****** Object:  Table [Catalogos].[CatalogoEstadosDentales]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Catalogos].[CatalogoEstadosDentales](
+	[IdEstadoDental] [int] IDENTITY(1,1) NOT NULL,
+	[Nombre] [varchar](80) NOT NULL,
+	[ColorHex] [varchar](7) NULL,
+	[Activo] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdEstadoDental] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [Odontologia].[Odontograma]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Odontologia].[Odontograma](
+	[IdRegistro] [int] IDENTITY(1,1) NOT NULL,
+	[IdPaciente] [int] NOT NULL,
+	[NumeroPieza] [int] NOT NULL,
+	[IdEstadoDental] [int] NOT NULL,
+	[Observaciones] [nvarchar](max) NULL,
+	[FechaRegistro] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdRegistro] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  View [Odontologia].[vwOdontogramaPaciente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Vista: Odontograma de Pacientes
+CREATE   VIEW [Odontologia].[vwOdontogramaPaciente] AS
+SELECT o.IdRegistro, p.NombreCompleto AS Paciente, o.NumeroPieza, 
+       ed.Nombre AS EstadoDental, ed.ColorHex, o.Observaciones, o.FechaRegistro
+FROM Odontologia.Odontograma o
+INNER JOIN Pacientes.Pacientes p ON o.IdPaciente = p.IdPaciente
+INNER JOIN Catalogos.CatalogoEstadosDentales ed ON o.IdEstadoDental = ed.IdEstadoDental;
+
+GO
+/****** Object:  View [Pacientes].[vwPacientes]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- Vista: Pacientes Activos
+CREATE   VIEW [Pacientes].[vwPacientes] AS
+SELECT IdPaciente, NombreCompleto, Direccion, FechaNacimiento, Sexo, DUI, Telefono, 
+       NombreEncargado, ContactoEmergencia, TelefonoEmergencia, FechaRegistro
+FROM Pacientes.Pacientes
+WHERE Activo = 1;
+
+GO
+/****** Object:  View [Personal].[vwDoctores]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Vista: Doctores Activos
+CREATE   VIEW [Personal].[vwDoctores] AS
+SELECT IdDoctor, NombreCompleto, Especialidad, Telefono, Correo, Direccion, NumeroJVPO
+FROM Personal.Doctores
+WHERE Activo = 1;
+
+GO
+/****** Object:  View [Agenda].[vwAgendaHoy]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Vista: Agenda de Hoy
+CREATE   VIEW [Agenda].[vwAgendaHoy] AS
+SELECT c.IdCita, p.NombreCompleto AS Paciente, d.NombreCompleto AS Doctor, 
+       c.FechaHora, e.Nombre AS Estado, c.Observaciones
+FROM Agenda.Citas c
+INNER JOIN Pacientes.Pacientes p ON c.IdPaciente = p.IdPaciente
+INNER JOIN Personal.Doctores d ON c.IdDoctor = d.IdDoctor
+INNER JOIN Catalogos.EstadosCita e ON c.IdEstado = e.IdEstado
+WHERE CAST(c.FechaHora AS DATE) = CAST(GETDATE() AS DATE);
+
+GO
+/****** Object:  Table [Archivos].[ImagenesPaciente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Archivos].[ImagenesPaciente](
+	[IdImagen] [int] IDENTITY(1,1) NOT NULL,
+	[IdPaciente] [int] NOT NULL,
+	[RutaArchivo] [varchar](500) NOT NULL,
+	[TipoArchivo] [varchar](40) NULL,
+	[Descripcion] [varchar](255) NULL,
+	[FechaSubida] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdImagen] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [Seguridad].[Bitacora]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Seguridad].[Bitacora](
+	[IdBitacora] [int] IDENTITY(1,1) NOT NULL,
+	[Usuario] [varchar](100) NOT NULL,
+	[Accion] [varchar](50) NOT NULL,
+	[Tabla] [varchar](100) NOT NULL,
+	[Fecha] [datetime] NULL,
+	[Equipo] [varchar](100) NULL,
+	[IP] [varchar](50) NULL,
+	[RegistroAfectado] [nvarchar](max) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdBitacora] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [Seguridad].[Roles]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Seguridad].[Roles](
+	[IdRol] [int] IDENTITY(1,1) NOT NULL,
+	[Nombre] [varchar](50) NOT NULL,
+	[Descripcion] [varchar](200) NULL,
+	[Activo] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdRol] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [Seguridad].[Usuarios]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [Seguridad].[Usuarios](
+	[IdUsuario] [int] IDENTITY(1,1) NOT NULL,
+	[IdRol] [int] NOT NULL,
+	[NombreCompleto] [nvarchar](150) NOT NULL,
+	[Usuario] [varchar](50) NOT NULL,
+	[Correo] [varchar](120) NULL,
+	[PasswordHash] [varchar](255) NOT NULL,
+	[Activo] [bit] NULL,
+	[FechaCreacion] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IdUsuario] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+SET IDENTITY_INSERT [Catalogos].[CatalogoEstadosDentales] ON 
+
+INSERT [Catalogos].[CatalogoEstadosDentales] ([IdEstadoDental], [Nombre], [ColorHex], [Activo]) VALUES (1, N'Sano', N'#FFFFFF', 1)
+INSERT [Catalogos].[CatalogoEstadosDentales] ([IdEstadoDental], [Nombre], [ColorHex], [Activo]) VALUES (2, N'Caries', N'#FF0000', 1)
+INSERT [Catalogos].[CatalogoEstadosDentales] ([IdEstadoDental], [Nombre], [ColorHex], [Activo]) VALUES (3, N'Resina', N'#0000FF', 1)
+INSERT [Catalogos].[CatalogoEstadosDentales] ([IdEstadoDental], [Nombre], [ColorHex], [Activo]) VALUES (4, N'Corona', N'#FFD700', 1)
+INSERT [Catalogos].[CatalogoEstadosDentales] ([IdEstadoDental], [Nombre], [ColorHex], [Activo]) VALUES (5, N'Implante', N'#808080', 1)
+INSERT [Catalogos].[CatalogoEstadosDentales] ([IdEstadoDental], [Nombre], [ColorHex], [Activo]) VALUES (6, N'Sellante', N'#00FF00', 1)
+INSERT [Catalogos].[CatalogoEstadosDentales] ([IdEstadoDental], [Nombre], [ColorHex], [Activo]) VALUES (7, N'Endodoncia', N'#800080', 1)
+INSERT [Catalogos].[CatalogoEstadosDentales] ([IdEstadoDental], [Nombre], [ColorHex], [Activo]) VALUES (8, N'Extracción', N'#000000', 1)
+INSERT [Catalogos].[CatalogoEstadosDentales] ([IdEstadoDental], [Nombre], [ColorHex], [Activo]) VALUES (9, N'Prótesis', N'#FFA500', 1)
+SET IDENTITY_INSERT [Catalogos].[CatalogoEstadosDentales] OFF
+GO
+SET IDENTITY_INSERT [Catalogos].[CatalogoTratamientos] ON 
+
+INSERT [Catalogos].[CatalogoTratamientos] ([IdTratamiento], [Nombre], [Descripcion], [PrecioBase], [DuracionMinutos], [Activo]) VALUES (1, N'Consulta General', N'Evaluación inicial del paciente', CAST(15.00 AS Decimal(10, 2)), 30, 1)
+INSERT [Catalogos].[CatalogoTratamientos] ([IdTratamiento], [Nombre], [Descripcion], [PrecioBase], [DuracionMinutos], [Activo]) VALUES (2, N'Profilaxis', N'Limpieza dental básica', CAST(25.00 AS Decimal(10, 2)), 45, 1)
+INSERT [Catalogos].[CatalogoTratamientos] ([IdTratamiento], [Nombre], [Descripcion], [PrecioBase], [DuracionMinutos], [Activo]) VALUES (3, N'Limpieza', N'Limpieza profunda (Detartraje)', CAST(35.00 AS Decimal(10, 2)), 60, 1)
+INSERT [Catalogos].[CatalogoTratamientos] ([IdTratamiento], [Nombre], [Descripcion], [PrecioBase], [DuracionMinutos], [Activo]) VALUES (4, N'Resina', N'Relleno estético (por pieza)', CAST(40.00 AS Decimal(10, 2)), 45, 1)
+INSERT [Catalogos].[CatalogoTratamientos] ([IdTratamiento], [Nombre], [Descripcion], [PrecioBase], [DuracionMinutos], [Activo]) VALUES (5, N'Extracción', N'Extracción simple de pieza', CAST(30.00 AS Decimal(10, 2)), 40, 1)
+INSERT [Catalogos].[CatalogoTratamientos] ([IdTratamiento], [Nombre], [Descripcion], [PrecioBase], [DuracionMinutos], [Activo]) VALUES (6, N'Endodoncia', N'Tratamiento de conducto', CAST(120.00 AS Decimal(10, 2)), 90, 1)
+INSERT [Catalogos].[CatalogoTratamientos] ([IdTratamiento], [Nombre], [Descripcion], [PrecioBase], [DuracionMinutos], [Activo]) VALUES (7, N'Ortodoncia', N'Mensualidad de brackets', CAST(50.00 AS Decimal(10, 2)), 30, 1)
+INSERT [Catalogos].[CatalogoTratamientos] ([IdTratamiento], [Nombre], [Descripcion], [PrecioBase], [DuracionMinutos], [Activo]) VALUES (8, N'Blanqueamiento', N'Blanqueamiento dental clínico', CAST(150.00 AS Decimal(10, 2)), 60, 1)
+INSERT [Catalogos].[CatalogoTratamientos] ([IdTratamiento], [Nombre], [Descripcion], [PrecioBase], [DuracionMinutos], [Activo]) VALUES (9, N'Implante', N'Colocación de implante de titanio', CAST(800.00 AS Decimal(10, 2)), 120, 1)
+INSERT [Catalogos].[CatalogoTratamientos] ([IdTratamiento], [Nombre], [Descripcion], [PrecioBase], [DuracionMinutos], [Activo]) VALUES (10, N'Prótesis', N'Prótesis dental removible o fija', CAST(250.00 AS Decimal(10, 2)), 60, 1)
+INSERT [Catalogos].[CatalogoTratamientos] ([IdTratamiento], [Nombre], [Descripcion], [PrecioBase], [DuracionMinutos], [Activo]) VALUES (11, N'Cirugía', N'Extracción de cordales u otra cirugía', CAST(100.00 AS Decimal(10, 2)), 90, 1)
+INSERT [Catalogos].[CatalogoTratamientos] ([IdTratamiento], [Nombre], [Descripcion], [PrecioBase], [DuracionMinutos], [Activo]) VALUES (12, N'Radiografía', N'Toma de radiografía periapical', CAST(10.00 AS Decimal(10, 2)), 15, 1)
+SET IDENTITY_INSERT [Catalogos].[CatalogoTratamientos] OFF
+GO
+SET IDENTITY_INSERT [Catalogos].[EstadosCita] ON 
+
+INSERT [Catalogos].[EstadosCita] ([IdEstado], [Nombre]) VALUES (3, N'Atendida')
+INSERT [Catalogos].[EstadosCita] ([IdEstado], [Nombre]) VALUES (4, N'Cancelada')
+INSERT [Catalogos].[EstadosCita] ([IdEstado], [Nombre]) VALUES (2, N'Confirmada')
+INSERT [Catalogos].[EstadosCita] ([IdEstado], [Nombre]) VALUES (5, N'No Asistió')
+INSERT [Catalogos].[EstadosCita] ([IdEstado], [Nombre]) VALUES (1, N'Pendiente')
+SET IDENTITY_INSERT [Catalogos].[EstadosCita] OFF
+GO
+SET IDENTITY_INSERT [Seguridad].[Roles] ON 
+
+INSERT [Seguridad].[Roles] ([IdRol], [Nombre], [Descripcion], [Activo]) VALUES (1, N'Administrador', N'Control total del sistema', 1)
+INSERT [Seguridad].[Roles] ([IdRol], [Nombre], [Descripcion], [Activo]) VALUES (2, N'Doctor', N'Acceso a expedientes, odontograma y tratamientos', 1)
+INSERT [Seguridad].[Roles] ([IdRol], [Nombre], [Descripcion], [Activo]) VALUES (3, N'Recepcionista', N'Acceso a agenda, cobros y registro básico', 1)
+SET IDENTITY_INSERT [Seguridad].[Roles] OFF
+GO
+SET IDENTITY_INSERT [Seguridad].[Usuarios] ON 
+
+INSERT [Seguridad].[Usuarios] ([IdUsuario], [IdRol], [NombreCompleto], [Usuario], [Correo], [PasswordHash], [Activo], [FechaCreacion]) VALUES (1, 1, N'Administrador del Sistema', N'admin', N'admin@clinica.com', N'8D969EEF6ECAD3C29A3A629280E686CF0C3F5D5A86AFF3CA12020C923ADC6C92', 1, CAST(N'2026-08-03T21:48:08.650' AS DateTime))
+INSERT [Seguridad].[Usuarios] ([IdUsuario], [IdRol], [NombreCompleto], [Usuario], [Correo], [PasswordHash], [Activo], [FechaCreacion]) VALUES (2, 2, N'Dr. CDMario', N'doctor', N'doctor@clinica.com', N'8D969EEF6ECAD3C29A3A629280E686CF0C3F5D5A86AFF3CA12020C923ADC6C92', 1, CAST(N'2026-08-03T21:48:08.650' AS DateTime))
+INSERT [Seguridad].[Usuarios] ([IdUsuario], [IdRol], [NombreCompleto], [Usuario], [Correo], [PasswordHash], [Activo], [FechaCreacion]) VALUES (3, 3, N'Recepcionista Principal', N'recepcion', N'info@clinica.com', N'8D969EEF6ECAD3C29A3A629280E686CF0C3F5D5A86AFF3CA12020C923ADC6C92', 1, CAST(N'2026-08-03T21:48:08.650' AS DateTime))
+SET IDENTITY_INSERT [Seguridad].[Usuarios] OFF
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__EstadosC__75E3EFCF2FF0CD92]    Script Date: 6/8/2026 12:37:04 ******/
+ALTER TABLE [Catalogos].[EstadosCita] ADD UNIQUE NONCLUSTERED 
+(
+	[Nombre] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__Roles__75E3EFCFB09B314A]    Script Date: 6/8/2026 12:37:04 ******/
+ALTER TABLE [Seguridad].[Roles] ADD UNIQUE NONCLUSTERED 
+(
+	[Nombre] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [UQ__Usuarios__E3237CF7A3202CE2]    Script Date: 6/8/2026 12:37:04 ******/
+ALTER TABLE [Seguridad].[Usuarios] ADD UNIQUE NONCLUSTERED 
+(
+	[Usuario] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [Agenda].[Citas] ADD  DEFAULT (getdate()) FOR [FechaRegistro]
+GO
+ALTER TABLE [Archivos].[ImagenesPaciente] ADD  DEFAULT (getdate()) FOR [FechaSubida]
+GO
+ALTER TABLE [Catalogos].[CatalogoEstadosDentales] ADD  DEFAULT ((1)) FOR [Activo]
+GO
+ALTER TABLE [Catalogos].[CatalogoTratamientos] ADD  DEFAULT ((1)) FOR [Activo]
+GO
+ALTER TABLE [Odontologia].[Odontograma] ADD  DEFAULT (getdate()) FOR [FechaRegistro]
+GO
+ALTER TABLE [Odontologia].[Pagos] ADD  DEFAULT (getdate()) FOR [FechaPago]
+GO
+ALTER TABLE [Odontologia].[Pagos] ADD  DEFAULT ((0.00)) FOR [Monto]
+GO
+ALTER TABLE [Odontologia].[TratamientosPaciente] ADD  DEFAULT ('Pendiente') FOR [Estado]
+GO
+ALTER TABLE [Odontologia].[TratamientosPaciente] ADD  DEFAULT (getdate()) FOR [FechaInicio]
+GO
+ALTER TABLE [Pacientes].[HistorialClinico] ADD  DEFAULT (getdate()) FOR [FechaConsulta]
+GO
+ALTER TABLE [Pacientes].[Pacientes] ADD  DEFAULT (getdate()) FOR [FechaRegistro]
+GO
+ALTER TABLE [Pacientes].[Pacientes] ADD  DEFAULT ((1)) FOR [Activo]
+GO
+ALTER TABLE [Personal].[Doctores] ADD  DEFAULT ((1)) FOR [Activo]
+GO
+ALTER TABLE [Seguridad].[Bitacora] ADD  DEFAULT (getdate()) FOR [Fecha]
+GO
+ALTER TABLE [Seguridad].[Roles] ADD  DEFAULT ((1)) FOR [Activo]
+GO
+ALTER TABLE [Seguridad].[Usuarios] ADD  DEFAULT ((1)) FOR [Activo]
+GO
+ALTER TABLE [Seguridad].[Usuarios] ADD  DEFAULT (getdate()) FOR [FechaCreacion]
+GO
+ALTER TABLE [Agenda].[Citas]  WITH CHECK ADD FOREIGN KEY([IdDoctor])
+REFERENCES [Personal].[Doctores] ([IdDoctor])
+GO
+ALTER TABLE [Agenda].[Citas]  WITH CHECK ADD FOREIGN KEY([IdEstado])
+REFERENCES [Catalogos].[EstadosCita] ([IdEstado])
+GO
+ALTER TABLE [Agenda].[Citas]  WITH CHECK ADD FOREIGN KEY([IdPaciente])
+REFERENCES [Pacientes].[Pacientes] ([IdPaciente])
+GO
+ALTER TABLE [Archivos].[ImagenesPaciente]  WITH CHECK ADD FOREIGN KEY([IdPaciente])
+REFERENCES [Pacientes].[Pacientes] ([IdPaciente])
+GO
+ALTER TABLE [Odontologia].[Odontograma]  WITH CHECK ADD FOREIGN KEY([IdEstadoDental])
+REFERENCES [Catalogos].[CatalogoEstadosDentales] ([IdEstadoDental])
+GO
+ALTER TABLE [Odontologia].[Odontograma]  WITH CHECK ADD FOREIGN KEY([IdPaciente])
+REFERENCES [Pacientes].[Pacientes] ([IdPaciente])
+GO
+ALTER TABLE [Odontologia].[Pagos]  WITH CHECK ADD FOREIGN KEY([IdTratamientoPaciente])
+REFERENCES [Odontologia].[TratamientosPaciente] ([Id])
+GO
+ALTER TABLE [Odontologia].[TratamientosPaciente]  WITH CHECK ADD FOREIGN KEY([IdDoctor])
+REFERENCES [Personal].[Doctores] ([IdDoctor])
+GO
+ALTER TABLE [Odontologia].[TratamientosPaciente]  WITH CHECK ADD FOREIGN KEY([IdPaciente])
+REFERENCES [Pacientes].[Pacientes] ([IdPaciente])
+GO
+ALTER TABLE [Odontologia].[TratamientosPaciente]  WITH CHECK ADD FOREIGN KEY([IdTratamiento])
+REFERENCES [Catalogos].[CatalogoTratamientos] ([IdTratamiento])
+GO
+ALTER TABLE [Pacientes].[HistorialClinico]  WITH CHECK ADD FOREIGN KEY([IdDoctor])
+REFERENCES [Personal].[Doctores] ([IdDoctor])
+GO
+ALTER TABLE [Pacientes].[HistorialClinico]  WITH CHECK ADD FOREIGN KEY([IdPaciente])
+REFERENCES [Pacientes].[Pacientes] ([IdPaciente])
+GO
+ALTER TABLE [Seguridad].[Usuarios]  WITH CHECK ADD FOREIGN KEY([IdRol])
+REFERENCES [Seguridad].[Roles] ([IdRol])
+GO
+ALTER TABLE [Catalogos].[CatalogoTratamientos]  WITH CHECK ADD CHECK  (([PrecioBase]>=(0)))
+GO
+ALTER TABLE [Odontologia].[Odontograma]  WITH CHECK ADD CHECK  (([NumeroPieza]>(0) AND [NumeroPieza]<=(85)))
+GO
+ALTER TABLE [Odontologia].[Pagos]  WITH CHECK ADD CHECK  (([Monto]>=(0)))
+GO
+ALTER TABLE [Odontologia].[TratamientosPaciente]  WITH CHECK ADD CHECK  (([CostoTotal]>=(0)))
+GO
+ALTER TABLE [Odontologia].[TratamientosPaciente]  WITH CHECK ADD CHECK  (([Estado]='Cancelado' OR [Estado]='Finalizado' OR [Estado]='En progreso' OR [Estado]='Pendiente'))
+GO
+ALTER TABLE [Pacientes].[Pacientes]  WITH CHECK ADD CHECK  (([Sexo]='Otro' OR [Sexo]='Femenino' OR [Sexo]='Masculino'))
+GO
+/****** Object:  StoredProcedure [Agenda].[sp_AgendarCita]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- ----------------- AGENDA -----------------
+CREATE   PROCEDURE [Agenda].[sp_AgendarCita]
+    @IdPaciente INT, @IdDoctor INT, @IdEstado INT, @FechaHora DATETIME, @Observaciones NVARCHAR(MAX)
+AS
+BEGIN
+    INSERT INTO Agenda.Citas (IdPaciente, IdDoctor, IdEstado, FechaHora, Observaciones)
+    VALUES (@IdPaciente, @IdDoctor, @IdEstado, @FechaHora, @Observaciones);
+END;
+
+GO
+/****** Object:  StoredProcedure [Agenda].[sp_CancelarCita]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Agenda].[sp_CancelarCita]
+    @IdCita INT
+AS
+BEGIN
+    DECLARE @IdEstadoCancelado INT;
+    SELECT @IdEstadoCancelado = IdEstado FROM Catalogos.EstadosCita WHERE Nombre = 'Cancelada';
+    UPDATE Agenda.Citas SET IdEstado = @IdEstadoCancelado WHERE IdCita = @IdCita;
+END;
+
+GO
+/****** Object:  StoredProcedure [Agenda].[sp_EditarCita]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Agenda].[sp_EditarCita]
+    @IdCita INT, @IdDoctor INT, @IdEstado INT, @FechaHora DATETIME, @Observaciones NVARCHAR(MAX)
+AS
+BEGIN
+    UPDATE Agenda.Citas
+    SET IdDoctor = @IdDoctor, IdEstado = @IdEstado, FechaHora = @FechaHora, Observaciones = @Observaciones
+    WHERE IdCita = @IdCita;
+END;
+
+GO
+/****** Object:  StoredProcedure [Agenda].[sp_ListarAgendaDia]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Agenda].[sp_ListarAgendaDia] AS
+BEGIN SELECT * FROM Agenda.vwAgendaHoy ORDER BY FechaHora ASC; END;
+
+GO
+/****** Object:  StoredProcedure [Agenda].[sp_ListarAgendaSemana]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Agenda].[sp_ListarAgendaSemana] AS
+BEGIN SELECT * FROM Agenda.vwAgendaSemana ORDER BY FechaHora ASC; END;
+
+GO
+/****** Object:  StoredProcedure [Archivos].[sp_EliminarImagen]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Archivos].[sp_EliminarImagen]
+    @IdImagen INT
+AS
+BEGIN
+    DELETE FROM Archivos.ImagenesPaciente WHERE IdImagen = @IdImagen;
+END;
+
+GO
+/****** Object:  StoredProcedure [Archivos].[sp_ListarImagenes]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Archivos].[sp_ListarImagenes]
+    @IdPaciente INT
+AS
+BEGIN
+    SELECT * FROM Archivos.ImagenesPaciente WHERE IdPaciente = @IdPaciente ORDER BY FechaSubida DESC;
+END;
+
+GO
+/****** Object:  StoredProcedure [Archivos].[sp_SubirImagen]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- ----------------- IMÁGENES -----------------
+CREATE   PROCEDURE [Archivos].[sp_SubirImagen]
+    @IdPaciente INT, @RutaArchivo VARCHAR(500), @TipoArchivo VARCHAR(40), @Descripcion VARCHAR(255)
+AS
+BEGIN
+    INSERT INTO Archivos.ImagenesPaciente (IdPaciente, RutaArchivo, TipoArchivo, Descripcion)
+    VALUES (@IdPaciente, @RutaArchivo, @TipoArchivo, @Descripcion);
+END;
+
+GO
+/****** Object:  StoredProcedure [Odontologia].[sp_ActualizarEstadoTratamiento]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Odontologia].[sp_ActualizarEstadoTratamiento]
+    @IdTratamientoPaciente INT, @NuevoEstado VARCHAR(30)
+AS
+BEGIN
+    UPDATE Odontologia.TratamientosPaciente SET Estado = @NuevoEstado WHERE Id = @IdTratamientoPaciente;
+END;
+
+GO
+/****** Object:  StoredProcedure [Odontologia].[sp_ActualizarPiezaDental]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Odontologia].[sp_ActualizarPiezaDental]
+    @IdRegistro INT, @IdEstadoDental INT, @Observaciones NVARCHAR(MAX)
+AS
+BEGIN
+    UPDATE Odontologia.Odontograma 
+    SET IdEstadoDental = @IdEstadoDental, Observaciones = @Observaciones 
+    WHERE IdRegistro = @IdRegistro;
+END;
+
+GO
+/****** Object:  StoredProcedure [Odontologia].[sp_CrearTratamiento]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- ----------------- TRATAMIENTOS -----------------
+CREATE   PROCEDURE [Odontologia].[sp_CrearTratamiento]
+    @IdPaciente INT, @IdDoctor INT, @IdTratamiento INT, @CostoTotal DECIMAL(10,2), @Observaciones NVARCHAR(MAX)
+AS
+BEGIN
+    INSERT INTO Odontologia.TratamientosPaciente (IdPaciente, IdDoctor, IdTratamiento, CostoTotal, Observaciones)
+    VALUES (@IdPaciente, @IdDoctor, @IdTratamiento, @CostoTotal, @Observaciones);
+END;
+
+GO
+/****** Object:  StoredProcedure [Odontologia].[sp_FinalizarTratamiento]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Odontologia].[sp_FinalizarTratamiento]
+    @IdTratamientoPaciente INT
+AS
+BEGIN
+    UPDATE Odontologia.TratamientosPaciente 
+    SET Estado = 'Finalizado', FechaFin = GETDATE() 
+    WHERE Id = @IdTratamientoPaciente;
+END;
+
+GO
+/****** Object:  StoredProcedure [Odontologia].[sp_InsertarEstadoDental]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- ----------------- ODONTOGRAMA -----------------
+CREATE   PROCEDURE [Odontologia].[sp_InsertarEstadoDental]
+    @IdPaciente INT, @NumeroPieza INT, @IdEstadoDental INT, @Observaciones NVARCHAR(MAX)
+AS
+BEGIN
+    INSERT INTO Odontologia.Odontograma (IdPaciente, NumeroPieza, IdEstadoDental, Observaciones)
+    VALUES (@IdPaciente, @NumeroPieza, @IdEstadoDental, @Observaciones);
+END;
+
+GO
+/****** Object:  StoredProcedure [Odontologia].[sp_ListarOdontograma]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Odontologia].[sp_ListarOdontograma]
+    @IdPaciente INT
+AS
+BEGIN
+    SELECT * FROM Odontologia.vwOdontogramaPaciente 
+    WHERE Paciente = Pacientes.fnNombreCompletoPaciente(@IdPaciente);
+END;
+
+GO
+/****** Object:  StoredProcedure [Odontologia].[sp_ListarPagos]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Odontologia].[sp_ListarPagos]
+    @IdTratamientoPaciente INT
+AS
+BEGIN
+    SELECT * FROM Odontologia.Pagos WHERE IdTratamientoPaciente = @IdTratamientoPaciente ORDER BY FechaPago DESC;
+END;
+
+GO
+/****** Object:  StoredProcedure [Odontologia].[sp_ListarTratamientosPaciente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Odontologia].[sp_ListarTratamientosPaciente]
+    @IdPaciente INT
+AS
+BEGIN
+    SELECT tp.Id, ct.Nombre, tp.CostoTotal, tp.Estado, tp.FechaInicio, tp.FechaFin 
+    FROM Odontologia.TratamientosPaciente tp
+    INNER JOIN Catalogos.CatalogoTratamientos ct ON tp.IdTratamiento = ct.IdTratamiento
+    WHERE tp.IdPaciente = @IdPaciente;
+END;
+
+GO
+/****** Object:  StoredProcedure [Odontologia].[sp_RegistrarPago]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- ----------------- PAGOS -----------------
+CREATE   PROCEDURE [Odontologia].[sp_RegistrarPago]
+    @IdTratamientoPaciente INT, @Monto DECIMAL(10,2), @MetodoPago VARCHAR(50), @Observacion VARCHAR(255)
+AS
+BEGIN
+    INSERT INTO Odontologia.Pagos (IdTratamientoPaciente, Monto, MetodoPago, Observacion)
+    VALUES (@IdTratamientoPaciente, @Monto, @MetodoPago, @Observacion);
+END;
+
+GO
+/****** Object:  StoredProcedure [Odontologia].[sp_SaldoPendiente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Odontologia].[sp_SaldoPendiente]
+    @IdTratamientoPaciente INT
+AS
+BEGIN
+    SELECT Odontologia.fnSaldoPendiente(@IdTratamientoPaciente) AS SaldoPendiente;
+END;
+
+GO
+/****** Object:  StoredProcedure [Odontologia].[sp_TotalPagado]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Odontologia].[sp_TotalPagado]
+    @IdTratamientoPaciente INT
+AS
+BEGIN
+    SELECT Odontologia.fnTotalAbonado(@IdTratamientoPaciente) AS TotalPagado;
+END;
+
+GO
+/****** Object:  StoredProcedure [Pacientes].[sp_BuscarPaciente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Pacientes].[sp_BuscarPaciente]
+    @Termino NVARCHAR(150)
+AS
+BEGIN
+    SELECT * FROM Pacientes.vwPacientes
+    WHERE NombreCompleto LIKE '%' + @Termino + '%' OR DUI LIKE '%' + @Termino + '%';
+END;
+
+GO
+/****** Object:  StoredProcedure [Pacientes].[sp_EditarConsulta]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Pacientes].[sp_EditarConsulta]
+    @IdHistorial INT, @MotivoConsulta NVARCHAR(MAX), @Diagnostico NVARCHAR(MAX), @PlanTratamiento NVARCHAR(MAX), @Observaciones NVARCHAR(MAX)
+AS
+BEGIN
+    UPDATE Pacientes.HistorialClinico
+    SET MotivoConsulta = @MotivoConsulta, Diagnostico = @Diagnostico, PlanTratamiento = @PlanTratamiento, Observaciones = @Observaciones
+    WHERE IdHistorial = @IdHistorial;
+END;
+
+GO
+/****** Object:  StoredProcedure [Pacientes].[sp_EditarPaciente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Pacientes].[sp_EditarPaciente]
+    @IdPaciente INT, @NombreCompleto NVARCHAR(150), @Direccion NVARCHAR(250), @FechaNacimiento DATE, 
+    @Sexo VARCHAR(20), @DUI VARCHAR(20), @Telefono VARCHAR(20), @NombreEncargado NVARCHAR(150), 
+    @ContactoEmergencia NVARCHAR(150), @TelefonoEmergencia VARCHAR(20)
+AS
+BEGIN
+    UPDATE Pacientes.Pacientes
+    SET NombreCompleto = @NombreCompleto, Direccion = @Direccion, FechaNacimiento = @FechaNacimiento, 
+        Sexo = @Sexo, DUI = @DUI, Telefono = @Telefono, NombreEncargado = @NombreEncargado, 
+        ContactoEmergencia = @ContactoEmergencia, TelefonoEmergencia = @TelefonoEmergencia
+    WHERE IdPaciente = @IdPaciente;
+END;
+
+GO
+/****** Object:  StoredProcedure [Pacientes].[sp_EliminarPaciente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Pacientes].[sp_EliminarPaciente]
+    @IdPaciente INT
+AS
+BEGIN
+    -- Soft Delete (Solo desactiva)
+    UPDATE Pacientes.Pacientes SET Activo = 0 WHERE IdPaciente = @IdPaciente;
+END;
+
+GO
+/****** Object:  StoredProcedure [Pacientes].[sp_InsertarConsulta]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- ----------------- HISTORIAL -----------------
+CREATE   PROCEDURE [Pacientes].[sp_InsertarConsulta]
+    @IdPaciente INT, @IdDoctor INT, @MotivoConsulta NVARCHAR(MAX), @AntecedentesMedicos NVARCHAR(MAX),
+    @AntecedentesOdontologicos NVARCHAR(MAX), @Diagnostico NVARCHAR(MAX), @PlanTratamiento NVARCHAR(MAX), @Observaciones NVARCHAR(MAX)
+AS
+BEGIN
+    INSERT INTO Pacientes.HistorialClinico (IdPaciente, IdDoctor, MotivoConsulta, AntecedentesMedicos, AntecedentesOdontologicos, Diagnostico, PlanTratamiento, Observaciones)
+    VALUES (@IdPaciente, @IdDoctor, @MotivoConsulta, @AntecedentesMedicos, @AntecedentesOdontologicos, @Diagnostico, @PlanTratamiento, @Observaciones);
+END;
+
+GO
+/****** Object:  StoredProcedure [Pacientes].[sp_InsertarPaciente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- ----------------- PACIENTES -----------------
+CREATE   PROCEDURE [Pacientes].[sp_InsertarPaciente]
+    @NombreCompleto NVARCHAR(150), @Direccion NVARCHAR(250), @FechaNacimiento DATE, @Sexo VARCHAR(20),
+    @DUI VARCHAR(20), @Telefono VARCHAR(20), @NombreEncargado NVARCHAR(150), 
+    @ContactoEmergencia NVARCHAR(150), @TelefonoEmergencia VARCHAR(20)
+AS
+BEGIN
+    INSERT INTO Pacientes.Pacientes (NombreCompleto, Direccion, FechaNacimiento, Sexo, DUI, Telefono, NombreEncargado, ContactoEmergencia, TelefonoEmergencia)
+    VALUES (@NombreCompleto, @Direccion, @FechaNacimiento, @Sexo, @DUI, @Telefono, @NombreEncargado, @ContactoEmergencia, @TelefonoEmergencia);
+    SELECT SCOPE_IDENTITY() AS IdGenerado;
+END;
+
+GO
+/****** Object:  StoredProcedure [Pacientes].[sp_ListarConsultasPaciente]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Pacientes].[sp_ListarConsultasPaciente]
+    @IdPaciente INT
+AS
+BEGIN
+    SELECT * FROM Pacientes.vwHistorialPaciente WHERE Paciente = Pacientes.fnNombreCompletoPaciente(@IdPaciente)
+    ORDER BY FechaConsulta DESC;
+END;
+
+GO
+/****** Object:  StoredProcedure [Pacientes].[sp_ListarPacientes]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Pacientes].[sp_ListarPacientes] AS
+BEGIN SELECT * FROM Pacientes.vwPacientes; END;
+
+GO
+/****** Object:  StoredProcedure [Seguridad].[sp_CambiarPassword]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Seguridad].[sp_CambiarPassword]
+    @IdUsuario INT,
+    @NuevoPasswordHash VARCHAR(255)
+AS
+BEGIN
+    UPDATE Seguridad.Usuarios SET PasswordHash = @NuevoPasswordHash WHERE IdUsuario = @IdUsuario;
+END;
+
+GO
+/****** Object:  StoredProcedure [Seguridad].[sp_CrearUsuario]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [Seguridad].[sp_CrearUsuario]
+    @IdRol INT, @NombreCompleto NVARCHAR(150), @Usuario VARCHAR(50), @Correo VARCHAR(120), @PasswordHash VARCHAR(255)
+AS
+BEGIN
+    INSERT INTO Seguridad.Usuarios (IdRol, NombreCompleto, Usuario, Correo, PasswordHash)
+    VALUES (@IdRol, @NombreCompleto, @Usuario, @Correo, @PasswordHash);
+END;
+
+GO
+/****** Object:  StoredProcedure [Seguridad].[sp_Login]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- (Opcional Integrado) Modificamos el SP de Login del Módulo 2 para auditar el TR_Login
+CREATE   PROCEDURE [Seguridad].[sp_Login]
+    @Usuario VARCHAR(50),
+    @PasswordHash VARCHAR(255)
+AS
+BEGIN
+    DECLARE @IdUsuario INT, @NombreCompleto NVARCHAR(150);
+    
+    SELECT @IdUsuario = IdUsuario, @NombreCompleto = NombreCompleto 
+    FROM Seguridad.Usuarios 
+    WHERE Usuario = @Usuario AND PasswordHash = @PasswordHash AND Activo = 1;
+
+    IF @IdUsuario IS NOT NULL
+    BEGIN
+        -- Registro en Bitácora de acceso exitoso
+        INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+        VALUES (@Usuario, 'LOGIN', 'Seguridad.Usuarios', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)), 'Acceso exitoso al sistema. ID: ' + CAST(@IdUsuario AS VARCHAR(10)));
+        
+        -- Retornamos los datos al sistema C#
+        SELECT IdUsuario, IdRol, NombreCompleto, Correo 
+        FROM Seguridad.Usuarios 
+        WHERE IdUsuario = @IdUsuario;
+    END
+    ELSE
+    BEGIN
+        -- Registro en Bitácora de intento fallido
+        INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+        VALUES (@Usuario, 'LOGIN FALLIDO', 'Seguridad.Usuarios', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)), 'Intento de acceso fallido.');
+    END
+END;
+
+GO
+/****** Object:  Trigger [Agenda].[TR_InsertCita]    Script Date: 6/8/2026 12:37:04 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Trigger: Insertar Cita
+CREATE   TRIGGER [Agenda].[TR_InsertCita]
+ON [Agenda].[Citas]
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'INSERT', 'Agenda.Citas', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdCita: ' + CAST(i.IdCita AS VARCHAR(10)) + ' | Fecha: ' + CAST(i.FechaHora AS VARCHAR(30))
+    FROM inserted i;
+END;
+
+GO
+ALTER TABLE [Agenda].[Citas] ENABLE TRIGGER [TR_InsertCita]
+GO
+/****** Object:  Trigger [Archivos].[TR_InsertImagen]    Script Date: 6/8/2026 12:37:05 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Trigger: Insertar Imagen
+CREATE   TRIGGER [Archivos].[TR_InsertImagen]
+ON [Archivos].[ImagenesPaciente]
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'INSERT', 'Archivos.ImagenesPaciente', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdImagen: ' + CAST(i.IdImagen AS VARCHAR(10)) + ' | Ruta: ' + i.RutaArchivo
+    FROM inserted i;
+END;
+
+GO
+ALTER TABLE [Archivos].[ImagenesPaciente] ENABLE TRIGGER [TR_InsertImagen]
+GO
+/****** Object:  Trigger [Odontologia].[TR_InsertPago]    Script Date: 6/8/2026 12:37:05 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Trigger: Insertar Pago
+CREATE   TRIGGER [Odontologia].[TR_InsertPago]
+ON [Odontologia].[Pagos]
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'INSERT', 'Odontologia.Pagos', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdPago: ' + CAST(i.IdPago AS VARCHAR(10)) + ' | Monto: $' + CAST(i.Monto AS VARCHAR(20))
+    FROM inserted i;
+END;
+
+GO
+ALTER TABLE [Odontologia].[Pagos] ENABLE TRIGGER [TR_InsertPago]
+GO
+/****** Object:  Trigger [Odontologia].[TR_InsertTratamiento]    Script Date: 6/8/2026 12:37:05 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Trigger: Insertar TratamientoPaciente
+CREATE   TRIGGER [Odontologia].[TR_InsertTratamiento]
+ON [Odontologia].[TratamientosPaciente]
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'INSERT', 'Odontologia.TratamientosPaciente', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdTratamientoAsignado: ' + CAST(i.Id AS VARCHAR(10)) + ' | Costo: $' + CAST(i.CostoTotal AS VARCHAR(20))
+    FROM inserted i;
+END;
+
+GO
+ALTER TABLE [Odontologia].[TratamientosPaciente] ENABLE TRIGGER [TR_InsertTratamiento]
+GO
+/****** Object:  Trigger [Pacientes].[TR_DeletePaciente]    Script Date: 6/8/2026 12:37:05 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Trigger: Eliminar Paciente (Lógico o Físico)
+CREATE   TRIGGER [Pacientes].[TR_DeletePaciente]
+ON [Pacientes].[Pacientes]
+AFTER DELETE
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'DELETE', 'Pacientes.Pacientes', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdPaciente Eliminado: ' + CAST(d.IdPaciente AS VARCHAR(10)) + ' | Nombre: ' + d.NombreCompleto
+    FROM deleted d;
+END;
+
+GO
+ALTER TABLE [Pacientes].[Pacientes] ENABLE TRIGGER [TR_DeletePaciente]
+GO
+/****** Object:  Trigger [Pacientes].[TR_InsertPaciente]    Script Date: 6/8/2026 12:37:05 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- ==============================================================================
+-- ⚡ 2. TRIGGERS (AUTOMATIZACIÓN DE AUDITORÍA)
+-- ==============================================================================
+
+-- Trigger: Insertar Paciente
+CREATE   TRIGGER [Pacientes].[TR_InsertPaciente]
+ON [Pacientes].[Pacientes]
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'INSERT', 'Pacientes.Pacientes', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdPaciente: ' + CAST(i.IdPaciente AS VARCHAR(10)) + ' | Nombre: ' + i.NombreCompleto
+    FROM inserted i;
+END;
+
+GO
+ALTER TABLE [Pacientes].[Pacientes] ENABLE TRIGGER [TR_InsertPaciente]
+GO
+/****** Object:  Trigger [Pacientes].[TR_UpdatePaciente]    Script Date: 6/8/2026 12:37:05 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Trigger: Actualizar Paciente
+CREATE   TRIGGER [Pacientes].[TR_UpdatePaciente]
+ON [Pacientes].[Pacientes]
+AFTER UPDATE
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'UPDATE', 'Pacientes.Pacientes', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdPaciente: ' + CAST(i.IdPaciente AS VARCHAR(10)) + ' | Nuevo Nombre: ' + i.NombreCompleto + ' | Activo: ' + CAST(i.Activo AS VARCHAR(1))
+    FROM inserted i;
+END;
+
+GO
+ALTER TABLE [Pacientes].[Pacientes] ENABLE TRIGGER [TR_UpdatePaciente]
+GO

@@ -1,0 +1,5 @@
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\ClinicaDentalMario.csproj.AssemblyReference.cache
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\MainWindow.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\App.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\ClinicaDentalMario_MarkupCompile.cache
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\ClinicaDentalMario_MarkupCompile.lref

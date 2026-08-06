@@ -1,0 +1,237 @@
+USE ClinicaDentalMario;
+GO
+
+-- ==============================================================================
+-- 🛡️ 1. TABLA DE AUDITORÍA (BITÁCORA)
+-- ==============================================================================
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Bitacora' AND schema_id = SCHEMA_ID('Seguridad'))
+BEGIN
+    CREATE TABLE Seguridad.Bitacora (
+        IdBitacora INT IDENTITY(1,1) PRIMARY KEY,
+        Usuario VARCHAR(100) NOT NULL, -- Usuario de la Base de Datos o Aplicación
+        Accion VARCHAR(50) NOT NULL,   -- INSERT, UPDATE, DELETE, LOGIN
+        Tabla VARCHAR(100) NOT NULL,
+        Fecha DATETIME DEFAULT GETDATE(),
+        Equipo VARCHAR(100) NULL,      -- Nombre de la PC
+        IP VARCHAR(50) NULL,           -- Dirección IP
+        RegistroAfectado NVARCHAR(MAX) NULL -- Detalle de lo que se modificó
+    );
+END
+GO
+
+-- ==============================================================================
+-- ⚡ 2. TRIGGERS (AUTOMATIZACIÓN DE AUDITORÍA)
+-- ==============================================================================
+
+-- Trigger: Insertar Paciente
+CREATE OR ALTER TRIGGER Pacientes.TR_InsertPaciente
+ON Pacientes.Pacientes
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'INSERT', 'Pacientes.Pacientes', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdPaciente: ' + CAST(i.IdPaciente AS VARCHAR(10)) + ' | Nombre: ' + i.NombreCompleto
+    FROM inserted i;
+END;
+GO
+
+-- Trigger: Actualizar Paciente
+CREATE OR ALTER TRIGGER Pacientes.TR_UpdatePaciente
+ON Pacientes.Pacientes
+AFTER UPDATE
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'UPDATE', 'Pacientes.Pacientes', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdPaciente: ' + CAST(i.IdPaciente AS VARCHAR(10)) + ' | Nuevo Nombre: ' + i.NombreCompleto + ' | Activo: ' + CAST(i.Activo AS VARCHAR(1))
+    FROM inserted i;
+END;
+GO
+
+-- Trigger: Eliminar Paciente (Lógico o Físico)
+CREATE OR ALTER TRIGGER Pacientes.TR_DeletePaciente
+ON Pacientes.Pacientes
+AFTER DELETE
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'DELETE', 'Pacientes.Pacientes', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdPaciente Eliminado: ' + CAST(d.IdPaciente AS VARCHAR(10)) + ' | Nombre: ' + d.NombreCompleto
+    FROM deleted d;
+END;
+GO
+
+-- Trigger: Insertar Pago
+CREATE OR ALTER TRIGGER Odontologia.TR_InsertPago
+ON Odontologia.Pagos
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'INSERT', 'Odontologia.Pagos', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdPago: ' + CAST(i.IdPago AS VARCHAR(10)) + ' | Monto: $' + CAST(i.Monto AS VARCHAR(20))
+    FROM inserted i;
+END;
+GO
+
+-- Trigger: Insertar Cita
+CREATE OR ALTER TRIGGER Agenda.TR_InsertCita
+ON Agenda.Citas
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'INSERT', 'Agenda.Citas', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdCita: ' + CAST(i.IdCita AS VARCHAR(10)) + ' | Fecha: ' + CAST(i.FechaHora AS VARCHAR(30))
+    FROM inserted i;
+END;
+GO
+
+-- Trigger: Insertar TratamientoPaciente
+CREATE OR ALTER TRIGGER Odontologia.TR_InsertTratamiento
+ON Odontologia.TratamientosPaciente
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'INSERT', 'Odontologia.TratamientosPaciente', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdTratamientoAsignado: ' + CAST(i.Id AS VARCHAR(10)) + ' | Costo: $' + CAST(i.CostoTotal AS VARCHAR(20))
+    FROM inserted i;
+END;
+GO
+
+-- Trigger: Insertar Imagen
+CREATE OR ALTER TRIGGER Archivos.TR_InsertImagen
+ON Archivos.ImagenesPaciente
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+    SELECT SYSTEM_USER, 'INSERT', 'Archivos.ImagenesPaciente', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)),
+           'IdImagen: ' + CAST(i.IdImagen AS VARCHAR(10)) + ' | Ruta: ' + i.RutaArchivo
+    FROM inserted i;
+END;
+GO
+
+-- (Opcional Integrado) Modificamos el SP de Login del Módulo 2 para auditar el TR_Login
+CREATE OR ALTER PROCEDURE Seguridad.sp_Login
+    @Usuario VARCHAR(50),
+    @PasswordHash VARCHAR(255)
+AS
+BEGIN
+    DECLARE @IdUsuario INT, @NombreCompleto NVARCHAR(150);
+    
+    SELECT @IdUsuario = IdUsuario, @NombreCompleto = NombreCompleto 
+    FROM Seguridad.Usuarios 
+    WHERE Usuario = @Usuario AND PasswordHash = @PasswordHash AND Activo = 1;
+
+    IF @IdUsuario IS NOT NULL
+    BEGIN
+        -- Registro en Bitácora de acceso exitoso
+        INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+        VALUES (@Usuario, 'LOGIN', 'Seguridad.Usuarios', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)), 'Acceso exitoso al sistema. ID: ' + CAST(@IdUsuario AS VARCHAR(10)));
+        
+        -- Retornamos los datos al sistema C#
+        SELECT IdUsuario, IdRol, NombreCompleto, Correo 
+        FROM Seguridad.Usuarios 
+        WHERE IdUsuario = @IdUsuario;
+    END
+    ELSE
+    BEGIN
+        -- Registro en Bitácora de intento fallido
+        INSERT INTO Seguridad.Bitacora (Usuario, Accion, Tabla, Equipo, IP, RegistroAfectado)
+        VALUES (@Usuario, 'LOGIN FALLIDO', 'Seguridad.Usuarios', HOST_NAME(), CAST(CONNECTIONPROPERTY('client_net_address') AS VARCHAR(50)), 'Intento de acceso fallido.');
+    END
+END;
+GO
+
+
+-- ==============================================================================
+-- 🌱 3. DATOS INICIALES (SEED DATA / CATÁLOGOS)
+-- ==============================================================================
+
+-- 3.1 Roles
+IF NOT EXISTS (SELECT 1 FROM Seguridad.Roles)
+BEGIN
+    INSERT INTO Seguridad.Roles (Nombre, Descripcion) VALUES 
+    ('Administrador', 'Control total del sistema'),
+    ('Doctor', 'Acceso a expedientes, odontograma y tratamientos'),
+    ('Recepcionista', 'Acceso a agenda, cobros y registro básico');
+END
+GO
+
+-- 3.2 Estados de Cita
+IF NOT EXISTS (SELECT 1 FROM Catalogos.EstadosCita)
+BEGIN
+    INSERT INTO Catalogos.EstadosCita (Nombre) VALUES 
+    ('Pendiente'), ('Confirmada'), ('Atendida'), ('Cancelada'), ('No Asistió');
+END
+GO
+
+-- 3.3 Estados Dentales (Odontograma)
+IF NOT EXISTS (SELECT 1 FROM Catalogos.CatalogoEstadosDentales)
+BEGIN
+    INSERT INTO Catalogos.CatalogoEstadosDentales (Nombre, ColorHex) VALUES 
+    ('Sano', '#FFFFFF'), ('Caries', '#FF0000'), ('Resina', '#0000FF'), 
+    ('Corona', '#FFD700'), ('Implante', '#808080'), ('Sellante', '#00FF00'), 
+    ('Endodoncia', '#800080'), ('Extracción', '#000000'), ('Prótesis', '#FFA500');
+END
+GO
+
+-- 3.4 Tratamientos Catálogo
+IF NOT EXISTS (SELECT 1 FROM Catalogos.CatalogoTratamientos)
+BEGIN
+    INSERT INTO Catalogos.CatalogoTratamientos (Nombre, Descripcion, PrecioBase, DuracionMinutos) VALUES 
+    ('Consulta General', 'Evaluación inicial del paciente', 15.00, 30),
+    ('Profilaxis', 'Limpieza dental básica', 25.00, 45),
+    ('Limpieza', 'Limpieza profunda (Detartraje)', 35.00, 60),
+    ('Resina', 'Relleno estético (por pieza)', 40.00, 45),
+    ('Extracción', 'Extracción simple de pieza', 30.00, 40),
+    ('Endodoncia', 'Tratamiento de conducto', 120.00, 90),
+    ('Ortodoncia', 'Mensualidad de brackets', 50.00, 30),
+    ('Blanqueamiento', 'Blanqueamiento dental clínico', 150.00, 60),
+    ('Implante', 'Colocación de implante de titanio', 800.00, 120),
+    ('Prótesis', 'Prótesis dental removible o fija', 250.00, 60),
+    ('Cirugía', 'Extracción de cordales u otra cirugía', 100.00, 90),
+    ('Radiografía', 'Toma de radiografía periapical', 10.00, 15);
+END
+GO
+
+-- 3.5 Usuarios de Prueba
+-- NOTA: Las contraseñas están encriptadas con SHA2_256 ('123456' en este ejemplo). 
+-- En tu C# de WPF debes usar Hashing SHA256 al mandar el password.
+IF NOT EXISTS (SELECT 1 FROM Seguridad.Usuarios)
+BEGIN
+    DECLARE @IdAdmin INT = (SELECT IdRol FROM Seguridad.Roles WHERE Nombre = 'Administrador');
+    DECLARE @IdDoctor INT = (SELECT IdRol FROM Seguridad.Roles WHERE Nombre = 'Doctor');
+    DECLARE @IdRecep INT = (SELECT IdRol FROM Seguridad.Roles WHERE Nombre = 'Recepcionista');
+
+    INSERT INTO Seguridad.Usuarios (IdRol, NombreCompleto, Usuario, Correo, PasswordHash) VALUES 
+    (@IdAdmin, 'Administrador del Sistema', 'admin', 'admin@clinica.com', CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', '123456'), 2)),
+    (@IdDoctor, 'Dr. CDMario', 'doctor', 'doctor@clinica.com', CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', '123456'), 2)),
+    (@IdRecep, 'Recepcionista Principal', 'recepcion', 'info@clinica.com', CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', '123456'), 2));
+END
+GO
+
+-- ==============================================================================
+-- 🚀 4. ÍNDICES FINALES (OPTIMIZACIÓN PARA REPORTES Y FILTROS)
+-- ==============================================================================
+
+-- Índice para optimizar los reportes de ingresos mensuales/diarios
+CREATE NONCLUSTERED INDEX IX_Pagos_Reportes ON Odontologia.Pagos(FechaPago) INCLUDE (Monto);
+GO
+
+-- Índice para optimizar la búsqueda rápida de la agenda por paciente
+CREATE NONCLUSTERED INDEX IX_Citas_PacienteAgenda ON Agenda.Citas(IdPaciente, FechaHora);
+GO
+
+-- Índice para el historial clínico (ordenación por fecha)
+CREATE NONCLUSTERED INDEX IX_Historial_FechaConsulta ON Pacientes.HistorialClinico(IdPaciente, FechaConsulta DESC);
+GO
+
+-- Índice para auditoría (búsqueda de errores o acciones recientes)
+CREATE NONCLUSTERED INDEX IX_Bitacora_Fecha ON Seguridad.Bitacora(Fecha DESC);
+GO
+
+PRINT '¡Módulo 3 ejecutado con éxito! Triggers, Datos Semilla, Auditoría e Índices optimizados listos.';

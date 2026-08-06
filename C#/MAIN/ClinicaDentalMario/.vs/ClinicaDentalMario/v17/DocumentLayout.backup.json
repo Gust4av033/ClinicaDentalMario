@@ -1,0 +1,139 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\viewmodel\\tratamientos\\nuevotratamientoviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:viewmodel\\tratamientos\\nuevotratamientoviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\viewmodel\\tratamientos\\tratamientosviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:viewmodel\\tratamientos\\tratamientosviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\models\\tratamientopacientemodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:models\\tratamientopacientemodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\models\\pacientemodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:models\\pacientemodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\viewmodel\\agenda\\editarcitaviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:viewmodel\\agenda\\editarcitaviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\models\\citamodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:models\\citamodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\viewmodel\\base\\viewmodelbase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:viewmodel\\base\\viewmodelbase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "PacienteModel.cs",
+              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Models\\PacienteModel.cs",
+              "RelativeDocumentMoniker": "Models\\PacienteModel.cs",
+              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Models\\PacienteModel.cs",
+              "RelativeToolTip": "Models\\PacienteModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-06T00:59:22.264Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "TratamientoPacienteModel.cs",
+              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Models\\TratamientoPacienteModel.cs",
+              "RelativeDocumentMoniker": "Models\\TratamientoPacienteModel.cs",
+              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Models\\TratamientoPacienteModel.cs",
+              "RelativeToolTip": "Models\\TratamientoPacienteModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-06T00:51:54.664Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "NuevoTratamientoViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Tratamientos\\NuevoTratamientoViewModel.cs",
+              "RelativeDocumentMoniker": "ViewModel\\Tratamientos\\NuevoTratamientoViewModel.cs",
+              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Tratamientos\\NuevoTratamientoViewModel.cs",
+              "RelativeToolTip": "ViewModel\\Tratamientos\\NuevoTratamientoViewModel.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAcwB8AAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-06T00:46:38.189Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "TratamientosViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Tratamientos\\TratamientosViewModel.cs",
+              "RelativeDocumentMoniker": "ViewModel\\Tratamientos\\TratamientosViewModel.cs",
+              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Tratamientos\\TratamientosViewModel.cs",
+              "RelativeToolTip": "ViewModel\\Tratamientos\\TratamientosViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-06T00:34:54.682Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "EditarCitaViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Agenda\\EditarCitaViewModel.cs",
+              "RelativeDocumentMoniker": "ViewModel\\Agenda\\EditarCitaViewModel.cs",
+              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Agenda\\EditarCitaViewModel.cs",
+              "RelativeToolTip": "ViewModel\\Agenda\\EditarCitaViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACkAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-06T00:32:03.195Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "CitaModel.cs",
+              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Models\\CitaModel.cs",
+              "RelativeDocumentMoniker": "Models\\CitaModel.cs",
+              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Models\\CitaModel.cs",
+              "RelativeToolTip": "Models\\CitaModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-06T00:25:06.651Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ViewModelBase.cs",
+              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Base\\ViewModelBase.cs",
+              "RelativeDocumentMoniker": "ViewModel\\Base\\ViewModelBase.cs",
+              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Base\\ViewModelBase.cs",
+              "RelativeToolTip": "ViewModel\\Base\\ViewModelBase.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAC4AAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-04T05:02:25.954Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

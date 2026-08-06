@@ -1,0 +1,231 @@
+-- ==========================================
+-- 1. CREACIÓN DE BASE DE DATOS
+-- ==========================================
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'ClinicaDentalMario')
+BEGIN
+    CREATE DATABASE ClinicaDentalMario;
+END
+GO
+
+USE ClinicaDentalMario;
+GO
+
+-- ==========================================
+-- 2. CREACIÓN DE ESQUEMAS
+-- ==========================================
+CREATE SCHEMA Seguridad;
+GO
+CREATE SCHEMA Catalogos;
+GO
+CREATE SCHEMA Pacientes;
+GO
+CREATE SCHEMA Personal;
+GO
+CREATE SCHEMA Agenda;
+GO
+CREATE SCHEMA Odontologia;
+GO
+CREATE SCHEMA Archivos;
+GO
+CREATE SCHEMA Facturacion;
+GO
+
+-- ==========================================
+-- 3. CREACIÓN DE TABLAS (Sin Llaves Foráneas aún)
+-- ==========================================
+
+-- Esquema: Seguridad
+CREATE TABLE Seguridad.Roles (
+    IdRol INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(50) NOT NULL UNIQUE,
+    Descripcion VARCHAR(200) NULL,
+    Activo BIT DEFAULT 1
+);
+
+CREATE TABLE Seguridad.Usuarios (
+    IdUsuario INT IDENTITY(1,1) PRIMARY KEY,
+    IdRol INT NOT NULL,
+    NombreCompleto NVARCHAR(150) NOT NULL,
+    Usuario VARCHAR(50) NOT NULL UNIQUE,
+    Correo VARCHAR(120) NULL,
+    PasswordHash VARCHAR(255) NOT NULL,
+    Activo BIT DEFAULT 1,
+    FechaCreacion DATETIME DEFAULT GETDATE()
+);
+
+-- Esquema: Personal
+CREATE TABLE Personal.Doctores (
+    IdDoctor INT IDENTITY(1,1) PRIMARY KEY,
+    NombreCompleto NVARCHAR(150) NOT NULL,
+    Especialidad VARCHAR(80) NULL,
+    Telefono VARCHAR(20) NULL,
+    Correo VARCHAR(120) NULL,
+    Direccion NVARCHAR(250) NULL,
+    NumeroJVPO VARCHAR(30) NULL,
+    Activo BIT DEFAULT 1
+);
+
+-- Esquema: Pacientes
+CREATE TABLE Pacientes.Pacientes (
+    IdPaciente INT IDENTITY(1,1) PRIMARY KEY,
+    NombreCompleto NVARCHAR(150) NOT NULL,
+    Direccion NVARCHAR(250) NULL,
+    FechaNacimiento DATE NULL,
+    Sexo VARCHAR(20) CHECK (Sexo IN ('Masculino', 'Femenino', 'Otro')),
+    DUI VARCHAR(20) NULL,
+    Telefono VARCHAR(20) NULL,
+    NombreEncargado NVARCHAR(150) NULL,
+    ContactoEmergencia NVARCHAR(150) NULL,
+    TelefonoEmergencia VARCHAR(20) NULL,
+    FechaRegistro DATETIME DEFAULT GETDATE(),
+    Activo BIT DEFAULT 1
+);
+
+CREATE TABLE Pacientes.HistorialClinico (
+    IdHistorial INT IDENTITY(1,1) PRIMARY KEY,
+    IdPaciente INT NOT NULL,
+    IdDoctor INT NOT NULL,
+    MotivoConsulta NVARCHAR(MAX) NULL,
+    AntecedentesMedicos NVARCHAR(MAX) NULL,
+    AntecedentesOdontologicos NVARCHAR(MAX) NULL,
+    Diagnostico NVARCHAR(MAX) NULL,
+    PlanTratamiento NVARCHAR(MAX) NULL,
+    Observaciones NVARCHAR(MAX) NULL,
+    FechaConsulta DATETIME DEFAULT GETDATE()
+);
+
+-- Esquema: Catalogos
+CREATE TABLE Catalogos.EstadosCita (
+    IdEstado INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(40) NOT NULL UNIQUE
+);
+
+CREATE TABLE Catalogos.CatalogoTratamientos (
+    IdTratamiento INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(120) NOT NULL,
+    Descripcion VARCHAR(255) NULL,
+    PrecioBase DECIMAL(10,2) NOT NULL CHECK (PrecioBase >= 0),
+    DuracionMinutos INT NULL,
+    Activo BIT DEFAULT 1
+);
+
+CREATE TABLE Catalogos.CatalogoEstadosDentales (
+    IdEstadoDental INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(80) NOT NULL,
+    ColorHex VARCHAR(7) NULL,
+    Activo BIT DEFAULT 1
+);
+
+-- Esquema: Agenda
+CREATE TABLE Agenda.Citas (
+    IdCita INT IDENTITY(1,1) PRIMARY KEY,
+    IdPaciente INT NOT NULL,
+    IdDoctor INT NOT NULL,
+    IdEstado INT NOT NULL,
+    FechaHora DATETIME NOT NULL,
+    Observaciones NVARCHAR(MAX) NULL,
+    FechaRegistro DATETIME DEFAULT GETDATE()
+);
+
+-- Esquema: Odontologia
+CREATE TABLE Odontologia.TratamientosPaciente (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    IdPaciente INT NOT NULL,
+    IdDoctor INT NOT NULL,
+    IdTratamiento INT NOT NULL,
+    CostoTotal DECIMAL(10,2) NOT NULL CHECK (CostoTotal >= 0),
+    Estado VARCHAR(30) DEFAULT 'Pendiente' CHECK (Estado IN ('Pendiente', 'En progreso', 'Finalizado', 'Cancelado')),
+    FechaInicio DATETIME DEFAULT GETDATE(),
+    FechaFin DATETIME NULL,
+    Observaciones NVARCHAR(MAX) NULL
+);
+
+CREATE TABLE Odontologia.Pagos (
+    IdPago INT IDENTITY(1,1) PRIMARY KEY,
+    IdTratamientoPaciente INT NOT NULL,
+    FechaPago DATETIME DEFAULT GETDATE(),
+    Monto DECIMAL(10,2) NOT NULL DEFAULT 0.00 CHECK (Monto >= 0),
+    MetodoPago VARCHAR(50) NULL,
+    Observacion VARCHAR(255) NULL
+);
+
+CREATE TABLE Odontologia.Odontograma (
+    IdRegistro INT IDENTITY(1,1) PRIMARY KEY,
+    IdPaciente INT NOT NULL,
+    NumeroPieza INT NOT NULL CHECK (NumeroPieza > 0 AND NumeroPieza <= 85), -- Rango general de piezas dentales
+    IdEstadoDental INT NOT NULL,
+    Observaciones NVARCHAR(MAX) NULL,
+    FechaRegistro DATETIME DEFAULT GETDATE()
+);
+
+-- Esquema: Archivos
+CREATE TABLE Archivos.ImagenesPaciente (
+    IdImagen INT IDENTITY(1,1) PRIMARY KEY,
+    IdPaciente INT NOT NULL,
+    RutaArchivo VARCHAR(500) NOT NULL,
+    TipoArchivo VARCHAR(40) NULL,
+    Descripcion VARCHAR(255) NULL,
+    FechaSubida DATETIME DEFAULT GETDATE()
+);
+GO
+
+-- ==========================================
+-- 4. RELACIONES (LLAVES FORÁNEAS)
+-- ==========================================
+
+-- Seguridad
+ALTER TABLE Seguridad.Usuarios 
+ADD FOREIGN KEY (IdRol) REFERENCES Seguridad.Roles(IdRol);
+
+-- Pacientes
+ALTER TABLE Pacientes.HistorialClinico 
+ADD FOREIGN KEY (IdPaciente) REFERENCES Pacientes.Pacientes(IdPaciente),
+    FOREIGN KEY (IdDoctor) REFERENCES Personal.Doctores(IdDoctor);
+
+-- Agenda
+ALTER TABLE Agenda.Citas 
+ADD FOREIGN KEY (IdPaciente) REFERENCES Pacientes.Pacientes(IdPaciente),
+    FOREIGN KEY (IdDoctor) REFERENCES Personal.Doctores(IdDoctor),
+    FOREIGN KEY (IdEstado) REFERENCES Catalogos.EstadosCita(IdEstado);
+
+-- Odontologia
+ALTER TABLE Odontologia.TratamientosPaciente 
+ADD FOREIGN KEY (IdPaciente) REFERENCES Pacientes.Pacientes(IdPaciente),
+    FOREIGN KEY (IdDoctor) REFERENCES Personal.Doctores(IdDoctor),
+    FOREIGN KEY (IdTratamiento) REFERENCES Catalogos.CatalogoTratamientos(IdTratamiento);
+
+ALTER TABLE Odontologia.Pagos 
+ADD FOREIGN KEY (IdTratamientoPaciente) REFERENCES Odontologia.TratamientosPaciente(Id);
+
+ALTER TABLE Odontologia.Odontograma 
+ADD FOREIGN KEY (IdPaciente) REFERENCES Pacientes.Pacientes(IdPaciente),
+    FOREIGN KEY (IdEstadoDental) REFERENCES Catalogos.CatalogoEstadosDentales(IdEstadoDental);
+
+-- Archivos
+ALTER TABLE Archivos.ImagenesPaciente 
+ADD FOREIGN KEY (IdPaciente) REFERENCES Pacientes.Pacientes(IdPaciente);
+GO
+
+-- ==========================================
+-- 5. ÍNDICES PARA OPTIMIZAR BÚSQUEDAS
+-- ==========================================
+
+-- Índices en Pacientes
+CREATE NONCLUSTERED INDEX IX_Pacientes_Nombre ON Pacientes.Pacientes(NombreCompleto);
+CREATE NONCLUSTERED INDEX IX_Pacientes_DUI ON Pacientes.Pacientes(DUI);
+CREATE NONCLUSTERED INDEX IX_Pacientes_Telefono ON Pacientes.Pacientes(Telefono);
+
+-- Índices en Citas
+CREATE NONCLUSTERED INDEX IX_Citas_FechaHora ON Agenda.Citas(FechaHora);
+CREATE NONCLUSTERED INDEX IX_Citas_IdEstado ON Agenda.Citas(IdEstado);
+CREATE NONCLUSTERED INDEX IX_Citas_IdDoctor ON Agenda.Citas(IdDoctor);
+
+-- Índices en Odontología y Tratamientos
+CREATE NONCLUSTERED INDEX IX_TratamientosPac_IdTratamiento ON Odontologia.TratamientosPaciente(IdTratamiento);
+CREATE NONCLUSTERED INDEX IX_Pagos_FechaPago ON Odontologia.Pagos(FechaPago);
+
+-- Índices en Seguridad
+CREATE NONCLUSTERED INDEX IX_Usuarios_Usuario ON Seguridad.Usuarios(Usuario);
+GO
+
+PRINT '¡Módulo 1 ejecutado con éxito! Estructura, relaciones e índices creados correctamente.';

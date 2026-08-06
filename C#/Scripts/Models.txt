@@ -1,0 +1,194 @@
+using System;
+
+namespace ClinicaDentalMario.Models
+{
+    public class Paciente
+    {
+        public int IdPaciente { get; set; } // INT
+        public string NombreCompleto { get; set; } = string.Empty; // NVARCHAR(150) NOT NULL
+        public string? Direccion { get; set; } // NVARCHAR(250) NULL
+        public DateTime? FechaNacimiento { get; set; } // DATE NULL
+        public string? Sexo { get; set; } // VARCHAR(20) NULL
+        public string? DUI { get; set; } // VARCHAR(20) NULL
+        public string? Telefono { get; set; } // VARCHAR(20) NULL
+        public string? NombreEncargado { get; set; } // NVARCHAR(150) NULL
+        public string? ContactoEmergencia { get; set; } // NVARCHAR(150) NULL
+        public string? TelefonoEmergencia { get; set; } // VARCHAR(20) NULL
+        public DateTime FechaRegistro { get; set; } // DATETIME
+        public bool Activo { get; set; } // BIT
+    }
+}
+
+namespace ClinicaDentalMario.Models
+{
+    public class Doctor
+    {
+        public int IdDoctor { get; set; }
+        public string NombreCompleto { get; set; } = string.Empty;
+        public string? Especialidad { get; set; }
+        public string? Telefono { get; set; }
+        public string? Correo { get; set; }
+        public string? Direccion { get; set; }
+        public string? NumeroJVPO { get; set; }
+        public bool Activo { get; set; }
+    }
+}
+
+using System;
+
+namespace ClinicaDentalMario.Models
+{
+    public class Cita
+    {
+        public int IdCita { get; set; }
+        public int IdPaciente { get; set; }
+        public int IdDoctor { get; set; }
+        public int IdEstado { get; set; }
+        public DateTime FechaHora { get; set; } // DATETIME NOT NULL
+        public string? Observaciones { get; set; }
+        public DateTime FechaRegistro { get; set; }
+    }
+}
+
+using System;
+
+namespace ClinicaDentalMario.Models
+{
+    public class TratamientoPaciente
+    {
+        public int Id { get; set; }
+        public int IdPaciente { get; set; }
+        public int IdDoctor { get; set; }
+        public int IdTratamiento { get; set; }
+        public decimal CostoTotal { get; set; } // DECIMAL(10,2) NOT NULL
+        public string Estado { get; set; } = "Pendiente"; // VARCHAR(30)
+        public DateTime FechaInicio { get; set; }
+        public DateTime? FechaFin { get; set; } // Puede ser nulo si no ha terminado
+        public string? Observaciones { get; set; }
+    }
+}
+
+using System;
+
+namespace ClinicaDentalMario.Models
+{
+    public class Pago
+    {
+        public int IdPago { get; set; }
+        public int IdTratamientoPaciente { get; set; }
+        public DateTime FechaPago { get; set; }
+        public decimal Monto { get; set; } // DECIMAL(10,2) NOT NULL
+        public string? MetodoPago { get; set; }
+        public string? Observacion { get; set; }
+    }
+}
+
+using System;
+
+namespace ClinicaDentalMario.Models
+{
+    public class HistorialClinico
+    {
+        public int IdHistorial { get; set; }
+        public int IdPaciente { get; set; }
+        public int IdDoctor { get; set; }
+        public string? MotivoConsulta { get; set; }
+        public string? AntecedentesMedicos { get; set; }
+        public string? AntecedentesOdontologicos { get; set; }
+        public string? Diagnostico { get; set; }
+        public string? PlanTratamiento { get; set; }
+        public string? Observaciones { get; set; }
+        public DateTime FechaConsulta { get; set; }
+    }
+}
+
+using System;
+
+namespace ClinicaDentalMario.Models
+{
+    public class Usuario
+    {
+        public int IdUsuario { get; set; }
+        public int IdRol { get; set; }
+        public string NombreCompleto { get; set; } = string.Empty;
+        public string NombreUsuario { get; set; } = string.Empty; // Mapeado de "Usuario" en SQL
+        public string? Correo { get; set; }
+        public string PasswordHash { get; set; } = string.Empty;
+        public bool Activo { get; set; }
+        public DateTime FechaCreacion { get; set; }
+    }
+}
+
+namespace ClinicaDentalMario.Models
+{
+    public class Rol
+    {
+        public int IdRol { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string? Descripcion { get; set; }
+        public bool Activo { get; set; }
+    }
+}
+
+namespace ClinicaDentalMario.Models
+{
+    public class EstadoCita
+    {
+        public int IdEstado { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+    }
+}
+
+namespace ClinicaDentalMario.Models
+{
+    public class CatalogoTratamiento
+    {
+        public int IdTratamiento { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string? Descripcion { get; set; }
+        public decimal PrecioBase { get; set; }
+        public int? DuracionMinutos { get; set; }
+        public bool Activo { get; set; }
+    }
+}
+
+namespace ClinicaDentalMario.Models
+{
+    public class CatalogoEstadoDental
+    {
+        public int IdEstadoDental { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string? ColorHex { get; set; }
+        public bool Activo { get; set; }
+    }
+}
+
+using System;
+
+namespace ClinicaDentalMario.Models
+{
+    public class Odontograma
+    {
+        public int IdRegistro { get; set; }
+        public int IdPaciente { get; set; }
+        public int NumeroPieza { get; set; }
+        public int IdEstadoDental { get; set; }
+        public string? Observaciones { get; set; }
+        public DateTime FechaRegistro { get; set; }
+    }
+}
+
+using System;
+
+namespace ClinicaDentalMario.Models
+{
+    public class ImagenPaciente
+    {
+        public int IdImagen { get; set; }
+        public int IdPaciente { get; set; }
+        public string RutaArchivo { get; set; } = string.Empty;
+        public string? TipoArchivo { get; set; }
+        public string? Descripcion { get; set; }
+        public DateTime FechaSubida { get; set; }
+    }
+}

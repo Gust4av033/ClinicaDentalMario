@@ -1,58 +1,89 @@
 ﻿using ClinicaDentalMario.ViewModel.Base;
+using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Views.Configuracion;
+using ClinicaDentalMario.ViewModel.Configuracion;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using ClinicaDentalMario.Models;
 
 namespace ClinicaDentalMario.ViewModel.Dashboard
 {
     public class DashboardViewModel : ViewModelBase
     {
-        private ObservableCollection<CitaModel> _citasHoy = new ObservableCollection<CitaModel>();
-        public ObservableCollection<CitaModel> CitasHoy
-        {
-            get => _citasHoy;
-            set => SetProperty(ref _citasHoy, value);
-        }
+        private readonly DashboardRepository _dashboardRepo;
+        private readonly Action<object> _cambiarVista;
 
+        // --- MÉTRICAS ---
         private decimal _ingresosHoy;
-        public decimal IngresosHoy
+        public decimal IngresosHoy { get => _ingresosHoy; set => SetProperty(ref _ingresosHoy, value); }
+
+        private int _citasHoy;
+        public int CitasHoy { get => _citasHoy; set => SetProperty(ref _citasHoy, value); }
+
+        // --- LISTAS REALES ---
+        public ObservableCollection<dynamic> ListaCitasHoy { get; set; } = new();
+        public ObservableCollection<dynamic> Morosos { get; set; } = new();
+        public ObservableCollection<dynamic> Cumpleaneros { get; set; } = new();
+
+        public ICommand AbrirConfiguracionCommand { get; }
+
+        public DashboardViewModel(Action<object> cambiarVista)
         {
-            get => _ingresosHoy;
-            set => SetProperty(ref _ingresosHoy, value);
+            Titulo = "Panel Principal (Dashboard)";
+            _dashboardRepo = new DashboardRepository();
+            _cambiarVista = cambiarVista;
+
+            AbrirConfiguracionCommand = new RelayCommand(AbrirConfiguracion);
+
+            // Arrancamos la carga real de la base de datos
+            _ = CargarDatosDashboardAsync();
         }
 
-        private int _pacientesAtendidos;
-        public int PacientesAtendidos
-        {
-            get => _pacientesAtendidos;
-            set => SetProperty(ref _pacientesAtendidos, value);
-        }
-
-        public ICommand CargarDashboardCommand { get; }
-
-        public DashboardViewModel()
-        {
-            Titulo = "Resumen del Día";
-
-            CargarDashboardCommand = new RelayCommand(async (_) => await CargarDashboardAsync());
-
-            // Ejecutamos la carga inicial
-            CargarDashboardCommand.Execute(null);
-        }
-
-        private async Task CargarDashboardAsync()
+        public async Task CargarDatosDashboardAsync()
         {
             EstaCargando = true;
+            try
+            {
+                DateTime hoy = DateTime.Today;
 
-            // Aquí consumiremos las vistas SQL como vwAgendaHoy y vwIngresosDiarios
-            await Task.Delay(500); // Simulando carga
+                // 1. Cargar Tarjetas (Las que ya tenías)
+                IngresosHoy = await _dashboardRepo.ObtenerIngresosDelDiaAsync(hoy);
+                CitasHoy = await _dashboardRepo.ObtenerTotalCitasHoyAsync(hoy);
 
-            EstaCargando = false;
+                // 2. Cargar Listas (Las nuevas)
+                var citas = await _dashboardRepo.ObtenerCitasHoyListaAsync();
+                var morosos = await _dashboardRepo.ObtenerMorososAsync();
+                var cumpleaneros = await _dashboardRepo.ObtenerCumpleanerosMesAsync();
+
+                // Llenamos las listas visuales vaciándolas primero (por si se recarga)
+                ListaCitasHoy.Clear();
+                foreach (var item in citas) ListaCitasHoy.Add(item);
+
+                Morosos.Clear();
+                foreach (var item in morosos) Morosos.Add(item);
+
+                Cumpleaneros.Clear();
+                foreach (var item in cumpleaneros) Cumpleaneros.Add(item);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Error al cargar datos reales del dashboard: " + ex.Message);
+            }
+            finally
+            {
+                EstaCargando = false;
+            }
+        }
+
+        private void AbrirConfiguracion(object? parameter)
+        {
+            if (_cambiarVista != null)
+            {
+                var vistaConfig = new ConfiguracionView();
+                vistaConfig.DataContext = new ConfiguracionViewModel();
+                _cambiarVista(vistaConfig);
+            }
         }
     }
 }

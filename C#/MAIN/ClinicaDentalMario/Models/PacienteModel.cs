@@ -20,5 +20,6 @@ namespace ClinicaDentalMario.Models
         public string? TelefonoEmergencia { get; set; } // VARCHAR(20) NULL
         public DateTime FechaRegistro { get; set; } // DATETIME
         public bool Activo { get; set; } // BIT
+
     }
 }

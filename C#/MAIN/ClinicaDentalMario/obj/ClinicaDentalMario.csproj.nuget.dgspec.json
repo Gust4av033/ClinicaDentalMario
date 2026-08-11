@@ -67,9 +67,17 @@
               "target": "Package",
               "version": "[2.1.66, )"
             },
+            "MahApps.Metro.IconPacks.Material": {
+              "target": "Package",
+              "version": "[6.2.1, )"
+            },
             "Microsoft.Data.SqlClient": {
               "target": "Package",
               "version": "[7.0.2, )"
+            },
+            "QuestPDF": {
+              "target": "Package",
+              "version": "[2026.7.2, )"
             },
             "System.Data.SqlClient": {
               "target": "Package",

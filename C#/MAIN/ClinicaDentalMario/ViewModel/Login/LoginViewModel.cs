@@ -7,51 +7,73 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using ClinicaDentalMario.Views;
 
 namespace ClinicaDentalMario.ViewModel.Login
 {
     public partial class LoginViewModel : ViewModelBase
     {
-        private string _usuario = string.Empty;
-        public string Usuario
-        {
-            get => _usuario;
-            set => SetProperty(ref _usuario, value);
-        }
+        /* private string _usuario = string.Empty;
+          public string Usuario
+          {
+              get => _usuario;
+              set => SetProperty(ref _usuario, value);
+          }
 
-        private string _mensajeError = string.Empty;
-        public string MensajeError
-        {
-            get => _mensajeError;
-            set => SetProperty(ref _mensajeError, value);
-        }
+          private string _mensajeError = string.Empty;
+          public string MensajeError
+          {
+              get => _mensajeError;
+              set => SetProperty(ref _mensajeError, value);
+          }
 
-        // Declaración manual del comando
-        public ICommand IniciarSesionCommand { get; }
+          // Declaración manual del comando
+          public ICommand IniciarSesionCommand { get; }
+
+          public LoginViewModel()
+          {
+              Titulo = "Iniciar Sesión";
+
+              // Inicializamos el comando apuntando al método asíncrono
+              IniciarSesionCommand = new RelayCommand(async (param) => await IniciarSesionAsync(param));
+          }
+
+          private async Task IniciarSesionAsync(object? passwordObj)
+          {
+              if (string.IsNullOrWhiteSpace(Usuario))
+              {
+                  MensajeError = "Por favor, ingresa tu usuario.";
+                  return;
+              }
+
+              EstaCargando = true;
+              MensajeError = string.Empty;
+
+              // Simulación de espera a SQL Server
+              await Task.Delay(1000);
+
+              EstaCargando = false;
+          }*/
+
+        public ICommand AccederCommand { get; }
 
         public LoginViewModel()
         {
-            Titulo = "Iniciar Sesión";
-
-            // Inicializamos el comando apuntando al método asíncrono
-            IniciarSesionCommand = new RelayCommand(async (param) => await IniciarSesionAsync(param));
+            Titulo = "Iniciar Sesión - CDMario Dental";
+            AccederCommand = new RelayCommand(Acceder);
         }
 
-        private async Task IniciarSesionAsync(object? passwordObj)
+        private void Acceder(object? parameter)
         {
-            if (string.IsNullOrWhiteSpace(Usuario))
+            // 1. Instanciamos la ventana principal (MainWindow)
+            MainWindow mainWindow = new MainWindow();
+            mainWindow.Show();
+
+            // 2. Cerramos la ventana de login actual (el parameter viene desde el CommandParameter de la vista)
+            if (parameter is System.Windows.Window ventanaLogin)
             {
-                MensajeError = "Por favor, ingresa tu usuario.";
-                return;
+                ventanaLogin.Close();
             }
-
-            EstaCargando = true;
-            MensajeError = string.Empty;
-
-            // Simulación de espera a SQL Server
-            await Task.Delay(1000);
-
-            EstaCargando = false;
         }
     }
 }

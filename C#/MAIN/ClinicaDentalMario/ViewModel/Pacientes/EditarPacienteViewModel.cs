@@ -1,22 +1,32 @@
-﻿using ClinicaDentalMario.Models;
+﻿using ClinicaDentalMario.Data;
+using ClinicaDentalMario.Models;
+using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Services;
 using ClinicaDentalMario.ViewModel.Base;
+using ClinicaDentalMario.Views.Pacientes; // Asegúrate de tener este using para la navegación
+using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Pacientes
 {
-    public class EditarPacienteViewModel : ViewModelBase 
+    public class EditarPacienteViewModel : ViewModelBase
     {
-       // [cite_start]// Mapea directamente a tu tabla Pacientes [cite: 546-547, 600-607]
-        private PacienteModel _pacienteEditado;
-        public PacienteModel PacienteEditado
+        private readonly PacienteRepository _pacienteRepository;
+        private readonly PagoRepository _pagoRepository;
+        private readonly HistorialClinicoRepository _historialRepository;
+        private readonly TratamientoRepository _tratamientoRepository; // Agregado para los abonos
+
+        private readonly Action<object> _cambiarVista; // Recuperamos la navegación
+
+        private PacienteModel _pacienteActual;
+        public PacienteModel PacienteActual
         {
-            get => _pacienteEditado;
-            set => SetProperty(ref _pacienteEditado, value);
+            get => _pacienteActual;
+            set => SetProperty(ref _pacienteActual, value);
         }
 
         private string _mensajeError = string.Empty;
@@ -26,40 +36,244 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             set => SetProperty(ref _mensajeError, value);
         }
 
-        public ICommand GuardarCommand { get; }
-        public ICommand CancelarCommand { get; }
-
-        public EditarPacienteViewModel(PacienteModel paciente)
+        private HistorialClinicoModel _historialActual = new();
+        public HistorialClinicoModel HistorialActual
         {
-            Titulo = "Editar Información del Paciente";
-
-            // Recibimos el paciente seleccionado desde la lista
-            _pacienteEditado = paciente;
-
-            GuardarCommand = new RelayCommand(Guardar);
-            CancelarCommand = new RelayCommand(Cancelar);
+            get => _historialActual;
+            set => SetProperty(ref _historialActual, value);
         }
 
-        private void Guardar(object? parameter)
+        private string _mensajeExito = string.Empty;
+        public string MensajeExito
         {
-            // Validaciones manuales básicas
-            if (string.IsNullOrWhiteSpace(PacienteEditado.NombreCompleto))
+            get => _mensajeExito;
+            set => SetProperty(ref _mensajeExito, value);
+        }
+
+        // --- PROPIEDADES PARA EL CONTROL RÁPIDO DE ABONOS ---
+        private decimal _nuevoAbono;
+        public decimal NuevoAbono
+        {
+            get => _nuevoAbono;
+            set => SetProperty(ref _nuevoAbono, value);
+        }
+
+        private string _observacionAbono;
+        public string ObservacionAbono
+        {
+            get => _observacionAbono;
+            set => SetProperty(ref _observacionAbono, value);
+        }
+
+        public ICommand GuardarCambiosCommand { get; }
+        public ICommand DesactivarCommand { get; }
+        public ICommand CancelarCommand { get; }
+        public ICommand ExportarPdfCommand { get; }
+        public ICommand RegistrarAbonoCommand { get; }
+
+        public EditarPacienteViewModel(PacienteModel pacienteSeleccionado, Action<object> cambiarVista)
+        {
+            Titulo = "Actualizar Expediente Clínico";
+            _cambiarVista = cambiarVista; // Guardamos la puerta de navegación
+
+            _pacienteRepository = new PacienteRepository();
+            _pagoRepository = new PagoRepository();
+            _historialRepository = new HistorialClinicoRepository();
+            _tratamientoRepository = new TratamientoRepository(); // Inicializamos
+
+            _ = CargarHistorialAsync(pacienteSeleccionado.IdPaciente);
+
+            PacienteActual = new PacienteModel
             {
-                MensajeError = "El nombre completo no puede quedar vacío.";
+                IdPaciente = pacienteSeleccionado.IdPaciente,
+                NombreCompleto = pacienteSeleccionado.NombreCompleto,
+                Direccion = pacienteSeleccionado.Direccion,
+                FechaNacimiento = pacienteSeleccionado.FechaNacimiento,
+                Sexo = pacienteSeleccionado.Sexo,
+                DUI = pacienteSeleccionado.DUI,
+                Telefono = pacienteSeleccionado.Telefono,
+                NombreEncargado = pacienteSeleccionado.NombreEncargado,
+                ContactoEmergencia = pacienteSeleccionado.ContactoEmergencia,
+                TelefonoEmergencia = pacienteSeleccionado.TelefonoEmergencia,
+                Activo = pacienteSeleccionado.Activo
+            };
+
+            GuardarCambiosCommand = new RelayCommand(async (param) => await GuardarCambiosAsync());
+            DesactivarCommand = new RelayCommand(async (param) => await DesactivarPacienteAsync());
+            CancelarCommand = new RelayCommand(Cancelar);
+            ExportarPdfCommand = new RelayCommand(ExportarPdf);
+            //RegistrarAbonoCommand = new RelayCommand(async (param) => await RegistrarAbonoAsync());
+        }
+
+        private async Task GuardarCambiosAsync()
+        {
+            if (PacienteActual.IdPaciente == 0)
+            {
+                MessageBox.Show("¡Te caché! El ID del paciente llegó como 0. El DataGrid no está mandando el expediente.", "Error de ID", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(PacienteActual.NombreCompleto))
+            {
+                MensajeError = "El nombre completo es obligatorio.";
+                MensajeExito = string.Empty;
                 return;
             }
 
             MensajeError = string.Empty;
             EstaCargando = true;
 
-           // [cite_start]// Aquí llamaremos al PacienteRepository para ejecutar sp_EditarPaciente [cite: 505-507]
+            try
+            {
+                await _pacienteRepository.ActualizarAsync(PacienteActual);
 
-            EstaCargando = false;
+                if (HistorialActual != null && HistorialActual.IdHistorial > 0)
+                {
+                    await _historialRepository.EditarConsultaAsync(HistorialActual);
+                }
+
+                MessageBox.Show("¡Datos del paciente y su historial actualizados correctamente!", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                Volver(null); // Regresamos a la lista
+            }
+            catch (Exception ex)
+            {
+                MensajeError = "Error al actualizar: " + ex.Message;
+            }
+            finally
+            {
+                EstaCargando = false;
+            }
         }
+
+        private async Task DesactivarPacienteAsync()
+        {
+            var resultado = MessageBox.Show($"¿Estás seguro que deseas desactivar el expediente de {PacienteActual.NombreCompleto}? No aparecerá más en las búsquedas.",
+                                            "Confirmar Desactivación",
+                                            MessageBoxButton.YesNo,
+                                            MessageBoxImage.Warning);
+
+            if (resultado == MessageBoxResult.Yes)
+            {
+                EstaCargando = true;
+                try
+                {
+                    await _pacienteRepository.EliminarAsync(PacienteActual.IdPaciente);
+                    MessageBox.Show("Expediente desactivado con éxito.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Volver(null); // Regresamos a la lista
+                }
+                catch (Exception ex)
+                {
+                    MensajeError = "Error al desactivar: " + ex.Message;
+                }
+                finally
+                {
+                    EstaCargando = false;
+                }
+            }
+        }
+
+        private async void ExportarPdf(object? parameter)
+        {
+            try
+            {
+                var dialog = new SaveFileDialog
+                {
+                    Title = "Guardar expediente en PDF",
+                    Filter = "Archivos PDF (*.pdf)|*.pdf",
+                    FileName = $"Expediente_{PacienteActual.NombreCompleto.Replace(" ", "_")}.pdf"
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    var listaConsultas = await _historialRepository.ListarConsultasAsync(PacienteActual.IdPaciente);
+                    var listaPagos = await _pagoRepository.ListarPagosPorPacienteAsync(PacienteActual.IdPaciente);
+
+                    var pdfService = new PdfService();
+                    pdfService.GenerarExpedientePdf(PacienteActual, listaConsultas, listaPagos, dialog.FileName);
+
+                    MensajeExito = "PDF exportado correctamente con historial y abonos.";
+                }
+            }
+            catch (Exception ex)
+            {
+                MensajeError = "Error al exportar PDF: " + ex.Message;
+            }
+        }
+
+       /* private async Task RegistrarAbonoAsync()
+        {
+            try
+            {
+                MensajeError = string.Empty;
+                MensajeExito = string.Empty;
+
+                if (NuevoAbono <= 0)
+                {
+                    MessageBox.Show("Ingrese un monto de abono válido mayor a 0.", "Atención", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // 🔥 BUSCAMOS EL TRATAMIENTO REAL EN PROCESO 🔥
+                int? idTratamientoActivo = await _tratamientoRepository.ObtenerIdTratamientoActivoAsync(PacienteActual.IdPaciente);
+
+                if (idTratamientoActivo == null || idTratamientoActivo == 0)
+                {
+                    MessageBox.Show("Este paciente no tiene ningún tratamiento 'En Proceso' al cual abonarle. Regístrele un tratamiento primero.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var pagoModel = new PagoModel
+                {
+                    IdTratamientoPaciente = idTratamientoActivo.Value,
+                    Monto = NuevoAbono,
+                    MetodoPago = "Efectivo",
+                    Observacion = string.IsNullOrWhiteSpace(ObservacionAbono) ? $"Abono en clínica" : ObservacionAbono
+                };
+
+                await _pagoRepository.RegistrarPagoAsync(pagoModel);
+
+                MessageBox.Show($"¡Abono de ${NuevoAbono:N2} registrado con éxito al tratamiento activo!", "Cobro Exitoso", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                NuevoAbono = 0;
+                ObservacionAbono = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al registrar abono: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }*/
 
         private void Cancelar(object? parameter)
         {
-            // Lógica para regresar al listado descartando los cambios en UI
+            Volver(null);
+        }
+
+        private void Volver(object? parameter)
+        {
+            if (_cambiarVista != null)
+            {
+                var vistaLista = new ListaPacientesView();
+                vistaLista.DataContext = new ListaPacientesViewModel(_cambiarVista);
+                _cambiarVista(vistaLista);
+            }
+        }
+
+        private async Task CargarHistorialAsync(int idPaciente)
+        {
+            try
+            {
+                var listaHistorial = await _historialRepository.ListarConsultasAsync(idPaciente);
+
+                var ultimaConsulta = listaHistorial.FirstOrDefault();
+                if (ultimaConsulta != null)
+                {
+                    HistorialActual = ultimaConsulta;
+                }
+            }
+            catch (Exception ex)
+            {
+                MensajeError = "Error al cargar historial: " + ex.Message;
+            }
         }
     }
 }

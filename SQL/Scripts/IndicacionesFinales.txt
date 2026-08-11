@@ -1,0 +1,13 @@
+Lo que sigue ahora es darle una "cara" a todo ese código. Aquí tienes la hoja de ruta exacta con las indicaciones de lo que nos toca hacer a continuación, sin tocar una sola línea de código todavía:
+
+Fase 1: Creación de las Vistas (Maquetación XAML)
+Ahora nos toca entrar a la carpeta Views. Por cada ViewModel que creamos, vamos a necesitar crear un archivo visual (generalmente un UserControl en WPF). Aquí es donde diseñaremos la interfaz gráfica usando XAML: los cuadros de texto, las tablas (DataGrid), los botones y los colores para que se vea moderno y profesional.
+
+Fase 2: La Conexión (Data Binding)
+Una vez que dibujemos una pantalla (por ejemplo, NuevoPacienteView.xaml), el siguiente paso es conectarla con su respectivo "cerebro" (NuevoPacienteViewModel.cs). A esto se le llama Data Binding. Le diremos a WPF que, cuando el dentista escriba en el cuadro de texto del nombre, ese texto viaje automáticamente a la variable de tu ViewModel, y que cuando presione el botón de "Guardar", se dispare el comando que configuramos.
+
+Fase 3: El Cascarón Principal (MainWindow)
+Tenemos que diseñar la ventana principal del programa (MainWindow.xaml). Esta ventana tendrá tu menú lateral de navegación (con los botones de Dashboard, Pacientes, Agenda, etc.) y un área vacía grande en el centro. Al presionar los botones, usaremos tu MainViewModel  para inyectar y cambiar las diferentes vistas dentro de esa área vacía, logrando que el programa se sienta como una sola aplicación fluida y sin ventanas saltando por todos lados.
+
+Fase 4: Pruebas de Arranque
+Finalmente, probaremos toda la integración. Ejecutaremos el .exe para asegurarnos de que la clase inicializadora que hicimos cree la base de datos silenciosamente en LocalDB, y comprobaremos que puedas guardar y leer pacientes desde la interfaz gráfica hasta SQL Server.

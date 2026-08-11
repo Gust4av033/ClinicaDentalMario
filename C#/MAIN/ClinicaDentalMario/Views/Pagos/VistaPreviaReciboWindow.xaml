@@ -1,0 +1,93 @@
+﻿<Window x:Class="ClinicaDentalMario.Views.Pagos.VistaPreviaReciboWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        Title="Vista Previa de Estado de Cuenta" Height="700" Width="800"
+        WindowStartupLocation="CenterScreen" Background="#F4F6F7">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#2C3E50" Padding="15">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Click="BtnImprimir_Click" Background="#27AE60" Foreground="White" BorderThickness="0" Padding="15,8" Cursor="Hand" Margin="0,0,10,0">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="5"/>
+                        </Style>
+                    </Button.Resources>
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="Printer" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="Imprimir / Guardar como PDF" FontWeight="Bold"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <DocumentViewer Grid.Row="1" Background="#ECF0F1">
+            <FixedDocument x:Name="DocRecibo">
+                <PageContent>
+                    <FixedPage Width="793" Height="1122">
+                        <Border Width="700" Margin="46" Padding="30" BorderBrush="#BDC3C7" BorderThickness="1" Background="White">
+                            <StackPanel>
+                                <TextBlock Text="CLÍNICA DENTAL MARIO" FontSize="26" FontWeight="Bold" Foreground="#2980B9" HorizontalAlignment="Center"/>
+                                <TextBlock Text="ESTADO DE CUENTA DE PACIENTE" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,5,0,20"/>
+
+                                <Border BorderBrush="#7F8C8D" BorderThickness="0,0,0,2" Padding="0,0,0,10" Margin="0,0,0,20">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding PacienteNombre}" FontSize="16" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding FechaEmision}" FontSize="14" Foreground="#7F8C8D" Margin="0,5,0,0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                            <TextBlock Text="{Binding TratamientoNombre}" FontSize="16" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding CostoTotalText}" FontSize="16" FontWeight="Bold" Foreground="#C0392B" HorizontalAlignment="Right" Margin="0,5,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="120"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" BorderBrush="Black" BorderThickness="0,0,0,2" Padding="5">
+                                        <TextBlock Text="FECHA" FontWeight="Bold"/>
+                                    </Border>
+                                    <Border Grid.Column="1" BorderBrush="Black" BorderThickness="0,0,0,2" Padding="5">
+                                        <TextBlock Text="TRATAMIENTO/ABONO" FontWeight="Bold"/>
+                                    </Border>
+                                    <Border Grid.Column="2" BorderBrush="Black" BorderThickness="0,0,0,2" Padding="5">
+                                        <TextBlock Text="ABONO" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                    </Border>
+                                    <Border Grid.Column="3" BorderBrush="Black" BorderThickness="0,0,0,2" Padding="5">
+                                        <TextBlock Text="SALDO" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                    </Border>
+                                </Grid>
+
+                                <StackPanel x:Name="ContenedorFilas" Margin="0,10,0,0"/>
+
+                                <StackPanel Margin="0,80,0,0" HorizontalAlignment="Center">
+                                    <Border BorderBrush="Black" BorderThickness="0,1,0,0" Width="250" Padding="10,5,10,0">
+                                        <TextBlock Text="Firma / Sello Recibido" HorizontalAlignment="Center" FontWeight="SemiBold" Foreground="#7F8C8D"/>
+                                    </Border>
+                                </StackPanel>
+
+                            </StackPanel>
+                        </Border>
+                    </FixedPage>
+                </PageContent>
+            </FixedDocument>
+        </DocumentViewer>
+    </Grid>
+</Window>

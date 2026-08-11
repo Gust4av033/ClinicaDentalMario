@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Data;
-using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
-using Dapper;
+using ClinicaDentalMario.Config;
 using ClinicaDentalMario.Models;
+using Dapper;
+using Microsoft.Data.SqlClient;
 
 namespace ClinicaDentalMario.Repositories
 {
@@ -14,13 +13,30 @@ namespace ClinicaDentalMario.Repositories
     {
         private readonly string _connectionString;
 
-        public CitaRepository(string connectionString)
+        // Constructor por defecto usando tu configuración global
+        public CitaRepository()
         {
-            _connectionString = connectionString;
+            _connectionString = AppSettings.ConnectionString;
         }
 
-        // Usamos dynamic porque la vista devuelve nombres cruzados (Paciente, Doctor, Estado) 
-        // en lugar de solo IDs, ideal para mostrar en el DataGrid.
+        // Método vital para la Agenda (El calendario llama a este método)
+        public async Task<IEnumerable<dynamic>> ObtenerCitasPorFechaAsync(DateTime fecha)
+        {
+            using IDbConnection db = new SqlConnection(_connectionString);
+            string sql = @"
+                SELECT c.IdCita, c.IdPaciente, c.IdDoctor, c.FechaHora, c.Observaciones, 
+                       p.NombreCompleto AS Paciente, d.NombreCompleto AS Doctor, e.Nombre AS Estado
+                FROM Agenda.Citas c
+                INNER JOIN Pacientes.Pacientes p ON c.IdPaciente = p.IdPaciente
+                INNER JOIN Personal.Doctores d ON c.IdDoctor = d.IdDoctor
+                INNER JOIN Catalogos.EstadosCita e ON c.IdEstado = e.IdEstado
+                WHERE CAST(c.FechaHora AS DATE) = CAST(@Fecha AS DATE) 
+                  AND e.Nombre != 'Cancelada'
+                ORDER BY c.FechaHora ASC";
+
+            return await db.QueryAsync<dynamic>(sql, new { Fecha = fecha });
+        }
+
         public async Task<IEnumerable<dynamic>> ObtenerAgendaHoyAsync()
         {
             using IDbConnection db = new SqlConnection(_connectionString);
@@ -33,7 +49,7 @@ namespace ClinicaDentalMario.Repositories
             return await db.QueryAsync("Agenda.sp_ListarAgendaSemana", commandType: CommandType.StoredProcedure);
         }
 
-        public async Task AgendarAsync(CitaModel cita)
+        public async Task InsertarAsync(CitaModel cita) // Renombrado a InsertarAsync para hacer match con el ViewModel
         {
             using IDbConnection db = new SqlConnection(_connectionString);
             var parameters = new
@@ -48,11 +64,17 @@ namespace ClinicaDentalMario.Repositories
             await db.ExecuteAsync("Agenda.sp_AgendarCita", parameters, commandType: CommandType.StoredProcedure);
         }
 
-        public async Task CancelarAsync(int idCita)
+        public async Task ActualizarCitaAsync(int idCita, DateTime fechaHora, string observaciones)
+        {
+            using IDbConnection db = new SqlConnection(_connectionString);
+            string sql = "UPDATE Agenda.Citas SET FechaHora = @FechaHora, Observaciones = @Observaciones WHERE IdCita = @IdCita";
+            await db.ExecuteAsync(sql, new { IdCita = idCita, FechaHora = fechaHora, Observaciones = observaciones });
+        }
+
+        public async Task CancelarCitaAsync(int idCita) // Renombrado a CancelarCitaAsync para el ViewModel
         {
             using IDbConnection db = new SqlConnection(_connectionString);
             var parameters = new { IdCita = idCita };
-            // Cambia el estado internamente a 'Cancelada'
             await db.ExecuteAsync("Agenda.sp_CancelarCita", parameters, commandType: CommandType.StoredProcedure);
         }
     }

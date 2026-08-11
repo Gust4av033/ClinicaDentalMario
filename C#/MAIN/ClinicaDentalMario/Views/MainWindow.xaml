@@ -1,0 +1,47 @@
+﻿<Window x:Class="ClinicaDentalMario.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Sistema Clínica Dental - CDMario" Height="768" Width="1024"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F6FA">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="#2C3E50">
+            <StackPanel Margin="10,20,10,10">
+
+                <TextBlock Text="CDMario Dental" 
+                           Foreground="White" 
+                           FontSize="22" 
+                           FontWeight="Bold" 
+                           TextAlignment="Center" 
+                           Margin="0,0,0,40"/>
+
+                <Button Content="Dashboard" Command="{Binding NavegarDashboardCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
+                <Button Content="Pacientes" Command="{Binding NavegarPacientesCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
+                <Button Content="Agenda" Command="{Binding NavegarAgendaCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
+                <Button Content="Tratamientos" Command="{Binding NavegarTratamientosCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
+                <Button Content="Pagos" Command="{Binding NavegarPagosCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
+                <Button Content="Odontograma" Command="{Binding NavegarOdontogramaCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
+                <Button Content="Reportes" Command="{Binding NavegarReportesCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
+
+                <Separator Margin="0,20" Background="#7F8C8D"/>
+
+                <Button Content="Configuración" Command="{Binding NavegarConfiguracionCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
+
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Padding="20">
+            <ContentControl Content="{Binding VistaActual}" />
+        </Border>
+
+    </Grid>
+</Window>

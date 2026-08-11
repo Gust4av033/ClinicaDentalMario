@@ -1,0 +1,53 @@
+﻿<Window x:Class="ClinicaDentalMario.Views.Pagos.NuevoPagoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        Title="Registrar Abono" Height="525" Width="420"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="#F8F9FA">
+
+    <Border Padding="25" Background="White" CornerRadius="12" Margin="15">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#BDC3C7" Opacity="0.4"/>
+        </Border.Effect>
+
+        <StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <iconPacks:PackIconMaterial Kind="CashPlus" Width="26" Height="26" Foreground="#27AE60" Margin="0,0,10,0"/>
+                <TextBlock Text="Registrar Nuevo Abono" FontSize="20" FontWeight="Bold" Foreground="#2C3E50" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <Border Background="#E8F8F5" Padding="12" CornerRadius="8" Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock x:Name="TxtTratamientoInfo" Text="Tratamiento: Ortodoncia" FontWeight="Bold" Foreground="#27AE60" FontSize="13"/>
+                    <TextBlock x:Name="TxtSaldoPendienteInfo" Text="Saldo Pendiente: $200.00" Foreground="#C0392B" FontWeight="SemiBold" FontSize="13" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="Monto a Abonar ($):" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,5,0,5"/>
+            <TextBox x:Name="TxtMonto" FontSize="16" Padding="8" FontWeight="Bold" Foreground="#27AE60" BorderBrush="#BDC3C7"/>
+
+            <TextBlock Text="Método de Pago:" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,12,0,5"/>
+            <ComboBox x:Name="CmbMetodoPago" SelectedIndex="0" FontSize="14" Padding="6">
+                <ComboBoxItem Content="Efectivo"/>
+                <ComboBoxItem Content="Tarjeta de Débito/Crédito"/>
+                <ComboBoxItem Content="Transferencia Bancaria"/>
+                <ComboBoxItem Content="Tigo Money / Otro"/>
+            </ComboBox>
+
+            <TextBlock Text="Concepto / Observación:" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,12,0,5"/>
+            <TextBox x:Name="TxtObservacion" Height="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="6" FontSize="13"/>
+
+            <Grid Margin="0,20,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Content="Cancelar" Click="BtnCancelar_Click" Height="38" Background="#95A5A6" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                <Button Grid.Column="2" Content="Guardar Abono" Click="BtnGuardar_Click" Height="38" Background="#27AE60" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>

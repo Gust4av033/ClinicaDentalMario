@@ -8,6 +8,7 @@ namespace ClinicaDentalMario.Models
 {
     public class TratamientoPacienteModel
     {
+        public int Id { get; set; } //Faltaba la llave primaria
         public int IdPaciente { get; set; }
         public int IdDoctor { get; set; }
         public int IdTratamiento { get; set; }
@@ -22,5 +23,8 @@ namespace ClinicaDentalMario.Models
         public string? Estado { get; set; }
         public string? Observaciones { get; set; } 
         public DateTime? FechaInicio { get; set; }
+
+        // PROPIEDAD EXTRA (Para mostrar el nombre en el ComboBox)
+        public string? NombreTratamiento { get; set; }
     }
 }

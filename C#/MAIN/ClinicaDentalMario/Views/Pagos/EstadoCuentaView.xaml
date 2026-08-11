@@ -1,0 +1,166 @@
+﻿<UserControl x:Class="ClinicaDentalMario.Views.Pagos.EstadoCuentaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             Background="Transparent">
+
+    <Border Background="White" CornerRadius="15" Margin="10" Padding="25">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#D1D8E0" Opacity="0.5"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <iconPacks:PackIconMaterial Kind="CashRegister" Width="28" Height="28" Foreground="#27AE60" Margin="0,0,10,0"/>
+                    <TextBlock Text="Estado de Cuenta y Abonos" FontSize="24" FontWeight="Bold" Foreground="#2C3E50"/>
+                </StackPanel>
+
+                <Button HorizontalAlignment="Right" Command="{Binding ImprimirReciboCommand}" Height="36" Background="#34495E" Foreground="White" BorderThickness="0" Padding="15,0" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="18"/>
+                        </Style>
+                    </Button.Resources>
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="Printer" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="Imprimir Estado de Cuenta" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <Grid Grid.Row="1" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="Paciente:" Foreground="#7F8C8D" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="14"/>
+                <ComboBox Grid.Column="1" ItemsSource="{Binding ListaPacientes}" 
+                          SelectedItem="{Binding PacienteSeleccionado}" 
+                          DisplayMemberPath="NombreCompleto" 
+                          IsEditable="True" TextSearch.TextPath="NombreCompleto"
+                          FontSize="14" Padding="5" BorderBrush="#BDC3C7"/>
+
+                <TextBlock Grid.Column="3" Text="Tratamiento:" Foreground="#7F8C8D" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0" FontSize="14"/>
+                <ComboBox Grid.Column="4" ItemsSource="{Binding ListaTratamientos}" 
+                          SelectedItem="{Binding TratamientoSeleccionado}" 
+                          DisplayMemberPath="NombreTratamiento" 
+                          FontSize="14" Padding="5" BorderBrush="#BDC3C7"/>
+
+                <Button Grid.Column="6" Command="{Binding NuevoAbonoCommand}" Height="38" Background="#27AE60" Foreground="White" BorderThickness="0" Padding="15,0" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="19"/>
+                        </Style>
+                    </Button.Resources>
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="PlusCircle" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="Registrar Abono" VerticalAlignment="Center" FontSize="13" FontWeight="Bold"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <Grid Grid.Row="2" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="#F8F9FA" Padding="15" CornerRadius="10" BorderBrush="#E1E5EA" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Costo Total" Foreground="#7F8C8D" FontSize="12" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding CostoTotal, StringFormat=C}" FontSize="22" FontWeight="Bold" Foreground="#2C3E50" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Background="#E8F8F5" Padding="15" CornerRadius="10" BorderBrush="#A9DFBF" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Total Abonado" Foreground="#27AE60" FontSize="12" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding TotalAbonado, StringFormat=C}" FontSize="22" FontWeight="Bold" Foreground="#27AE60" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="4" Background="#FDEDEC" Padding="15" CornerRadius="10" BorderBrush="#F5B7B1" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Saldo Pendiente" Foreground="#C0392B" FontSize="12" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding SaldoPendiente, StringFormat=C}" FontSize="22" FontWeight="Bold" Foreground="#E74C3C" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Row="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <DataGrid Grid.Row="0" ItemsSource="{Binding HistorialPagos}" 
+                          SelectedItem="{Binding PagoSeleccionado}"
+                          AutoGenerateColumns="False" 
+                          CanUserAddRows="False" Background="White" BorderThickness="1" BorderBrush="#E1E5EA"
+                          RowBackground="White" AlternatingRowBackground="#F9FAFC"
+                          GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E1E5EA"
+                          HeadersVisibility="Column" RowHeight="38" FontSize="13">
+
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#F5F6FA"/>
+                            <Setter Property="Foreground" Value="#7F8C8D"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Padding" Value="10,8"/>
+                        </Style>
+                    </DataGrid.Resources>
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Fecha de Pago" Binding="{Binding FechaPago, StringFormat=dd/MM/yyyy hh:mm tt}" Width="160"/>
+                        <DataGridTextColumn Header="Método de Pago" Binding="{Binding MetodoPago}" Width="150"/>
+                        <DataGridTextColumn Header="Concepto / Observaciones" Binding="{Binding Observacion}" Width="*"/>
+                        <DataGridTextColumn Header="Monto Abonado ($)" Binding="{Binding Monto, StringFormat=C}" Width="140" FontWeight="Bold" Foreground="#27AE60"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                    <Button Command="{Binding VerDetalleCommand}" Height="34" Background="#3498DB" Foreground="White" BorderThickness="0" Padding="12,0" Margin="0,0,10,0" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Eye" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Ver Detalle" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button Command="{Binding EliminarAbonoCommand}" Height="34" Background="#E74C3C" Foreground="White" BorderThickness="0" Padding="12,0" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="TrashCan" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Eliminar Abono" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

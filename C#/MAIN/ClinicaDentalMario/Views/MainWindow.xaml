@@ -29,8 +29,6 @@
                 <Button Content="Agenda" Command="{Binding NavegarAgendaCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
                 <Button Content="Tratamientos" Command="{Binding NavegarTratamientosCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
                 <Button Content="Pagos" Command="{Binding NavegarPagosCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
-                <Button Content="Odontograma" Command="{Binding NavegarOdontogramaCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
-                <Button Content="Reportes" Command="{Binding NavegarReportesCommand}" Height="40" Margin="0,5" Background="#34495E" Foreground="White" FontSize="16" BorderThickness="0"/>
 
                 <Separator Margin="0,20" Background="#7F8C8D"/>
 

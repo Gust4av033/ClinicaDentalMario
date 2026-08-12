@@ -4,7 +4,8 @@ using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Pacientes;
 using ClinicaDentalMario.Views.Tratamientos;
 using ClinicaDentalMario.ViewModel.Tratamientos;
-using ClinicaDentalMario.ViewModel.Archivos;    // 🔥 1. AGREGAR ESTE USING 🔥
+using ClinicaDentalMario.ViewModel.Archivos;
+using ClinicaDentalMario.ViewModel.Odontograma;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -32,8 +33,11 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             set => SetProperty(ref _historialConsultas, value);
         }
 
-        // 🔥 2. PROPIEDAD PARA CONECTAR LA GALERÍA DE IMÁGENES 🔥
+        // 🔥 PROPIEDAD PARA CONECTAR LA GALERÍA DE IMÁGENES 🔥
         public ImagenesPacienteViewModel GaleriaVM { get; }
+
+        // 🔥 PROPIEDAD PARA CONECTAR EL ODONTOGRAMA 🔥
+        public OdontogramaViewModel OdontogramaVM { get; }
 
         // COMANDOS
         public ICommand AbrirNuevaConsultaCommand { get; }
@@ -49,8 +53,9 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
             _historialRepo = new HistorialClinicoRepository();
 
-            // 🔥 3. INSTANCIAMOS EL VIEWMODEL DE LA GALERÍA CON EL ID Y EL DELEGADO DE NAVEGACIÓN 🔥
+            // INSTANCIAMOS LOS VIEWMODELS DE LAS PESTAÑAS (TABS)
             GaleriaVM = new ImagenesPacienteViewModel(PacienteActual.IdPaciente, _cambiarVista);
+            OdontogramaVM = new OdontogramaViewModel(PacienteActual.IdPaciente); // <--- LA PIEZA FALTANTE
 
             AbrirNuevaConsultaCommand = new RelayCommand(AbrirNuevaConsulta);
             AbrirNuevoTratamientoCommand = new RelayCommand(AbrirNuevoTratamiento);

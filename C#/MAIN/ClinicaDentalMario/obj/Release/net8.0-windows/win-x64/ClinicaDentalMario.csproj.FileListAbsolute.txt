@@ -576,3 +576,14 @@ C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Pagos\VistaPreviaReciboWindow.baml
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Configuracion\ConfiguracionView.g.cs
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Pagos\VistaPreviaReciboWindow.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\bin\Release\net8.0-windows\win-x64\como-llenar-odontograma4.pdf
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Archivos\ImagenesPacienteView.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Archivos\SubirImagenView.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Pacientes\PiezaDentalControl.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Archivos\ImagenesPacienteView.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Archivos\SubirImagenView.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Pacientes\OdontogramaView.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Pacientes\PiezaDentalControl.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\GeneratedInternalTypeHelper.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\ClinicaDentalMario_MarkupCompile.lref
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Pacientes\OdontogramaView.baml

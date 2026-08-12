@@ -150,3 +150,8 @@ C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\ref\ClinicaDentalMario.dll
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\GeneratedInternalTypeHelper.g.cs
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\ClinicaDentalMario_MarkupCompile.lref
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\Views\Pacientes\OdontogramaView.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\bin\Debug\net8.0-windows\como-llenar-odontograma4.pdf
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\Views\Pacientes\PiezaDentalControl.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\Views\Pacientes\PiezaDentalControl.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\Views\Pacientes\OdontogramaView.baml

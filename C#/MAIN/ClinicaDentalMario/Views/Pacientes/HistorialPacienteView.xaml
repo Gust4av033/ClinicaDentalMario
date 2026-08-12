@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:archivos="clr-namespace:ClinicaDentalMario.Views.Archivos"
+             xmlns:pacientes="clr-namespace:ClinicaDentalMario.Views.Pacientes"
              Background="Transparent">
 
     <Grid Margin="15">
@@ -105,13 +106,7 @@
             </TabItem>
 
             <TabItem Header="Odontograma Digital">
-                <Border Background="White" CornerRadius="0,8,8,8" Padding="40">
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <iconPacks:PackIconMaterial Kind="Tooth" Width="60" Height="60" Foreground="#BDC3C7" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-                        <TextBlock Text="Módulo de Odontograma" FontSize="20" FontWeight="Bold" Foreground="#7F8C8D" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Próximamente..." FontSize="14" Foreground="#95A5A6" HorizontalAlignment="Center" Margin="0,5,0,0"/>
-                    </StackPanel>
-                </Border>
+                <pacientes:OdontogramaView DataContext="{Binding OdontogramaVM}"/>
             </TabItem>
 
             <TabItem Header="Galería de Imágenes">

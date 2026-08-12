@@ -10,11 +10,11 @@ none
 false
 TRACE;RELEASE;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\App.xaml
-18569559798
+22-342966203
 
-90-1238467663
+94-2063776377
 220-1736164765
-Views\Agenda\AgendaView.xaml;Views\Agenda\EditarCitaView.xaml;Views\Agenda\NuevaCitaView.xaml;Views\Configuracion\ConfiguracionView.xaml;Views\Dashboard\DashboardView.xaml;Views\Login\LoginView.xaml;Views\MainWindow.xaml;Views\Pacientes\EditarPacienteView.xaml;Views\Pacientes\HistorialPacienteView.xaml;Views\Pacientes\ListaPacientesView.xaml;Views\Pacientes\NuevaConsultaView.xaml;Views\Pacientes\NuevaConsultaWindow.xaml;Views\Pacientes\NuevoPacienteView.xaml;Views\Pagos\EstadoCuentaView.xaml;Views\Pagos\NuevoPagoWindow.xaml;Views\Pagos\VistaPreviaReciboWindow.xaml;Views\Tratamientos\NuevoTratamientoView.xaml;Views\Tratamientos\TratamientosView.xaml;
+Views\Agenda\AgendaView.xaml;Views\Agenda\EditarCitaView.xaml;Views\Agenda\NuevaCitaView.xaml;Views\Archivos\ImagenesPacienteView.xaml;Views\Archivos\SubirImagenView.xaml;Views\Configuracion\ConfiguracionView.xaml;Views\Dashboard\DashboardView.xaml;Views\Login\LoginView.xaml;Views\MainWindow.xaml;Views\Pacientes\EditarPacienteView.xaml;Views\Pacientes\HistorialPacienteView.xaml;Views\Pacientes\ListaPacientesView.xaml;Views\Pacientes\NuevaConsultaView.xaml;Views\Pacientes\NuevaConsultaWindow.xaml;Views\Pacientes\NuevoPacienteView.xaml;Views\Pacientes\OdontogramaView.xaml;Views\Pacientes\PiezaDentalControl.xaml;Views\Pagos\EstadoCuentaView.xaml;Views\Pagos\NuevoPagoWindow.xaml;Views\Pagos\VistaPreviaReciboWindow.xaml;Views\Tratamientos\NuevoTratamientoView.xaml;Views\Tratamientos\TratamientosView.xaml;
 
 False
 

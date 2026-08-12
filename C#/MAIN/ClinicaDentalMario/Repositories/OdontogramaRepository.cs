@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 using Dapper;
@@ -14,37 +10,43 @@ namespace ClinicaDentalMario.Repositories
 {
     public class OdontogramaRepository
     {
-        public async Task<IEnumerable<dynamic>> ListarOdontogramaAsync(int idPaciente)
+        // Guarda el estado de los 32 dientes al mismo tiempo (Nueva Evolución)
+        public async Task GuardarOdontogramaAsync(IEnumerable<OdontogramaModel> piezas)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            var parameters = new { IdPaciente = idPaciente };
-            // Usamos dynamic porque la vista devuelve nombres cruzados (Paciente, ColorHex, Estado)
-            return await db.QueryAsync("Odontologia.sp_ListarOdontograma", parameters, commandType: CommandType.StoredProcedure);
+
+            // 🔥 CAMBIO CLAVE: Quitamos GETDATE() y usamos @FechaRegistro 🔥
+            string sql = @"
+                INSERT INTO Odontologia.Odontograma 
+                (IdPaciente, NumeroPieza, IdEstadoDental, Observaciones, FechaRegistro)
+                VALUES 
+                (@IdPaciente, @NumeroPieza, @IdEstadoDental, @Observaciones, @FechaRegistro)";
+
+            await db.ExecuteAsync(sql, piezas);
         }
 
-        public async Task InsertarEstadoDentalAsync(OdontogramaModel odontograma)
+        // 🔥 NUEVO: Lista todas las fechas exactas donde se ha guardado un odontograma
+        public async Task<IEnumerable<DateTime>> ListarFechasEvolucionesAsync(int idPaciente)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            var parameters = new
-            {
-                odontograma.IdPaciente,
-                odontograma.NumeroPieza,
-                odontograma.IdEstadoDental,
-                odontograma.Observaciones
-            };
-            await db.ExecuteAsync("Odontologia.sp_InsertarEstadoDental", parameters, commandType: CommandType.StoredProcedure);
+            string sql = "SELECT DISTINCT FechaRegistro FROM Odontologia.Odontograma WHERE IdPaciente = @IdPaciente ORDER BY FechaRegistro DESC";
+            return await db.QueryAsync<DateTime>(sql, new { IdPaciente = idPaciente });
         }
 
-        public async Task ActualizarPiezaDentalAsync(int idRegistro, int idEstadoDental, string observaciones)
+        // 🔥 NUEVO: Carga los 32 dientes de una fecha y hora específica
+        public async Task<IEnumerable<OdontogramaModel>> ObtenerOdontogramaPorFechaAsync(int idPaciente, DateTime fecha)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            var parameters = new
-            {
-                IdRegistro = idRegistro,
-                IdEstadoDental = idEstadoDental,
-                Observaciones = observaciones
-            };
-            await db.ExecuteAsync("Odontologia.sp_ActualizarPiezaDental", parameters, commandType: CommandType.StoredProcedure);
+            string sql = "SELECT * FROM Odontologia.Odontograma WHERE IdPaciente = @IdPaciente AND FechaRegistro = @Fecha";
+            return await db.QueryAsync<OdontogramaModel>(sql, new { IdPaciente = idPaciente, Fecha = fecha });
+        }
+
+        // 🔥 NUEVO: Borra toda una evolución clínica (por si el doctor se equivocó)
+        public async Task EliminarOdontogramaAsync(int idPaciente, DateTime fecha)
+        {
+            using IDbConnection db = DatabaseConnection.GetConnection();
+            string sql = "DELETE FROM Odontologia.Odontograma WHERE IdPaciente = @IdPaciente AND FechaRegistro = @Fecha";
+            await db.ExecuteAsync(sql, new { IdPaciente = idPaciente, Fecha = fecha });
         }
     }
 }

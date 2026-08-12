@@ -1,13 +1,9 @@
-﻿using ClinicaDentalMario.Data;
-using ClinicaDentalMario.Models;
+﻿using ClinicaDentalMario.Models;
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.Services;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Pacientes; // Asegúrate de tener este using para la navegación
 using Microsoft.Win32;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -200,48 +196,48 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             }
         }
 
-       /* private async Task RegistrarAbonoAsync()
-        {
-            try
-            {
-                MensajeError = string.Empty;
-                MensajeExito = string.Empty;
+        /* private async Task RegistrarAbonoAsync()
+         {
+             try
+             {
+                 MensajeError = string.Empty;
+                 MensajeExito = string.Empty;
 
-                if (NuevoAbono <= 0)
-                {
-                    MessageBox.Show("Ingrese un monto de abono válido mayor a 0.", "Atención", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
+                 if (NuevoAbono <= 0)
+                 {
+                     MessageBox.Show("Ingrese un monto de abono válido mayor a 0.", "Atención", MessageBoxButton.OK, MessageBoxImage.Warning);
+                     return;
+                 }
 
-                // 🔥 BUSCAMOS EL TRATAMIENTO REAL EN PROCESO 🔥
-                int? idTratamientoActivo = await _tratamientoRepository.ObtenerIdTratamientoActivoAsync(PacienteActual.IdPaciente);
+                 // 🔥 BUSCAMOS EL TRATAMIENTO REAL EN PROCESO 🔥
+                 int? idTratamientoActivo = await _tratamientoRepository.ObtenerIdTratamientoActivoAsync(PacienteActual.IdPaciente);
 
-                if (idTratamientoActivo == null || idTratamientoActivo == 0)
-                {
-                    MessageBox.Show("Este paciente no tiene ningún tratamiento 'En Proceso' al cual abonarle. Regístrele un tratamiento primero.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
+                 if (idTratamientoActivo == null || idTratamientoActivo == 0)
+                 {
+                     MessageBox.Show("Este paciente no tiene ningún tratamiento 'En Proceso' al cual abonarle. Regístrele un tratamiento primero.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                     return;
+                 }
 
-                var pagoModel = new PagoModel
-                {
-                    IdTratamientoPaciente = idTratamientoActivo.Value,
-                    Monto = NuevoAbono,
-                    MetodoPago = "Efectivo",
-                    Observacion = string.IsNullOrWhiteSpace(ObservacionAbono) ? $"Abono en clínica" : ObservacionAbono
-                };
+                 var pagoModel = new PagoModel
+                 {
+                     IdTratamientoPaciente = idTratamientoActivo.Value,
+                     Monto = NuevoAbono,
+                     MetodoPago = "Efectivo",
+                     Observacion = string.IsNullOrWhiteSpace(ObservacionAbono) ? $"Abono en clínica" : ObservacionAbono
+                 };
 
-                await _pagoRepository.RegistrarPagoAsync(pagoModel);
+                 await _pagoRepository.RegistrarPagoAsync(pagoModel);
 
-                MessageBox.Show($"¡Abono de ${NuevoAbono:N2} registrado con éxito al tratamiento activo!", "Cobro Exitoso", MessageBoxButton.OK, MessageBoxImage.Information);
+                 MessageBox.Show($"¡Abono de ${NuevoAbono:N2} registrado con éxito al tratamiento activo!", "Cobro Exitoso", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                NuevoAbono = 0;
-                ObservacionAbono = string.Empty;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al registrar abono: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }*/
+                 NuevoAbono = 0;
+                 ObservacionAbono = string.Empty;
+             }
+             catch (Exception ex)
+             {
+                 MessageBox.Show("Error al registrar abono: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+             }
+         }*/
 
         private void Cancelar(object? parameter)
         {

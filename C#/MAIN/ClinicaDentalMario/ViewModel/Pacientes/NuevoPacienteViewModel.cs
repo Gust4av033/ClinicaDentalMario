@@ -2,10 +2,7 @@
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Pacientes; // Asegúrate de tener este using para la navegación
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows; // Para el MessageBox
 using System.Windows.Input;
 

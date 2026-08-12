@@ -1,6 +1,5 @@
 ﻿using ClinicaDentalMario.Models;
 using ClinicaDentalMario.Repositories;
-using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -57,7 +56,7 @@ namespace ClinicaDentalMario.Views.Pagos
 
                 PagoRealizado = true;
                 DialogResult = true;
-                
+
             }
             catch (Exception ex)
             {
@@ -68,7 +67,7 @@ namespace ClinicaDentalMario.Views.Pagos
         private void BtnCancelar_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
-            
+
         }
     }
 }

@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Data;
-using System.Threading.Tasks;
+﻿using ClinicaDentalMario.Data;
 using Dapper;
-using ClinicaDentalMario.Data;
+using System.Data;
 
 namespace ClinicaDentalMario.Repositories
 {
@@ -24,7 +17,7 @@ namespace ClinicaDentalMario.Repositories
         public async Task<IEnumerable<dynamic>> ObtenerIngresosMensualesAsync()
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-           // [cite_start]// Consume la vista Facturacion.vwIngresosMensuales [cite: 704, 800]
+            // [cite_start]// Consume la vista Facturacion.vwIngresosMensuales [cite: 704, 800]
             string query = "SELECT * FROM Facturacion.vwIngresosMensuales ORDER BY Anio DESC, Mes DESC";
             return await db.QueryAsync(query);
         }
@@ -32,7 +25,7 @@ namespace ClinicaDentalMario.Repositories
         public async Task<IEnumerable<dynamic>> ObtenerSaldosMorososAsync()
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-          //  [cite_start]// Consume la vista Pacientes.vwSaldoPacientes [cite: 706, 803] y filtra los que deben
+            //  [cite_start]// Consume la vista Pacientes.vwSaldoPacientes [cite: 706, 803] y filtra los que deben
             string query = "SELECT * FROM Pacientes.vwSaldoPacientes WHERE (TotalCargos - TotalPagado) > 0";
             return await db.QueryAsync(query);
         }

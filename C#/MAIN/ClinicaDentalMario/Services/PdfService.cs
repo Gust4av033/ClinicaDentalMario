@@ -2,9 +2,6 @@
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ClinicaDentalMario.Services // Asegúrate de tener tu namespace correcto
 {

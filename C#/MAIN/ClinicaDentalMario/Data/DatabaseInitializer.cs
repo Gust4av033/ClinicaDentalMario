@@ -1,9 +1,7 @@
-﻿using System;
+﻿using Dapper;
+using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
-using Dapper;
 
 namespace ClinicaDentalMario.Data
 {

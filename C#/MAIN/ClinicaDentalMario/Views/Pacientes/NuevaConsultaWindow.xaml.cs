@@ -1,6 +1,5 @@
 ﻿using ClinicaDentalMario.Models;
 using ClinicaDentalMario.Repositories;
-using System;
 using System.Windows;
 
 namespace ClinicaDentalMario.Views.Pacientes
@@ -61,7 +60,7 @@ namespace ClinicaDentalMario.Views.Pacientes
                 }
 
                 DialogResult = true;
-            }   
+            }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al guardar la consulta: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);

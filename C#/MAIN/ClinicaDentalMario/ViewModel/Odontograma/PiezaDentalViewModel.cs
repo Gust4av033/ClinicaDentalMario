@@ -1,5 +1,5 @@
-﻿using System.Windows.Input;
-using ClinicaDentalMario.ViewModel.Base;
+﻿using ClinicaDentalMario.ViewModel.Base;
+using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Odontograma
 {

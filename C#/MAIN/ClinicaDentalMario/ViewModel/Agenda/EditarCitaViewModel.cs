@@ -1,9 +1,6 @@
-﻿using ClinicaDentalMario.Models;
-using ClinicaDentalMario.Repositories;
+﻿using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Agenda;
-using System;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 

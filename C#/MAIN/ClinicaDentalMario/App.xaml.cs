@@ -1,9 +1,7 @@
 ﻿using ClinicaDentalMario.Data;
-using ClinicaDentalMario.Views.Login;
 using ClinicaDentalMario.ViewModel.Login;
-using System;
-using System.Windows;
 using ClinicaDentalMario.Views.Login;
+using System.Windows;
 
 namespace ClinicaDentalMario
 {

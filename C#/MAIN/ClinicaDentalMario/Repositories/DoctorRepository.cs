@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Data;
-using System.Threading.Tasks;
-using Dapper;
+﻿using ClinicaDentalMario.Data;
 using ClinicaDentalMario.Models;
-using ClinicaDentalMario.Data;
+using Dapper;
+using System.Data;
 
 namespace ClinicaDentalMario.Repositories
 {

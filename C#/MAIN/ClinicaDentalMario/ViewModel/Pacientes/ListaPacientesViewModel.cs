@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using ClinicaDentalMario.Models;
+﻿using ClinicaDentalMario.Models;
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Pacientes;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Pacientes
 {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ClinicaDentalMario.Models
+﻿namespace ClinicaDentalMario.Models
 {
     public class CitaModel
     {
@@ -19,6 +13,6 @@ namespace ClinicaDentalMario.Models
         public string? NumeroJVPO { get; set; }
         public bool Activo { get; set; }
         public string? Observaciones { get; set; }
-        public DateTime FechaHora { get; set; } 
-}
+        public DateTime FechaHora { get; set; }
+    }
 }

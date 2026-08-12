@@ -1,10 +1,8 @@
-﻿using ClinicaDentalMario.ViewModel.Base;
-using ClinicaDentalMario.Repositories;
-using ClinicaDentalMario.Views.Configuracion;
+﻿using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.ViewModel.Configuracion;
-using System;
+using ClinicaDentalMario.Views.Configuracion;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Dashboard

@@ -2,14 +2,9 @@
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Pagos;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Controls;
-using System.Windows.Documents;
 
 namespace ClinicaDentalMario.ViewModel.Pagos
 {
@@ -244,7 +239,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                     HistorialPagos
                 );
 
-               // ventanaPrevia.Owner = Application.Current.MainWindow;
+                // ventanaPrevia.Owner = Application.Current.MainWindow;
                 ventanaPrevia.ShowDialog();
             }
             catch (Exception ex)

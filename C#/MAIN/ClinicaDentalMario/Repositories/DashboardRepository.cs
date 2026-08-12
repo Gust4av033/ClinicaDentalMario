@@ -1,9 +1,6 @@
 ﻿using ClinicaDentalMario.Data;
 using Dapper;
-using System;
-using System.Collections.Generic; // Agregado para usar IEnumerable
 using System.Data;
-using System.Threading.Tasks;
 
 namespace ClinicaDentalMario.Repositories
 {

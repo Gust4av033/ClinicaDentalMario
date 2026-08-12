@@ -2,9 +2,7 @@
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Agenda; // Para regresar a la Agenda
-using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -108,7 +106,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                 ListaPacientes = new ObservableCollection<PacienteModel>(pacientes);
 
                 var doctores = await _doctorRepository.ObtenerDoctoresActivosAsync();
-                
+
                 ListaDoctores = new ObservableCollection<DoctorModel>(doctores);
             }
             catch (Exception ex)

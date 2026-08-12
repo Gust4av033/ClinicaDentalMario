@@ -2,13 +2,7 @@
 using ClinicaDentalMario.Data; // <-- Asegúrate de incluir este using para tu DatabaseConnection
 using ClinicaDentalMario.Models;
 using Dapper;
-using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ClinicaDentalMario.Repositories
 {

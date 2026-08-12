@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data;
+﻿using ClinicaDentalMario.Config;
 using Microsoft.Data.SqlClient;
-using ClinicaDentalMario.Config;
+using System.Data;
 
 namespace ClinicaDentalMario.Data
 {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ClinicaDentalMario.Models
+﻿namespace ClinicaDentalMario.Models
 {
     public class TratamientoPacienteModel
     {
@@ -21,7 +15,7 @@ namespace ClinicaDentalMario.Models
         public decimal CostoTotal { get; set; }
         public bool Activo { get; set; }
         public string? Estado { get; set; }
-        public string? Observaciones { get; set; } 
+        public string? Observaciones { get; set; }
         public DateTime? FechaInicio { get; set; }
 
         // PROPIEDAD EXTRA (Para mostrar el nombre en el ComboBox)

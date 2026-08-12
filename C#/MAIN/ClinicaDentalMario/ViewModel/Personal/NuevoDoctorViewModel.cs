@@ -1,10 +1,5 @@
 ﻿using ClinicaDentalMario.Models;
 using ClinicaDentalMario.ViewModel.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Personal
@@ -12,7 +7,7 @@ namespace ClinicaDentalMario.ViewModel.Personal
     public class NuevoDoctorViewModel : ViewModelBase
     {
         private DoctorModel _nuevoDoctor;
-        public DoctorModel  NuevoDoctor
+        public DoctorModel NuevoDoctor
         {
             get => _nuevoDoctor;
             set => SetProperty(ref _nuevoDoctor, value);

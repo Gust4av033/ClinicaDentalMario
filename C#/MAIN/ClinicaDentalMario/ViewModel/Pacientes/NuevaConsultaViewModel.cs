@@ -2,8 +2,6 @@
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Pacientes;
-using System;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 

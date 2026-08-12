@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\views\\tratamientos\\nuevotratamientoview.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:views\\tratamientos\\nuevotratamientoview.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\viewmodel\\odontograma\\odontogramaviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:viewmodel\\odontograma\\odontogramaviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -167,6 +171,18 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "NuevoTratamientoView.xaml",
+              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Tratamientos\\NuevoTratamientoView.xaml",
+              "RelativeDocumentMoniker": "Views\\Tratamientos\\NuevoTratamientoView.xaml",
+              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Tratamientos\\NuevoTratamientoView.xaml",
+              "RelativeToolTip": "Views\\Tratamientos\\NuevoTratamientoView.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-08-12T06:32:00.869Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "OdontogramaViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Odontograma\\OdontogramaViewModel.cs",
               "RelativeDocumentMoniker": "ViewModel\\Odontograma\\OdontogramaViewModel.cs",
@@ -179,7 +195,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "OdontogramaRepository.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Repositories\\OdontogramaRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\OdontogramaRepository.cs",
@@ -187,48 +203,44 @@
               "RelativeToolTip": "Repositories\\OdontogramaRepository.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAABkAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-11T07:00:07.617Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-11T07:00:07.617Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "OdontogramaView.xaml",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\OdontogramaView.xaml",
               "RelativeDocumentMoniker": "Views\\Pacientes\\OdontogramaView.xaml",
               "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\OdontogramaView.xaml",
               "RelativeToolTip": "Views\\Pacientes\\OdontogramaView.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-08-11T06:40:38.991Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-11T06:40:38.991Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "HistorialPacienteView.xaml",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\HistorialPacienteView.xaml",
               "RelativeDocumentMoniker": "Views\\Pacientes\\HistorialPacienteView.xaml",
               "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\HistorialPacienteView.xaml",
               "RelativeToolTip": "Views\\Pacientes\\HistorialPacienteView.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-08-11T06:17:25.898Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-11T06:17:25.898Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "MainWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\MainWindow.xaml",
               "RelativeDocumentMoniker": "Views\\MainWindow.xaml",
               "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\MainWindow.xaml",
               "RelativeToolTip": "Views\\MainWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-08-08T07:59:28.587Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-08T07:59:28.587Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "NuevaConsultaWindow.xaml.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\NuevaConsultaWindow.xaml.cs",
               "RelativeDocumentMoniker": "Views\\Pacientes\\NuevaConsultaWindow.xaml.cs",
@@ -236,12 +248,11 @@
               "RelativeToolTip": "Views\\Pacientes\\NuevaConsultaWindow.xaml.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-10T00:23:51.872Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-10T00:23:51.872Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "HistorialPacienteViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Pacientes\\HistorialPacienteViewModel.cs",
               "RelativeDocumentMoniker": "ViewModel\\Pacientes\\HistorialPacienteViewModel.cs",
@@ -249,12 +260,11 @@
               "RelativeToolTip": "ViewModel\\Pacientes\\HistorialPacienteViewModel.cs",
               "ViewState": "AgIAAHcAAAAAAAAAAAAmwJUAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-11T06:14:23.605Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-11T06:14:23.605Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "ConfiguracionViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Configuracion\\ConfiguracionViewModel.cs",
               "RelativeDocumentMoniker": "ViewModel\\Configuracion\\ConfiguracionViewModel.cs",
@@ -266,7 +276,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "ConfiguracionView.xaml",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Configuracion\\ConfiguracionView.xaml",
               "RelativeDocumentMoniker": "Views\\Configuracion\\ConfiguracionView.xaml",
@@ -277,7 +287,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "NuevaConsultaView.xaml.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\NuevaConsultaView.xaml.cs",
               "RelativeDocumentMoniker": "Views\\Pacientes\\NuevaConsultaView.xaml.cs",
@@ -289,7 +299,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 13,
               "Title": "NuevoPagoWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pagos\\NuevoPagoWindow.xaml",
               "RelativeDocumentMoniker": "Views\\Pagos\\NuevoPagoWindow.xaml",
@@ -300,7 +310,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "CatalogoRepository.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Repositories\\CatalogoRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\CatalogoRepository.cs",
@@ -312,7 +322,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "NuevaConsultaView.xaml",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\NuevaConsultaView.xaml",
               "RelativeDocumentMoniker": "Views\\Pacientes\\NuevaConsultaView.xaml",
@@ -323,7 +333,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 14,
               "Title": "NuevaConsultaWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\NuevaConsultaWindow.xaml",
               "RelativeDocumentMoniker": "Views\\Pacientes\\NuevaConsultaWindow.xaml",
@@ -334,7 +344,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 15,
               "Title": "EstadoCuentaView.xaml",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pagos\\EstadoCuentaView.xaml",
               "RelativeDocumentMoniker": "Views\\Pagos\\EstadoCuentaView.xaml",
@@ -345,7 +355,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 16,
               "Title": "EstadoCuentaView.xaml.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pagos\\EstadoCuentaView.xaml.cs",
               "RelativeDocumentMoniker": "Views\\Pagos\\EstadoCuentaView.xaml.cs",
@@ -357,7 +367,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 18,
               "Title": "PagosViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Pagos\\PagosViewModel.cs",
               "RelativeDocumentMoniker": "ViewModel\\Pagos\\PagosViewModel.cs",
@@ -369,7 +379,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 17,
               "Title": "PagoRepository.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Repositories\\PagoRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\PagoRepository.cs",
@@ -381,7 +391,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 19,
               "Title": "PagoModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Models\\PagoModel.cs",
               "RelativeDocumentMoniker": "Models\\PagoModel.cs",
@@ -393,7 +403,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 20,
               "Title": "NuevoPacienteViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Pacientes\\NuevoPacienteViewModel.cs",
               "RelativeDocumentMoniker": "ViewModel\\Pacientes\\NuevoPacienteViewModel.cs",
@@ -401,12 +411,11 @@
               "RelativeToolTip": "ViewModel\\Pacientes\\NuevoPacienteViewModel.cs",
               "ViewState": "AgIAAFUAAAAAAAAAAAAowGwAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-08T06:20:26.08Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-08T06:20:26.08Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 21,
               "Title": "CatalogoTratamientosViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Tratamientos\\CatalogoTratamientosViewModel.cs",
               "RelativeDocumentMoniker": "ViewModel\\Tratamientos\\CatalogoTratamientosViewModel.cs",
@@ -418,7 +427,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 22,
               "Title": "NuevaCitaViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Agenda\\NuevaCitaViewModel.cs",
               "RelativeDocumentMoniker": "ViewModel\\Agenda\\NuevaCitaViewModel.cs",
@@ -426,12 +435,11 @@
               "RelativeToolTip": "ViewModel\\Agenda\\NuevaCitaViewModel.cs",
               "ViewState": "AgIAAH8AAAAAAAAAAAAmwJEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-08T07:31:33.262Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-08T07:31:33.262Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 24,
               "Title": "NuevaConsultaViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Pacientes\\NuevaConsultaViewModel.cs",
               "RelativeDocumentMoniker": "ViewModel\\Pacientes\\NuevaConsultaViewModel.cs",
@@ -439,12 +447,11 @@
               "RelativeToolTip": "ViewModel\\Pacientes\\NuevaConsultaViewModel.cs",
               "ViewState": "AgIAADoAAAAAAAAAAAAowGEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-08T07:54:22.301Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-08T07:54:22.301Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 23,
               "Title": "AgendaView.xaml",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Agenda\\AgendaView.xaml",
               "RelativeDocumentMoniker": "Views\\Agenda\\AgendaView.xaml",
@@ -455,7 +462,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 26,
               "Title": "AgendaViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Agenda\\AgendaViewModel.cs",
               "RelativeDocumentMoniker": "ViewModel\\Agenda\\AgendaViewModel.cs",
@@ -463,12 +470,11 @@
               "RelativeToolTip": "ViewModel\\Agenda\\AgendaViewModel.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-08T07:31:41.464Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-08-08T07:31:41.464Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 25,
               "Title": "ListaPacientesViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Pacientes\\ListaPacientesViewModel.cs",
               "RelativeDocumentMoniker": "ViewModel\\Pacientes\\ListaPacientesViewModel.cs",
@@ -480,7 +486,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 27,
               "Title": "DoctorRepository.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Repositories\\DoctorRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\DoctorRepository.cs",
@@ -492,7 +498,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 28,
               "Title": "NuevaCitaView.xaml",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Agenda\\NuevaCitaView.xaml",
               "RelativeDocumentMoniker": "Views\\Agenda\\NuevaCitaView.xaml",
@@ -503,7 +509,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
+              "DocumentIndex": 29,
               "Title": "AgendaView.xaml.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Agenda\\AgendaView.xaml.cs",
               "RelativeDocumentMoniker": "Views\\Agenda\\AgendaView.xaml.cs",
@@ -515,7 +521,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
+              "DocumentIndex": 30,
               "Title": "PacienteRepository.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Repositories\\PacienteRepository.cs",
               "RelativeDocumentMoniker": "Repositories\\PacienteRepository.cs",
@@ -527,7 +533,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 30,
+              "DocumentIndex": 31,
               "Title": "ListaPacientesView.xaml",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\ListaPacientesView.xaml",
               "RelativeDocumentMoniker": "Views\\Pacientes\\ListaPacientesView.xaml",
@@ -538,7 +544,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 32,
               "Title": "MainWindow.xaml.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\MainWindow.xaml.cs",
               "RelativeDocumentMoniker": "Views\\MainWindow.xaml.cs",
@@ -550,7 +556,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 32,
+              "DocumentIndex": 33,
               "Title": "PacienteViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Pacientes\\PacienteViewModel.cs",
               "RelativeDocumentMoniker": "ViewModel\\Pacientes\\PacienteViewModel.cs",
@@ -562,7 +568,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 34,
               "Title": "DatabaseInitializer.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Data\\DatabaseInitializer.cs",
               "RelativeDocumentMoniker": "Data\\DatabaseInitializer.cs",
@@ -574,7 +580,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 35,
               "Title": "LoginView.xaml",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Login\\LoginView.xaml",
               "RelativeDocumentMoniker": "Views\\Login\\LoginView.xaml",
@@ -585,7 +591,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 36,
               "Title": "LoginViewModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Login\\LoginViewModel.cs",
               "RelativeDocumentMoniker": "ViewModel\\Login\\LoginViewModel.cs",
@@ -597,7 +603,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
+              "DocumentIndex": 37,
               "Title": "PacienteModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Models\\PacienteModel.cs",
               "RelativeDocumentMoniker": "Models\\PacienteModel.cs",
@@ -609,7 +615,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 38,
               "Title": "CitaModel.cs",
               "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Models\\CitaModel.cs",
               "RelativeDocumentMoniker": "Models\\CitaModel.cs",

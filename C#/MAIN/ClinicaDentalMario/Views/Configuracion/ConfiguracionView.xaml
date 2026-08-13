@@ -1,5 +1,7 @@
 ﻿<UserControl x:Class="ClinicaDentalMario.Views.Configuracion.ConfiguracionView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:vistas="clr-namespace:ClinicaDentalMario.Views.Configuracion"
+             xmlns:vistasUsuarios="clr-namespace:ClinicaDentalMario.Views.Usuarios"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              Background="Transparent">
@@ -93,14 +95,20 @@
                 </TabItem>
 
                 <TabItem Header="Doctores y Personal">
-                    <Grid Margin="0,20,0,0">
-                        <TextBlock Text="¡Módulo de doctores en construcción para la próxima fase!" Foreground="#7F8C8D" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Grid Margin="0,15,0,0">
+                        <vistasUsuarios:UsuariosView />
                     </Grid>
                 </TabItem>
 
                 <TabItem Header="Métodos de Pago y Estados">
                     <Grid Margin="0,20,0,0">
                         <TextBlock Text="¡Módulo de estados en construcción!" Foreground="#7F8C8D" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Bitácora de Seguridad">
+                    <Grid Margin="0,15,0,0">
+                        <vistas:BitacoraView />
                     </Grid>
                 </TabItem>
 

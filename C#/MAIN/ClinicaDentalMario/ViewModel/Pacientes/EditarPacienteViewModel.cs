@@ -66,6 +66,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         public ICommand CancelarCommand { get; }
         public ICommand ExportarPdfCommand { get; }
         public ICommand RegistrarAbonoCommand { get; }
+        public ICommand RegresarCommand { get; }
 
         public EditarPacienteViewModel(PacienteModel pacienteSeleccionado, Action<object> cambiarVista)
         {
@@ -76,6 +77,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             _pagoRepository = new PagoRepository();
             _historialRepository = new HistorialClinicoRepository();
             _tratamientoRepository = new TratamientoRepository(); // Inicializamos
+            RegresarCommand = new RelayCommand(Volver);
 
             _ = CargarHistorialAsync(pacienteSeleccionado.IdPaciente);
 

@@ -1,71 +1,97 @@
-﻿using ClinicaDentalMario.ViewModel.Base;
+﻿using ClinicaDentalMario.Common;
+using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views;
+using System;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Login
 {
-    public partial class LoginViewModel : ViewModelBase
+    public class LoginViewModel : ViewModelBase
     {
-        /* private string _usuario = string.Empty;
-          public string Usuario
-          {
-              get => _usuario;
-              set => SetProperty(ref _usuario, value);
-          }
+        private readonly UsuarioRepository _usuarioRepo;
 
-          private string _mensajeError = string.Empty;
-          public string MensajeError
-          {
-              get => _mensajeError;
-              set => SetProperty(ref _mensajeError, value);
-          }
+        private string _usuario = string.Empty;
+        public string Usuario { get => _usuario; set => SetProperty(ref _usuario, value); }
 
-          // Declaración manual del comando
-          public ICommand IniciarSesionCommand { get; }
-
-          public LoginViewModel()
-          {
-              Titulo = "Iniciar Sesión";
-
-              // Inicializamos el comando apuntando al método asíncrono
-              IniciarSesionCommand = new RelayCommand(async (param) => await IniciarSesionAsync(param));
-          }
-
-          private async Task IniciarSesionAsync(object? passwordObj)
-          {
-              if (string.IsNullOrWhiteSpace(Usuario))
-              {
-                  MensajeError = "Por favor, ingresa tu usuario.";
-                  return;
-              }
-
-              EstaCargando = true;
-              MensajeError = string.Empty;
-
-              // Simulación de espera a SQL Server
-              await Task.Delay(1000);
-
-              EstaCargando = false;
-          }*/
+        private string _mensajeError = string.Empty;
+        public string MensajeError { get => _mensajeError; set => SetProperty(ref _mensajeError, value); }
 
         public ICommand AccederCommand { get; }
+        public ICommand SalirCommand { get; } // 🔥 NUEVO COMANDO
 
         public LoginViewModel()
         {
             Titulo = "Iniciar Sesión - CDMario Dental";
-            AccederCommand = new RelayCommand(Acceder);
+            _usuarioRepo = new UsuarioRepository();
+
+            AccederCommand = new RelayCommand(async (param) => await AccederAsync(param));
+            SalirCommand = new RelayCommand(Salir); // 🔥 INICIALIZAR EL COMANDO
         }
 
-        private void Acceder(object? parameter)
+        private void Salir(object? parameter)
         {
-            // 1. Instanciamos la ventana principal (MainWindow)
-            MainWindow mainWindow = new MainWindow();
-            mainWindow.Show();
+            Application.Current.Shutdown(); // Cierra el programa por completo
+        }
 
-            // 2. Cerramos la ventana de login actual (el parameter viene desde el CommandParameter de la vista)
-            if (parameter is System.Windows.Window ventanaLogin)
+        private string EncriptarSHA256(string textoTextoPlano)
+        {
+            using (SHA256 sha256 = SHA256.Create())
             {
-                ventanaLogin.Close();
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(textoTextoPlano));
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in bytes) builder.Append(b.ToString("x2"));
+                return builder.ToString();
+            }
+        }
+
+        private async Task AccederAsync(object? parameter)
+        {
+            if (parameter is not Window ventanaLogin) return;
+
+            var passwordBox = ventanaLogin.FindName("txtPassword") as PasswordBox;
+            string passwordPlana = passwordBox?.Password ?? "";
+
+            if (string.IsNullOrWhiteSpace(Usuario) || string.IsNullOrWhiteSpace(passwordPlana))
+            {
+                MensajeError = "⚠️ Ingresa tu usuario y contraseña.";
+                return;
+            }
+
+            EstaCargando = true;
+            MensajeError = string.Empty;
+
+            try
+            {
+                string hashPassword = EncriptarSHA256(passwordPlana);
+                var usuarioBD = await _usuarioRepo.LoginAsync(Usuario, hashPassword);
+
+                if (usuarioBD != null && usuarioBD.Activo)
+                {
+                    //ROLSQLSERVER
+                    UsuarioActual.IniciarSesion(usuarioBD, usuarioBD.NombreRol);
+
+                    MainWindow mainWindow = new MainWindow();
+                    mainWindow.Show();
+                    ventanaLogin.Close();
+                }
+                else
+                {
+                    MensajeError = "❌ Usuario o contraseña incorrectos.";
+                }
+            }
+            catch (Exception ex)
+            {
+                MensajeError = "❌ Error de conexión: " + ex.Message;
+            }
+            finally
+            {
+                EstaCargando = false;
             }
         }
     }

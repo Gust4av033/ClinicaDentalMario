@@ -16,13 +16,15 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Margin="0,0,0,20">
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <iconPacks:PackIconMaterial Kind="FolderAccount" Width="28" Height="28" Foreground="#3498DB" Margin="0,0,10,0"/>
-                        <TextBlock Text="Apertura de Expediente Clínico" FontSize="24" FontWeight="Bold" Foreground="#2C3E50"/>
+                        <Button Command="{Binding CancelarCommand}" Background="Transparent" BorderThickness="0" Margin="0,0,15,0" Cursor="Hand" ToolTip="Regresar al listado">
+                            <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="28" Height="28" Foreground="#95A5A6"/>
+                        </Button>
+                        <iconPacks:PackIconMaterial Kind="FolderAccount" Width="28" Height="28" Foreground="#3498DB" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Apertura de Expediente Clínico" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <TextBlock Text="{Binding MensajeError}" Foreground="#E74C3C" FontWeight="SemiBold" FontSize="14" Margin="0,5,0,0">
@@ -98,7 +100,6 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- CORREGIDO: Apuntando a NuevoHistorial -->
                 <StackPanel Grid.Row="2" Margin="0,0,0,20">
                     <TextBlock Text="Motivo de consulta:" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,0,0,5"/>
                     <TextBox Text="{Binding NuevoHistorial.MotivoConsulta, UpdateSourceTrigger=PropertyChanged}" 
@@ -116,38 +117,7 @@
                              Height="80" TextWrapping="Wrap" AcceptsReturn="True"/>
                 </StackPanel>
 
-                <Border Grid.Row="3" Background="#F9FAFC" CornerRadius="10" Padding="15" Margin="0,0,0,20" BorderBrush="#E1E5EA" BorderThickness="1">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <iconPacks:PackIconMaterial Kind="ToothOutline" Width="20" Height="20" Foreground="#2980B9" Margin="0,0,10,0"/>
-                            <TextBlock Text="Tratamiento Inicial (Opcional)" FontSize="16" FontWeight="SemiBold" Foreground="#2C3E50"/>
-                        </StackPanel>
-
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="Seleccione el tratamiento:" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                <ComboBox ItemsSource="{Binding ListaTratamientos}" 
-                                          SelectedItem="{Binding TratamientoSeleccionado}" 
-                                          DisplayMemberPath="Nombre" 
-                                          FontSize="14" Padding="5" BorderBrush="#BDC3C7"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="Costo Acordado ($):" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding CostoTratamientoInicial, UpdateSourceTrigger=PropertyChanged}" 
-                                         FontSize="14" Padding="8" BorderBrush="#BDC3C7" BorderThickness="1"/>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </Border>
-
-                <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
                     <Button Command="{Binding CancelarCommand}" Background="Transparent" Foreground="#7F8C8D" BorderBrush="#BDC3C7" BorderThickness="1" Height="40" Padding="20,0" Margin="0,0,15,0" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">

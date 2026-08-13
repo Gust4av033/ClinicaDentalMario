@@ -38,15 +38,14 @@
                           FontSize="14" Padding="8" BorderBrush="#BDC3C7" Margin="0,0,0,15"/>
 
                 <TextBlock Text="Costo Total Acordado ($):" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox Text="{Binding CostoTotal, UpdateSourceTrigger=PropertyChanged}" 
+                <TextBox Text="{Binding NuevoTratamiento.CostoTotal, UpdateSourceTrigger=PropertyChanged}" 
                          FontSize="18" FontWeight="Bold" Foreground="#27AE60" Padding="8" BorderBrush="#BDC3C7" BorderThickness="1" Margin="0,0,0,15"/>
-
                 <TextBlock Text="Plan de Tratamiento (Detalle y Materiales):" Foreground="#3498DB" FontWeight="Bold" Margin="0,0,0,5"/>
                 <TextBlock Text="Ej: Puente de Zirconia, Piezas #14 a #16..." Foreground="#95A5A6" FontSize="11" Margin="0,0,0,5" FontStyle="Italic"/>
-                <TextBox Text="{Binding PlanTratamientoTexto, UpdateSourceTrigger=PropertyChanged}" 
+                <TextBox Text="{Binding NuevoTratamiento.Observaciones, UpdateSourceTrigger=PropertyChanged}" 
                          FontSize="14" Padding="8" BorderBrush="#3498DB" BorderThickness="1.5" 
                          Height="80" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,25"/>
-
+                
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Command="{Binding CancelarCommand}" Background="Transparent" Foreground="#7F8C8D" BorderBrush="#BDC3C7" BorderThickness="1" Height="40" Padding="20,0" Margin="0,0,15,0" Cursor="Hand">
                         <Button.Resources>

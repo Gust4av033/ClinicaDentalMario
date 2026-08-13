@@ -10,5 +10,6 @@
         public string PasswordHash { get; set; } = string.Empty;
         public bool Activo { get; set; }
         public DateTime FechaCreacion { get; set; }
+        public string NombreRol { get; set; } = string.Empty; //  Importante para saber si es Admin o Doctor
     }
 }

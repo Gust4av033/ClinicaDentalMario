@@ -19,6 +19,9 @@
     <Compile Update="Views\Archivos\SubirImagenView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\Configuracion\BitacoraView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\Configuracion\ConfiguracionView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -64,10 +67,19 @@
     <Compile Update="Views\Pagos\VistaPreviaReciboWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\Tratamientos\EditarTratamientoWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\Tratamientos\NuevoTratamientoView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\Tratamientos\TratamientosView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Usuarios\NuevoEditarUsuarioWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Usuarios\UsuariosView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

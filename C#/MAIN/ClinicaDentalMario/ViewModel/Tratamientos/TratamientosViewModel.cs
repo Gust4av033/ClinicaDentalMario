@@ -2,7 +2,9 @@
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Tratamientos;
+using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -51,7 +53,8 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
         // COMANDOS
         public ICommand NuevoTratamientoCommand { get; }
         public ICommand FinalizarTratamientoCommand { get; }
-        public ICommand VerDetalleCommand { get; } // 🔥 NUEVO COMANDO 🔥
+        public ICommand VerDetalleCommand { get; }
+        public ICommand EditarTratamientoCommand { get; }
 
         public TratamientosViewModel(Action<object> cambiarVista)
         {
@@ -63,8 +66,8 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
             NuevoTratamientoCommand = new RelayCommand(AbrirNuevoTratamiento, (p) => PacienteSeleccionado != null);
             FinalizarTratamientoCommand = new RelayCommand(async (p) => await FinalizarTratamientoAsync(), (p) => TratamientoSeleccionado != null);
 
-            // Conectamos el botón de Ver Detalle
             VerDetalleCommand = new RelayCommand(VerDetalleTratamiento);
+            EditarTratamientoCommand = new RelayCommand(AbrirEdicionTratamiento);
 
             _ = CargarPacientesAsync();
         }
@@ -122,24 +125,68 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
             if (_cambiarVista != null && PacienteSeleccionado != null)
             {
                 var vistaNuevo = new NuevoTratamientoView();
-                var viewModelNuevo = new NuevoTratamientoViewModel(PacienteSeleccionado.IdPaciente, _cambiarVista);
+
+                // 🔥 AQUÍ ESTÁ LA CORRECCIÓN: Le pasamos IdPaciente, NombreCompleto y Action
+                var viewModelNuevo = new NuevoTratamientoViewModel(
+                    PacienteSeleccionado.IdPaciente,
+                    PacienteSeleccionado.NombreCompleto,
+                    _cambiarVista
+                );
+
                 vistaNuevo.DataContext = viewModelNuevo;
                 _cambiarVista(vistaNuevo);
             }
         }
 
-        // 🔥 LA LÓGICA DEL NUEVO BOTÓN 🔥
         private void VerDetalleTratamiento(object? parameter)
         {
-            if (parameter is TratamientoPacienteModel tratamiento)
+            if (parameter != null)
             {
-                string detalle = $"--- DETALLE DEL PLAN DE TRATAMIENTO ---\n\n" +
-                                 $"Tratamiento Base: {tratamiento.NombreTratamiento}\n" +
-                                 $"Fecha de Inicio: {tratamiento.FechaInicio:dd/MM/yyyy}\n" +
-                                 $"Costo Acordado: {tratamiento.CostoTotal:C}\n\n" +
-                                 $"📍 PLAN CLÍNICO Y MATERIALES:\n{(string.IsNullOrWhiteSpace(tratamiento.Observaciones) ? "Sin detalles registrados." : tratamiento.Observaciones)}";
+                // 🔥 CORRECCIÓN: Asignamos el objeto directamente a una variable dynamic
+                dynamic tratamiento = parameter;
 
-                MessageBox.Show(detalle, "Plan de Tratamiento", MessageBoxButton.OK, MessageBoxImage.Information);
+                try
+                {
+                    string observaciones = tratamiento.Observaciones ?? "Sin detalles registrados.";
+
+                    string detalle = $"--- DETALLE DEL PLAN DE TRATAMIENTO ---\n\n" +
+                                     $"Tratamiento Base: {tratamiento.NombreTratamiento}\n" +
+                                     $"Fecha de Inicio: {tratamiento.FechaInicio:dd/MM/yyyy}\n" +
+                                     $"Costo Acordado: {tratamiento.CostoTotal:C}\n\n" +
+                                     $"📍 PLAN CLÍNICO Y MATERIALES:\n{observaciones}";
+
+                    MessageBox.Show(detalle, "Plan de Tratamiento", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error al leer los detalles del tratamiento: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void AbrirEdicionTratamiento(object? parameter)
+        {
+            if (parameter != null)
+            {
+                dynamic t = parameter;
+
+                // Bloqueo de seguridad: No se edita lo que ya se finalizó
+                if (t.Estado == "Finalizado")
+                {
+                    MessageBox.Show("No se pueden editar los costos ni detalles de un tratamiento que ya fue finalizado.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Pasamos los datos al ViewModel de edición (Asegúrate de mandar el t.Id que es la llave de TratamientosPaciente)
+                var vmEdicion = new EditarTratamientoViewModel(t.Id, t.NombreTratamiento, t.CostoTotal, t.Observaciones);
+
+                var modal = new EditarTratamientoWindow { DataContext = vmEdicion };
+
+                // Si la ventana se cierra y dice que guardó, refrescamos la tabla
+                if (modal.ShowDialog() == true)
+                {
+                    _ = CargarTratamientosAsync(PacienteSeleccionado.IdPaciente);
+                }
             }
         }
     }

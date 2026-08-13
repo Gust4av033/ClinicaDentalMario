@@ -1,7 +1,9 @@
 ﻿using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Agenda;
+using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -12,8 +14,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         private readonly Action<object> _cambiarVista;
         private readonly CitaRepository _citaRepository;
 
-        // Usamos dynamic porque el JOIN trae columnas combinadas (Nombre Paciente, Doctor, etc.)
-        private ObservableCollection<dynamic> _citasDelDia = new ObservableCollection<dynamic>();
+        private ObservableCollection<dynamic> _citasDelDia = new();
         public ObservableCollection<dynamic> CitasDelDia
         {
             get => _citasDelDia;
@@ -28,8 +29,8 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             {
                 if (SetProperty(ref _fechaSeleccionada, value))
                 {
-                    // MAGIA: Al cambiar el día en el DatePicker, actualiza la tabla de inmediato
                     _ = CargarCitasDelDiaAsync();
+                    CerrarDetalle(null); // Ocultar el panel si cambian de día
                 }
             }
         }
@@ -38,12 +39,37 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         public dynamic? CitaSeleccionada
         {
             get => _citaSeleccionada;
-            set => SetProperty(ref _citaSeleccionada, value);
+            set
+            {
+                if (SetProperty(ref _citaSeleccionada, value))
+                {
+                    // 🔥 Lógica del Panel: Si seleccionan algo, se muestra. Si no, se oculta.
+                    PanelDetalleVisibility = value != null ? Visibility.Visible : Visibility.Collapsed;
+                    AnchoPanelDetalle = value != null ? 300 : 0;
+                }
+            }
         }
 
+        // --- PROPIEDADES VISUALES PARA EL PANEL LATERAL ---
+        private Visibility _panelDetalleVisibility = Visibility.Collapsed;
+        public Visibility PanelDetalleVisibility
+        {
+            get => _panelDetalleVisibility;
+            set => SetProperty(ref _panelDetalleVisibility, value);
+        }
+
+        private double _anchoPanelDetalle = 0;
+        public double AnchoPanelDetalle
+        {
+            get => _anchoPanelDetalle;
+            set => SetProperty(ref _anchoPanelDetalle, value);
+        }
+
+        // --- COMANDOS ---
         public ICommand NuevaCitaCommand { get; }
         public ICommand EditarCitaCommand { get; }
         public ICommand CancelarCitaCommand { get; }
+        public ICommand CerrarDetalleCommand { get; }
 
         public AgendaViewModel(Action<object> cambiarVista)
         {
@@ -54,8 +80,8 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             NuevaCitaCommand = new RelayCommand(AbrirNuevaCita);
             EditarCitaCommand = new RelayCommand(AbrirEditarCita);
             CancelarCitaCommand = new RelayCommand(async (param) => await CancelarCitaAsync(param));
+            CerrarDetalleCommand = new RelayCommand(CerrarDetalle);
 
-            // Cargar citas del día de hoy al abrir la pantalla
             _ = CargarCitasDelDiaAsync();
         }
 
@@ -71,17 +97,18 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             {
                 MessageBox.Show("Error al cargar la agenda: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            finally
-            {
-                EstaCargando = false;
-            }
+            finally { EstaCargando = false; }
+        }
+
+        private void CerrarDetalle(object? parameter)
+        {
+            CitaSeleccionada = null; // Esto automáticamente oculta el panel
         }
 
         private void AbrirNuevaCita(object? parameter)
         {
             if (_cambiarVista != null)
             {
-                // Navegamos a la vista de Nueva Cita
                 var vistaNuevaCita = new NuevaCitaView();
                 vistaNuevaCita.DataContext = new NuevaCitaViewModel(_cambiarVista);
                 _cambiarVista(vistaNuevaCita);
@@ -90,12 +117,10 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
         private void AbrirEditarCita(object? parameter)
         {
-            var citaAEditar = parameter as dynamic ?? CitaSeleccionada;
-            if (citaAEditar != null && _cambiarVista != null)
+            if (CitaSeleccionada != null && _cambiarVista != null)
             {
-                // Aquí deberías crear tu EditarCitaView visualmente, pero ya le pasamos los datos
-                var vistaEditar = new EditarCitaView(); // Asumiendo que la crearás
-                var viewModelEditar = new EditarCitaViewModel(citaAEditar, _cambiarVista);
+                var vistaEditar = new EditarCitaView();
+                var viewModelEditar = new EditarCitaViewModel(CitaSeleccionada, _cambiarVista);
                 vistaEditar.DataContext = viewModelEditar;
                 _cambiarVista(vistaEditar);
             }
@@ -103,16 +128,17 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
         private async Task CancelarCitaAsync(object? parameter)
         {
-            var citaACancelar = parameter as dynamic ?? CitaSeleccionada;
-            if (citaACancelar != null)
+            if (CitaSeleccionada != null)
             {
-                var result = MessageBox.Show($"¿Deseas cancelar la cita de {citaACancelar.Paciente}?", "Confirmar Cancelación", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                var result = MessageBox.Show($"¿Deseas cancelar la cita de {CitaSeleccionada.Paciente}?", "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    await _citaRepository.CancelarCitaAsync(citaACancelar.IdCita);
+                    await _citaRepository.CancelarCitaAsync(CitaSeleccionada.IdCita);
                     MessageBox.Show("Cita cancelada correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                    await CargarCitasDelDiaAsync(); // Recargamos la tabla
+
+                    CerrarDetalle(null); // Ocultamos el panel tras cancelar
+                    await CargarCitasDelDiaAsync(); // Recargamos
                 }
             }
         }

@@ -3,6 +3,7 @@ using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
+using System.Diagnostics; // 🔥 Necesario para abrir la app de Fotos de Windows
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
@@ -38,6 +39,7 @@ namespace ClinicaDentalMario.ViewModel.Archivos
         public ICommand ExplorarArchivoCommand { get; }
         public ICommand GuardarImagenCommand { get; }
         public ICommand EliminarImagenCommand { get; }
+        public ICommand VerImagenEnGrandeCommand { get; } // 🔥 NUEVO COMANDO PARA EL ZOOM
 
         public ImagenesPacienteViewModel(int idPaciente, Action<object>? cambiarVista = null)
         {
@@ -50,6 +52,9 @@ namespace ClinicaDentalMario.ViewModel.Archivos
             ExplorarArchivoCommand = new RelayCommand(ExplorarArchivo);
             GuardarImagenCommand = new RelayCommand(async p => await GuardarImagenAsync());
             EliminarImagenCommand = new RelayCommand(async p => await EliminarAsync(), p => ImagenSeleccionada != null);
+
+            // 🔥 INICIALIZAMOS EL COMANDO (Se habilita solo si hay una imagen seleccionada)
+            VerImagenEnGrandeCommand = new RelayCommand(VerImagen, p => ImagenSeleccionada != null);
 
             _ = CargarGaleriaAsync();
         }
@@ -133,6 +138,35 @@ namespace ClinicaDentalMario.ViewModel.Archivos
                     await CargarGaleriaAsync();
                 }
                 catch (Exception ex) { MessageBox.Show("Error al eliminar: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error); }
+            }
+        }
+
+        // 🔥 NUEVA LÓGICA: ABRE LA IMAGEN CON EL VISOR NATIVO DE WINDOWS
+        private void VerImagen(object? parameter)
+        {
+            if (ImagenSeleccionada == null || string.IsNullOrWhiteSpace(ImagenSeleccionada.RutaArchivo)) return;
+
+            try
+            {
+                if (File.Exists(ImagenSeleccionada.RutaArchivo))
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo
+                    {
+                        FileName = ImagenSeleccionada.RutaArchivo,
+                        UseShellExecute = true // Esto le dice a Windows que abra su App de Fotos por defecto
+                    };
+                    Process.Start(psi);
+                }
+                else
+                {
+                    MessageBox.Show("No se encontró el archivo de imagen en la ruta especificada. Es posible que haya sido movido o eliminado del disco duro.",
+                                    "Archivo no encontrado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ocurrió un error al intentar abrir la imagen: {ex.Message}",
+                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

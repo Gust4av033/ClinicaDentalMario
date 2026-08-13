@@ -10,6 +10,7 @@ namespace ClinicaDentalMario.Views.Login
         public LoginView()
         {
             InitializeComponent();
+            this.DataContext = new ClinicaDentalMario.ViewModel.Login.LoginViewModel(); // <--- ESTA LÍNEA
         }
     }
 }

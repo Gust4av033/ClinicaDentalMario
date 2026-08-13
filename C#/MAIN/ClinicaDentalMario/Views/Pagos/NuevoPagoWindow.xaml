@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         Title="Registrar Abono" Height="525" Width="420"
-        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
         Background="#F8F9FA">
 
     <Border Padding="25" Background="White" CornerRadius="12" Margin="15">
@@ -19,16 +19,18 @@
 
             <Border Background="#E8F8F5" Padding="12" CornerRadius="8" Margin="0,0,0,15">
                 <StackPanel>
-                    <TextBlock x:Name="TxtTratamientoInfo" Text="Tratamiento: Ortodoncia" FontWeight="Bold" Foreground="#27AE60" FontSize="13"/>
-                    <TextBlock x:Name="TxtSaldoPendienteInfo" Text="Saldo Pendiente: $200.00" Foreground="#C0392B" FontWeight="SemiBold" FontSize="13" Margin="0,4,0,0"/>
+                    <TextBlock Text="{Binding NombreTratamientoTexto}" FontWeight="Bold" Foreground="#27AE60" FontSize="13"/>
+                    <TextBlock Text="{Binding SaldoPendienteTexto}" Foreground="#C0392B" FontWeight="SemiBold" FontSize="13" Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>
 
+            <TextBlock Text="{Binding MensajeError}" Foreground="#E74C3C" FontWeight="Bold" Margin="0,0,0,10"/>
+
             <TextBlock Text="Monto a Abonar ($):" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,5,0,5"/>
-            <TextBox x:Name="TxtMonto" FontSize="16" Padding="8" FontWeight="Bold" Foreground="#27AE60" BorderBrush="#BDC3C7"/>
+            <TextBox Text="{Binding NuevoPago.Monto, UpdateSourceTrigger=PropertyChanged}" FontSize="16" Padding="8" FontWeight="Bold" Foreground="#27AE60" BorderBrush="#BDC3C7"/>
 
             <TextBlock Text="Método de Pago:" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,12,0,5"/>
-            <ComboBox x:Name="CmbMetodoPago" SelectedIndex="0" FontSize="14" Padding="6">
+            <ComboBox SelectedValue="{Binding NuevoPago.MetodoPago}" SelectedValuePath="Content" SelectedIndex="0" FontSize="14" Padding="6">
                 <ComboBoxItem Content="Efectivo"/>
                 <ComboBoxItem Content="Tarjeta de Débito/Crédito"/>
                 <ComboBoxItem Content="Transferencia Bancaria"/>
@@ -36,7 +38,7 @@
             </ComboBox>
 
             <TextBlock Text="Concepto / Observación:" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,12,0,5"/>
-            <TextBox x:Name="TxtObservacion" Height="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="6" FontSize="13"/>
+            <TextBox Text="{Binding NuevoPago.Observacion, UpdateSourceTrigger=PropertyChanged}" Height="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="6" FontSize="13"/>
 
             <Grid Margin="0,20,0,0">
                 <Grid.ColumnDefinitions>
@@ -45,8 +47,8 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="0" Content="Cancelar" Click="BtnCancelar_Click" Height="38" Background="#95A5A6" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-                <Button Grid.Column="2" Content="Guardar Abono" Click="BtnGuardar_Click" Height="38" Background="#27AE60" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                <Button Grid.Column="0" Command="{Binding CancelarCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" Content="Cancelar" Height="38" Background="#95A5A6" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                <Button Grid.Column="2" Command="{Binding GuardarCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" Content="Guardar Abono" Height="38" Background="#27AE60" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
             </Grid>
         </StackPanel>
     </Border>

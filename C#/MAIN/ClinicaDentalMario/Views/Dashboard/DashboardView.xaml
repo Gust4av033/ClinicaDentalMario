@@ -15,7 +15,7 @@
             <Grid Grid.Row="0" Margin="10,10,10,25">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <iconPacks:PackIconMaterial Kind="ViewDashboard" Width="28" Height="28" Foreground="#2C3E50" Margin="0,0,10,0"/>
-                    <TextBlock Text="Resumen General del Día" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" VerticalAlignment="Center"/>
+                    <TextBlock Text="Resumen Ejecutivo" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <Button Command="{Binding AbrirConfiguracionCommand}" HorizontalAlignment="Right" Height="40" Background="#34495E" Foreground="White" BorderThickness="0" Padding="15,0" Cursor="Hand">
@@ -26,7 +26,7 @@
                     </Button.Resources>
                     <StackPanel Orientation="Horizontal">
                         <iconPacks:PackIconMaterial Kind="Cog" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="Configurar Catálogos" VerticalAlignment="Center" FontWeight="Bold"/>
+                        <TextBlock Text="Configuraciones" VerticalAlignment="Center" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>
             </Grid>
@@ -36,40 +36,61 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="20"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="White" CornerRadius="15" Padding="25">
+                <Border Grid.Column="0" Background="White" CornerRadius="15" Padding="20">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#D1D8E0" Opacity="0.5"/>
                     </Border.Effect>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <iconPacks:PackIconMaterial Kind="CashMultiple" Width="24" Height="24" Foreground="#27AE60" Margin="0,0,10,0"/>
-                            <TextBlock Text="Ingresos Totales (Hoy)" FontSize="16" FontWeight="SemiBold" Foreground="#7F8C8D" VerticalAlignment="Center"/>
+                            <Border Background="#E8F8F5" Padding="8" CornerRadius="8" Margin="0,0,10,0">
+                                <iconPacks:PackIconMaterial Kind="CashMultiple" Width="20" Height="20" Foreground="#27AE60"/>
+                            </Border>
+                            <TextBlock Text="Ingresos (Hoy)" FontSize="15" FontWeight="SemiBold" Foreground="#7F8C8D" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Text="{Binding IngresosHoy, StringFormat={}{0:C2}}" FontSize="32" FontWeight="Bold" Foreground="#27AE60"/>
+                        <TextBlock Text="{Binding IngresosHoy, StringFormat={}{0:C2}}" FontSize="28" FontWeight="Bold" Foreground="#2C3E50"/>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Background="White" CornerRadius="15" Padding="25">
+                <Border Grid.Column="2" Background="White" CornerRadius="15" Padding="20">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#D1D8E0" Opacity="0.5"/>
                     </Border.Effect>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <iconPacks:PackIconMaterial Kind="CalendarCheck" Width="24" Height="24" Foreground="#2980B9" Margin="0,0,10,0"/>
-                            <TextBlock Text="Citas para Hoy" FontSize="16" FontWeight="SemiBold" Foreground="#7F8C8D" VerticalAlignment="Center"/>
+                            <Border Background="#EBF5FB" Padding="8" CornerRadius="8" Margin="0,0,10,0">
+                                <iconPacks:PackIconMaterial Kind="CalendarCheck" Width="20" Height="20" Foreground="#2980B9"/>
+                            </Border>
+                            <TextBlock Text="Citas (Hoy)" FontSize="15" FontWeight="SemiBold" Foreground="#7F8C8D" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Text="{Binding CitasHoy}" FontSize="32" FontWeight="Bold" Foreground="#2980B9"/>
+                        <TextBlock Text="{Binding CitasHoy}" FontSize="28" FontWeight="Bold" Foreground="#2C3E50"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="4" Background="White" CornerRadius="15" Padding="20">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#D1D8E0" Opacity="0.5"/>
+                    </Border.Effect>
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <Border Background="#FEF5E7" Padding="8" CornerRadius="8" Margin="0,0,10,0">
+                                <iconPacks:PackIconMaterial Kind="Tooth" Width="20" Height="20" Foreground="#F39C12"/>
+                            </Border>
+                            <TextBlock Text="Tratamientos Activos" FontSize="15" FontWeight="SemiBold" Foreground="#7F8C8D" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding TratamientosActivos}" FontSize="28" FontWeight="Bold" Foreground="#2C3E50"/>
                     </StackPanel>
                 </Border>
             </Grid>
 
             <Grid Grid.Row="2" Margin="10,0,10,10">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="2.5*"/>
                     <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="1.2*"/>
+                    <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
 
                 <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="20">
@@ -83,75 +104,81 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <iconPacks:PackIconMaterial Kind="CalendarClock" Foreground="#27AE60" Width="22" Height="22" Margin="0,0,8,0"/>
-                            <TextBlock Text="Próximas Citas (Hoy)" FontSize="18" FontWeight="Bold" Foreground="#2C3E50"/>
+                            <iconPacks:PackIconMaterial Kind="FormatListBulleted" Foreground="#34495E" Width="22" Height="22" Margin="0,0,8,0"/>
+                            <TextBlock Text="Agenda de Hoy" FontSize="18" FontWeight="Bold" Foreground="#2C3E50"/>
                         </StackPanel>
 
-                        <DataGrid Grid.Row="1" ItemsSource="{Binding ListaCitasHoy}" AutoGenerateColumns="False" CanUserAddRows="False" Background="White" BorderThickness="0" RowHeight="45" FontSize="14" HeadersVisibility="Column">
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding ListaCitasHoy}" AutoGenerateColumns="False" CanUserAddRows="False" Background="White" BorderThickness="0" RowHeight="45" FontSize="14" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E1E5EA">
                             <DataGrid.Resources>
                                 <Style TargetType="DataGridColumnHeader">
                                     <Setter Property="Background" Value="#F5F6FA"/>
                                     <Setter Property="Foreground" Value="#7F8C8D"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Padding" Value="10,10"/>
+                                    <Setter Property="Padding" Value="10,12"/>
+                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                    <Setter Property="BorderBrush" Value="#E1E5EA"/>
+                                </Style>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Padding" Value="10,0"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="DataGridCell">
+                                                <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                                    <ContentPresenter VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
                                 </Style>
                             </DataGrid.Resources>
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Hora" Binding="{Binding Hora}" Width="100" FontWeight="Bold"/>
+                                <DataGridTextColumn Header="Hora" Binding="{Binding Hora}" Width="90" FontWeight="Bold" Foreground="#2980B9"/>
                                 <DataGridTextColumn Header="Paciente" Binding="{Binding Paciente}" Width="*"/>
-                                <DataGridTextColumn Header="Tratamiento" Binding="{Binding Tratamiento}" Width="150"/>
-                                <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="120" Foreground="#2980B9"/>
+                                <DataGridTextColumn Header="Motivo / Tratamiento" Binding="{Binding Tratamiento}" Width="*"/>
+                                <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="100"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
                 </Border>
 
                 <StackPanel Grid.Column="2">
-
-                    <Border Background="#FDEDEC" CornerRadius="12" Padding="15" Margin="0,0,0,15" BorderBrush="#F5B7B1" BorderThickness="1">
+                    <Border Background="#FDEDEC" CornerRadius="12" Padding="20" BorderBrush="#F5B7B1" BorderThickness="1">
                         <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <iconPacks:PackIconMaterial Kind="AlertCircleOutline" Foreground="#C0392B" Width="20" Height="20" Margin="0,0,8,0"/>
-                                <TextBlock Text="Saldos Pendientes" FontSize="16" FontWeight="Bold" Foreground="#C0392B"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,15" HorizontalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="AlertOctagon" Foreground="#C0392B" Width="22" Height="22" Margin="0,0,8,0"/>
+                                <TextBlock Text="Cuentas por Cobrar" FontSize="16" FontWeight="Bold" Foreground="#C0392B"/>
                             </StackPanel>
-                            <ItemsControl ItemsSource="{Binding Morosos}">
+
+                            <TextBlock Text="Los 5 saldos más altos o atrasados:" FontSize="12" Foreground="#E74C3C" Margin="0,0,0,15" HorizontalAlignment="Center"/>
+
+                            <ItemsControl ItemsSource="{Binding TopMorosos}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="0,5">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding Paciente}" FontWeight="SemiBold" Foreground="#34495E"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding Saldo, StringFormat=C}" FontWeight="Bold" Foreground="#C0392B"/>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Background="#FEF9E7" CornerRadius="12" Padding="15" BorderBrush="#F9E79F" BorderThickness="1">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <iconPacks:PackIconMaterial Kind="CakeVariant" Foreground="#D4AC0D" Width="20" Height="20" Margin="0,0,8,0"/>
-                                <TextBlock Text="Cumpleañeros" FontSize="16" FontWeight="Bold" Foreground="#9A7D0A"/>
-                            </StackPanel>
-                            <ItemsControl ItemsSource="{Binding Cumpleaneros}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Margin="0,5">
-                                            <TextBlock Text="{Binding Paciente}" FontWeight="Bold" Foreground="#34495E"/>
-                                            <TextBlock Text="{Binding Fecha}" FontSize="12" Foreground="#7F8C8D"/>
-                                        </StackPanel>
+                                        <Border Background="White" CornerRadius="8" Padding="10" Margin="0,0,0,10">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="{Binding Paciente}" FontWeight="Bold" FontSize="13" Foreground="#2C3E50" TextTrimming="CharacterEllipsis"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                                        <iconPacks:PackIconMaterial Kind="Phone" Width="10" Height="10" Foreground="#95A5A6" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                                                        <TextBlock Text="{Binding Telefono}" FontSize="11" Foreground="#7F8C8D"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="1" Text="{Binding Saldo, StringFormat={}{0:C0}}" FontWeight="Bold" FontSize="15" Foreground="#E74C3C" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </StackPanel>
                     </Border>
                 </StackPanel>
+
             </Grid>
         </Grid>
     </ScrollViewer>
 </UserControl>
-    

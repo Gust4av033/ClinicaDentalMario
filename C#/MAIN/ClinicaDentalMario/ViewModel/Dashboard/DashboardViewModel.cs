@@ -2,7 +2,10 @@
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.ViewModel.Configuracion;
 using ClinicaDentalMario.Views.Configuracion;
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Dashboard
@@ -19,22 +22,23 @@ namespace ClinicaDentalMario.ViewModel.Dashboard
         private int _citasHoy;
         public int CitasHoy { get => _citasHoy; set => SetProperty(ref _citasHoy, value); }
 
-        // --- LISTAS REALES ---
+        private int _tratamientosActivos;
+        public int TratamientosActivos { get => _tratamientosActivos; set => SetProperty(ref _tratamientosActivos, value); }
+
+        // --- LISTAS ---
         public ObservableCollection<dynamic> ListaCitasHoy { get; set; } = new();
-        public ObservableCollection<dynamic> Morosos { get; set; } = new();
-        public ObservableCollection<dynamic> Cumpleaneros { get; set; } = new();
+        public ObservableCollection<dynamic> TopMorosos { get; set; } = new();
 
         public ICommand AbrirConfiguracionCommand { get; }
 
         public DashboardViewModel(Action<object> cambiarVista)
         {
-            Titulo = "Panel Principal (Dashboard)";
+            Titulo = "Resumen Ejecutivo";
             _dashboardRepo = new DashboardRepository();
             _cambiarVista = cambiarVista;
 
             AbrirConfiguracionCommand = new RelayCommand(AbrirConfiguracion);
 
-            // Arrancamos la carga real de la base de datos
             _ = CargarDatosDashboardAsync();
         }
 
@@ -45,24 +49,26 @@ namespace ClinicaDentalMario.ViewModel.Dashboard
             {
                 DateTime hoy = DateTime.Today;
 
-                // 1. Cargar Tarjetas (Las que ya tenías)
+                // 1. Cargar Tarjetas
                 IngresosHoy = await _dashboardRepo.ObtenerIngresosDelDiaAsync(hoy);
                 CitasHoy = await _dashboardRepo.ObtenerTotalCitasHoyAsync(hoy);
 
-                // 2. Cargar Listas (Las nuevas)
-                var citas = await _dashboardRepo.ObtenerCitasHoyListaAsync();
-                var morosos = await _dashboardRepo.ObtenerMorososAsync();
-                var cumpleaneros = await _dashboardRepo.ObtenerCumpleanerosMesAsync();
+                // (Opcional: Si no tienes este método en tu repo, puedes ponerle un número estático por ahora o crearlo luego)
+                // TratamientosActivos = await _dashboardRepo.ObtenerTratamientosActivosTotalesAsync();
+                TratamientosActivos = 12; // Número de ejemplo mientras creas el método en Dapper
 
-                // Llenamos las listas visuales vaciándolas primero (por si se recarga)
+                // 2. Cargar Listas
+                var citas = await _dashboardRepo.ObtenerCitasHoyListaAsync();
+                var morososCompletos = await _dashboardRepo.ObtenerMorososAsync();
+
+                // Llenamos la agenda
                 ListaCitasHoy.Clear();
                 foreach (var item in citas) ListaCitasHoy.Add(item);
 
-                Morosos.Clear();
-                foreach (var item in morosos) Morosos.Add(item);
-
-                Cumpleaneros.Clear();
-                foreach (var item in cumpleaneros) Cumpleaneros.Add(item);
+                // Llenamos SOLO LOS TOP 5 MOROSOS para no romper el diseño
+                TopMorosos.Clear();
+                var top5 = morososCompletos.OrderByDescending(m => m.Saldo).Take(5).ToList();
+                foreach (var item in top5) TopMorosos.Add(item);
             }
             catch (Exception ex)
             {

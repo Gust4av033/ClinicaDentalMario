@@ -116,10 +116,19 @@
                     <DataGridTemplateColumn Header="Acciones" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Command="{Binding DataContext.VerDetalleCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
-                                        CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Ver detalles del plan">
-                                    <iconPacks:PackIconMaterial Kind="Eye" Foreground="#3498DB" Width="20" Height="20"/>
-                                </Button>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+
+                                    <Button Command="{Binding DataContext.VerDetalleCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" ToolTip="Ver detalles del plan">
+                                        <iconPacks:PackIconMaterial Kind="Eye" Foreground="#3498DB" Width="20" Height="20"/>
+                                    </Button>
+
+                                    <Button Command="{Binding DataContext.EditarTratamientoCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Editar costo o detalles">
+                                        <iconPacks:PackIconMaterial Kind="Pencil" Foreground="#F39C12" Width="20" Height="20"/>
+                                    </Button>
+
+                                </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

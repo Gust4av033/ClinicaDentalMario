@@ -52,15 +52,24 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
             set => SetProperty(ref _mensajeError, value);
         }
 
+        private string _nombrePacienteTexto = string.Empty;
+        public string NombrePacienteTexto
+        {
+            get => _nombrePacienteTexto;
+            set => SetProperty(ref _nombrePacienteTexto, value);
+        }
+
         public ICommand GuardarCommand { get; }
         public ICommand CancelarCommand { get; }
 
-        public NuevoTratamientoViewModel(int idPaciente, Action<object> cambiarVista)
+        public NuevoTratamientoViewModel(int idPaciente, string nombrePaciente, Action<object> cambiarVista)
         {
             Titulo = "Asignar Tratamiento";
             _cambiarVista = cambiarVista;
             _tratamientoRepo = new TratamientoRepository();
             _catalogoRepo = new CatalogoRepository();
+
+            NombrePacienteTexto = $"Paciente: {nombrePaciente}";
 
             _nuevoTratamiento = new TratamientoPacienteModel
             {

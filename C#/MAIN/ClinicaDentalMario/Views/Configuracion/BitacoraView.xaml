@@ -1,0 +1,40 @@
+﻿<UserControl x:Class="ClinicaDentalMario.Views.Configuracion.BitacoraView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             Background="White">
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+            <TextBox Text="{Binding TextoBusqueda, UpdateSourceTrigger=PropertyChanged}" 
+                     Width="300" FontSize="14" Padding="8" BorderBrush="#BDC3C7" Margin="0,0,10,0"/>
+
+            <Button Command="{Binding BuscarCommand}" Background="#34495E" Foreground="White" BorderThickness="0" Padding="15,0" Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5"/>
+                    </Style>
+                </Button.Resources>
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="Magnify" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <TextBlock Text="Buscar" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <DataGrid Grid.Row="1" ItemsSource="{Binding RegistrosAuditoria}" AutoGenerateColumns="False" IsReadOnly="True" 
+                  CanUserAddRows="False" GridLinesVisibility="Horizontal" HeadersVisibility="Column" BorderThickness="1" BorderBrush="#E1E5EA" RowHeight="35">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Fecha y Hora" Binding="{Binding Fecha, StringFormat={}{0:dd/MM/yyyy hh:mm tt}}" Width="140"/>
+                <DataGridTextColumn Header="Usuario" Binding="{Binding NombreUsuario}" Width="120" FontWeight="Bold"/>
+                <DataGridTextColumn Header="Acción" Binding="{Binding Accion}" Width="150" Foreground="#E67E22"/>
+                <DataGridTextColumn Header="Detalles" Binding="{Binding Detalles}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

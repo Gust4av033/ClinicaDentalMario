@@ -112,7 +112,14 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             try
             {
                 var vistaNuevoTratamiento = new NuevoTratamientoView();
-                vistaNuevoTratamiento.DataContext = new NuevoTratamientoViewModel(PacienteActual.IdPaciente, _cambiarVista);
+
+                // 🔥 CORRECCIÓN: Aquí le agregamos 'PacienteActual.NombreCompleto' como segundo parámetro
+                vistaNuevoTratamiento.DataContext = new NuevoTratamientoViewModel(
+                    PacienteActual.IdPaciente,
+                    PacienteActual.NombreCompleto,
+                    _cambiarVista
+                );
+
                 _cambiarVista(vistaNuevoTratamiento);
             }
             catch (Exception ex)

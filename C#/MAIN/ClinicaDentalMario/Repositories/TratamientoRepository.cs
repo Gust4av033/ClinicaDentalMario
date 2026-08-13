@@ -70,5 +70,17 @@ namespace ClinicaDentalMario.Repositories
 
             return await db.QueryFirstOrDefaultAsync<int?>(sql, new { IdPaciente = idPaciente });
         }
+
+        public async Task ActualizarTratamientoAsync(int idTratamientoPaciente, decimal costoTotal, string observaciones)
+        {
+            using System.Data.IDbConnection db = DatabaseConnection.GetConnection();
+            string sql = @"
+        UPDATE Odontologia.TratamientosPaciente 
+        SET CostoTotal = @CostoTotal, 
+            Observaciones = @Observaciones 
+        WHERE Id = @IdTratamientoPaciente";
+
+            await db.ExecuteAsync(sql, new { CostoTotal = costoTotal, Observaciones = observaciones, IdTratamientoPaciente = idTratamientoPaciente });
+        }
     }
 }

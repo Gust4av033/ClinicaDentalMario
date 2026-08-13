@@ -1,7 +1,10 @@
-﻿using ClinicaDentalMario.Models;
+﻿using ClinicaDentalMario.Common;
+using ClinicaDentalMario.Models;
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
+using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -11,7 +14,6 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
     {
         private readonly CatalogoRepository _catalogoRepo;
 
-        // LISTA DE TRATAMIENTOS
         private ObservableCollection<CatalogoTratamientosModel> _listaTratamientos = new();
         public ObservableCollection<CatalogoTratamientosModel> ListaTratamientos
         {
@@ -26,7 +28,6 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
             set => SetProperty(ref _tratamientoSeleccionado, value);
         }
 
-        // CAMPOS PARA NUEVO TRATAMIENTO
         private string _nuevoNombreTratamiento = string.Empty;
         public string NuevoNombreTratamiento
         {
@@ -41,7 +42,6 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
             set => SetProperty(ref _nuevoPrecioBase, value);
         }
 
-        // COMANDOS
         public ICommand GuardarTratamientoCommand { get; }
         public ICommand EliminarTratamientoCommand { get; }
 
@@ -73,6 +73,13 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
 
         private async Task GuardarTratamientoAsync()
         {
+            // 🔥 SEGURIDAD: Solo Administradores pueden guardar
+            if (UsuarioActual.NombreRol != "Administrador")
+            {
+                MessageBox.Show("ACCESO DENEGADO: Solo los Administradores pueden modificar los catálogos de precios.", "Seguridad", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(NuevoNombreTratamiento) || !decimal.TryParse(NuevoPrecioBase, out decimal precio))
             {
                 MessageBox.Show("Por favor ingresa un nombre válido y un precio numérico.", "Datos inválidos", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -91,7 +98,6 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
                 await _catalogoRepo.InsertarTratamientoAsync(nuevoTratamiento);
                 MessageBox.Show("Tratamiento agregado con éxito.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Limpiar campos y recargar tabla
                 NuevoNombreTratamiento = string.Empty;
                 NuevoPrecioBase = string.Empty;
                 await CargarTratamientosAsync();
@@ -104,9 +110,16 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
 
         private async Task EliminarTratamientoAsync()
         {
+            // 🔥 SEGURIDAD: Solo Administradores pueden eliminar
+            if (UsuarioActual.NombreRol != "Administrador")
+            {
+                MessageBox.Show("ACCESO DENEGADO: No tienes permisos para eliminar tratamientos.", "Seguridad", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (TratamientoSeleccionado == null) return;
 
-            var result = MessageBox.Show($"¿Estás seguro de que deseas eliminar '{TratamientoSeleccionado.Nombre}' del catálogo?\n\n(No se borrará de los historiales pasados)", "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            var result = MessageBox.Show($"¿Estás seguro de que deseas eliminar '{TratamientoSeleccionado.Nombre}'?\n\n(No se borrará de los historiales pasados)", "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
                 try

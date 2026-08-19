@@ -3,45 +3,64 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         Title="{Binding Titulo}" Height="600" Width="420"
-        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Background="#F8F9FA">
-    
-    <Grid Margin="25">
-        <StackPanel>
-            <TextBlock Text="{Binding Titulo}" FontSize="20" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,20"/>
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" 
+        Background="{StaticResource BgWindowBrush}">
 
-            <TextBlock Text="Nombre Completo:" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,0,0,3"/>
-            <TextBox Text="{Binding Usuario.NombreCompleto, UpdateSourceTrigger=PropertyChanged}" FontSize="14" Padding="8" Margin="0,0,0,12"/>
+    <Border Background="{StaticResource BgCardBrush}" CornerRadius="12" Margin="15" Padding="25" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="4" Color="#000000" Opacity="0.5"/>
+        </Border.Effect>
 
-            <TextBlock Text="Nombre de Usuario (Login):" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,0,0,3"/>
-            <TextBox Text="{Binding Usuario.NombreUsuario, UpdateSourceTrigger=PropertyChanged}" FontSize="14" Padding="8" Margin="0,0,0,12"/>
+        <Grid>
+            <StackPanel>
+                <TextBlock Text="{Binding Titulo}" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,20"/>
 
-            <TextBlock Text="Correo Electrónico:" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,0,0,3"/>
-            <TextBox Text="{Binding Usuario.Correo, UpdateSourceTrigger=PropertyChanged}" FontSize="14" Padding="8" Margin="0,0,0,12"/>
+                <TextBlock Text="Nombre Completo:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                <TextBox Text="{Binding Usuario.NombreCompleto, UpdateSourceTrigger=PropertyChanged}" FontSize="14" Padding="8" Margin="0,0,0,12"/>
 
-            <TextBlock Text="Rol en el Sistema:" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,0,0,3"/>
-            <ComboBox ItemsSource="{Binding Roles}" DisplayMemberPath="Nombre" SelectedItem="{Binding RolSeleccionado}" FontSize="14" Padding="8" Margin="0,0,0,12"/>
+                <TextBlock Text="Nombre de Usuario (Login):" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                <TextBox Text="{Binding Usuario.NombreUsuario, UpdateSourceTrigger=PropertyChanged}" FontSize="14" Padding="8" Margin="0,0,0,12"/>
 
-            <TextBlock Text="Contraseña:" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,0,0,3"/>
-            <PasswordBox x:Name="txtPassword" FontSize="14" Padding="8" Margin="0,0,0,5"/>
-            <TextBlock Text="*(En edición, déjalo en blanco si no deseas cambiar la clave)" FontSize="11" Foreground="#95A5A6" Margin="0,0,0,12"/>
+                <TextBlock Text="Correo Electrónico:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                <TextBox Text="{Binding Usuario.Correo, UpdateSourceTrigger=PropertyChanged}" FontSize="14" Padding="8" Margin="0,0,0,12"/>
 
-            <CheckBox Content="Usuario Activo" IsChecked="{Binding Usuario.Activo}" FontSize="14" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+                <TextBlock Text="Rol en el Sistema:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                <ComboBox ItemsSource="{Binding Roles}" DisplayMemberPath="Nombre" SelectedItem="{Binding RolSeleccionado}" FontSize="14" Padding="8" Margin="0,0,0,12"/>
 
-            <TextBlock Text="{Binding MensajeError}" Foreground="#E74C3C" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                <TextBlock Text="Contraseña:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,3"/>
+                <PasswordBox x:Name="txtPassword" FontSize="14" Padding="8" Margin="0,0,0,5"/>
+                <TextBlock Text="*(En edición, déjalo en blanco si no deseas cambiar la clave)" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,12" FontStyle="Italic"/>
 
-            <Grid Margin="0,10,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                <CheckBox Content="Usuario Activo" IsChecked="{Binding Usuario.Activo}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,15"/>
 
-                <Button Grid.Column="0" Command="{Binding CancelarCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" 
-                        Background="#E74C3C" Foreground="White" Height="40" BorderThickness="0" Cursor="Hand" Content="Cancelar"/>
+                <TextBlock Text="{Binding MensajeError}" Foreground="#E74C3C" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,15"/>
 
-                <Button Grid.Column="2" Command="{Binding GuardarCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" 
-                        Background="#27AE60" Foreground="White" Height="40" BorderThickness="0" Cursor="Hand" Content="Guardar Usuario"/>
-            </Grid>
-        </StackPanel>
-    </Grid>
+                <Grid Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0" Command="{Binding CancelarCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" 
+                            Background="{StaticResource BgControlBrush}" Foreground="{StaticResource TextSecondaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Height="40" Cursor="Hand" Content="Cancelar">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+
+                    <Button Grid.Column="2" Command="{Binding GuardarCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" 
+                            Background="#27AE60" Foreground="White" FontWeight="Bold" Height="40" BorderThickness="0" Cursor="Hand" Content="Guardar Usuario">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </Border>
 </Window>

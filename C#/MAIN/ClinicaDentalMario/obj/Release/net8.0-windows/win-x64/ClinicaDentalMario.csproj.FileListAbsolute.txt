@@ -587,3 +587,13 @@ C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\GeneratedInternalTypeHelper.g.cs
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\ClinicaDentalMario_MarkupCompile.lref
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Pacientes\OdontogramaView.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Themes\DarkTheme.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Configuracion\BitacoraView.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Tratamientos\EditarTratamientoWindow.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Usuarios\NuevoEditarUsuarioWindow.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Usuarios\UsuariosView.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Configuracion\BitacoraView.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Tratamientos\EditarTratamientoWindow.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Usuarios\NuevoEditarUsuarioWindow.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Usuarios\UsuariosView.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\App.baml

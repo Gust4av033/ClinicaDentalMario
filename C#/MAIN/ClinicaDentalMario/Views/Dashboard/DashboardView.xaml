@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-             Background="Transparent">
+             Background="{StaticResource BgWindowBrush}">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
         <Grid>
@@ -14,19 +14,22 @@
 
             <Grid Grid.Row="0" Margin="10,10,10,25">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <iconPacks:PackIconMaterial Kind="ViewDashboard" Width="28" Height="28" Foreground="#2C3E50" Margin="0,0,10,0"/>
-                    <TextBlock Text="Resumen Ejecutivo" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" VerticalAlignment="Center"/>
+                    <iconPacks:PackIconMaterial Kind="HandWave" Width="32" Height="32" Foreground="{StaticResource AccentBrush}" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                    <StackPanel>
+                        <TextBlock Text="{Binding SaludoDinamico}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBlock Text="{Binding FechaHoraActual}" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                    </StackPanel>
                 </StackPanel>
 
-                <Button Command="{Binding AbrirConfiguracionCommand}" HorizontalAlignment="Right" Height="40" Background="#34495E" Foreground="White" BorderThickness="0" Padding="15,0" Cursor="Hand">
+                <Button Command="{Binding AbrirConfiguracionCommand}" HorizontalAlignment="Right" Height="40" Background="{StaticResource BgControlBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="15,0" Cursor="Hand">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="8"/>
                         </Style>
                     </Button.Resources>
                     <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="Cog" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="Configuraciones" VerticalAlignment="Center" FontWeight="Bold"/>
+                        <iconPacks:PackIconMaterial Kind="Cog" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBlock Text="Configuraciones" VerticalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
                     </StackPanel>
                 </Button>
             </Grid>
@@ -40,48 +43,48 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="White" CornerRadius="15" Padding="20">
+                <Border Grid.Column="0" Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#D1D8E0" Opacity="0.5"/>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#000000" Opacity="0.4"/>
                     </Border.Effect>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <Border Background="#E8F8F5" Padding="8" CornerRadius="8" Margin="0,0,10,0">
+                            <Border Background="#0E2317" Padding="8" CornerRadius="8" Margin="0,0,10,0">
                                 <iconPacks:PackIconMaterial Kind="CashMultiple" Width="20" Height="20" Foreground="#27AE60"/>
                             </Border>
-                            <TextBlock Text="Ingresos (Hoy)" FontSize="15" FontWeight="SemiBold" Foreground="#7F8C8D" VerticalAlignment="Center"/>
+                            <TextBlock Text="Ingresos (Hoy)" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Text="{Binding IngresosHoy, StringFormat={}{0:C2}}" FontSize="28" FontWeight="Bold" Foreground="#2C3E50"/>
+                        <TextBlock Text="{Binding IngresosHoy, StringFormat={}{0:C2}}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Background="White" CornerRadius="15" Padding="20">
+                <Border Grid.Column="2" Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#D1D8E0" Opacity="0.5"/>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#000000" Opacity="0.4"/>
                     </Border.Effect>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <Border Background="#EBF5FB" Padding="8" CornerRadius="8" Margin="0,0,10,0">
-                                <iconPacks:PackIconMaterial Kind="CalendarCheck" Width="20" Height="20" Foreground="#2980B9"/>
+                            <Border Background="#101F2B" Padding="8" CornerRadius="8" Margin="0,0,10,0">
+                                <iconPacks:PackIconMaterial Kind="CalendarCheck" Width="20" Height="20" Foreground="#3498DB"/>
                             </Border>
-                            <TextBlock Text="Citas (Hoy)" FontSize="15" FontWeight="SemiBold" Foreground="#7F8C8D" VerticalAlignment="Center"/>
+                            <TextBlock Text="Citas (Hoy)" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Text="{Binding CitasHoy}" FontSize="28" FontWeight="Bold" Foreground="#2C3E50"/>
+                        <TextBlock Text="{Binding CitasHoy}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="4" Background="White" CornerRadius="15" Padding="20">
+                <Border Grid.Column="4" Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#D1D8E0" Opacity="0.5"/>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#000000" Opacity="0.4"/>
                     </Border.Effect>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <Border Background="#FEF5E7" Padding="8" CornerRadius="8" Margin="0,0,10,0">
+                            <Border Background="#2B1E0D" Padding="8" CornerRadius="8" Margin="0,0,10,0">
                                 <iconPacks:PackIconMaterial Kind="Tooth" Width="20" Height="20" Foreground="#F39C12"/>
                             </Border>
-                            <TextBlock Text="Tratamientos Activos" FontSize="15" FontWeight="SemiBold" Foreground="#7F8C8D" VerticalAlignment="Center"/>
+                            <TextBlock Text="Tratamientos Activos" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Text="{Binding TratamientosActivos}" FontSize="28" FontWeight="Bold" Foreground="#2C3E50"/>
+                        <TextBlock Text="{Binding TratamientosActivos}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
                     </StackPanel>
                 </Border>
             </Grid>
@@ -93,9 +96,9 @@
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="20">
+                <Border Grid.Column="0" Background="{StaticResource BgCardBrush}" CornerRadius="12" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#D1D8E0" Opacity="0.5"/>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#000000" Opacity="0.4"/>
                     </Border.Effect>
                     <Grid>
                         <Grid.RowDefinitions>
@@ -104,80 +107,110 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <iconPacks:PackIconMaterial Kind="FormatListBulleted" Foreground="#34495E" Width="22" Height="22" Margin="0,0,8,0"/>
-                            <TextBlock Text="Agenda de Hoy" FontSize="18" FontWeight="Bold" Foreground="#2C3E50"/>
+                            <iconPacks:PackIconMaterial Kind="FormatListBulleted" Foreground="{StaticResource TextSecondaryBrush}" Width="22" Height="22" Margin="0,0,8,0"/>
+                            <TextBlock Text="Agenda de Hoy" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
                         </StackPanel>
 
-                        <DataGrid Grid.Row="1" ItemsSource="{Binding ListaCitasHoy}" AutoGenerateColumns="False" CanUserAddRows="False" Background="White" BorderThickness="0" RowHeight="45" FontSize="14" HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E1E5EA">
-                            <DataGrid.Resources>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#F5F6FA"/>
-                                    <Setter Property="Foreground" Value="#7F8C8D"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Padding" Value="10,12"/>
-                                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                    <Setter Property="BorderBrush" Value="#E1E5EA"/>
-                                </Style>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="BorderThickness" Value="0"/>
-                                    <Setter Property="Padding" Value="10,0"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="DataGridCell">
-                                                <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-                                                    <ContentPresenter VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </DataGrid.Resources>
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding ListaCitasHoy}" AutoGenerateColumns="False" CanUserAddRows="False" Background="Transparent" BorderThickness="0" RowHeight="45" FontSize="14" HeadersVisibility="Column">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Hora" Binding="{Binding Hora}" Width="90" FontWeight="Bold" Foreground="#2980B9"/>
+                                <DataGridTextColumn Header="Hora" Binding="{Binding Hora}" Width="90" FontWeight="Bold">
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#3498DB"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </DataGridTextColumn>
                                 <DataGridTextColumn Header="Paciente" Binding="{Binding Paciente}" Width="*"/>
                                 <DataGridTextColumn Header="Motivo / Tratamiento" Binding="{Binding Tratamiento}" Width="*"/>
-                                <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="100"/>
                             </DataGrid.Columns>
                         </DataGrid>
+
+                        <Border Grid.Row="1" Background="{StaticResource BgCardBrush}" Margin="0,30,0,0">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ListaCitasHoy.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ListaCitasHoy}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="CoffeeOutline" Width="50" Height="50" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.5" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                                <TextBlock Text="No hay citas programadas para hoy." FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="¡Tómate un buen café!" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.8" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
                     </Grid>
                 </Border>
 
                 <StackPanel Grid.Column="2">
-                    <Border Background="#FDEDEC" CornerRadius="12" Padding="20" BorderBrush="#F5B7B1" BorderThickness="1">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,15" HorizontalAlignment="Center">
-                                <iconPacks:PackIconMaterial Kind="AlertOctagon" Foreground="#C0392B" Width="22" Height="22" Margin="0,0,8,0"/>
-                                <TextBlock Text="Cuentas por Cobrar" FontSize="16" FontWeight="Bold" Foreground="#C0392B"/>
+                    <Border Background="#261A19" CornerRadius="12" Padding="20" BorderBrush="#512E2F" BorderThickness="1">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#000000" Opacity="0.4"/>
+                        </Border.Effect>
+                        <Grid>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,15" HorizontalAlignment="Center">
+                                    <iconPacks:PackIconMaterial Kind="AlertOctagon" Foreground="#E74C3C" Width="22" Height="22" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Cuentas por Cobrar" FontSize="16" FontWeight="Bold" Foreground="#E74C3C"/>
+                                </StackPanel>
+
+                                <TextBlock Text="Los 5 saldos más altos o atrasados:" FontSize="12" Foreground="#D98880" Margin="0,0,0,15" HorizontalAlignment="Center"/>
+
+                                <ItemsControl ItemsSource="{Binding TopMorosos}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{StaticResource BgControlBrush}" CornerRadius="8" Padding="10" Margin="0,0,0,10" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0">
+                                                        <TextBlock Text="{Binding Paciente}" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                        <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                                            <iconPacks:PackIconMaterial Kind="Phone" Width="10" Height="10" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                                                            <TextBlock Text="{Binding Telefono}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Saldo, StringFormat={}{0:C0}}" FontWeight="Bold" FontSize="15" Foreground="#E74C3C" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </StackPanel>
 
-                            <TextBlock Text="Los 5 saldos más altos o atrasados:" FontSize="12" Foreground="#E74C3C" Margin="0,0,0,15" HorizontalAlignment="Center"/>
-
-                            <ItemsControl ItemsSource="{Binding TopMorosos}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Background="White" CornerRadius="8" Padding="10" Margin="0,0,0,10">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="{Binding Paciente}" FontWeight="Bold" FontSize="13" Foreground="#2C3E50" TextTrimming="CharacterEllipsis"/>
-                                                    <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                                                        <iconPacks:PackIconMaterial Kind="Phone" Width="10" Height="10" Foreground="#95A5A6" VerticalAlignment="Center" Margin="0,0,3,0"/>
-                                                        <TextBlock Text="{Binding Telefono}" FontSize="11" Foreground="#7F8C8D"/>
-                                                    </StackPanel>
-                                                </StackPanel>
-                                                <TextBlock Grid.Column="1" Text="{Binding Saldo, StringFormat={}{0:C0}}" FontWeight="Bold" FontSize="15" Foreground="#E74C3C" VerticalAlignment="Center"/>
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
+                            <Border Background="#261A19" Margin="0,30,0,0">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding TopMorosos.Count}" Value="0">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding TopMorosos}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <iconPacks:PackIconMaterial Kind="CheckDecagram" Width="45" Height="45" Foreground="#27AE60" Opacity="0.8" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                                    <TextBlock Text="¡Excelente!" FontSize="15" FontWeight="Bold" Foreground="#27AE60" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Todos están al día" FontSize="13" Foreground="#D98880" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                     </Border>
                 </StackPanel>
-
+                
             </Grid>
         </Grid>
     </ScrollViewer>

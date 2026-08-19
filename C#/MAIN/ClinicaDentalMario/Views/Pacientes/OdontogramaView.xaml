@@ -3,280 +3,321 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:local="clr-namespace:ClinicaDentalMario.Views.Pacientes"
-             Background="Transparent">
+             Background="{StaticResource BgWindowBrush}">
+
+    <UserControl.Resources>
+        <Style x:Key="KitButtonUnah" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource BgControlBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="6" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bdr" Property="Background" Value="{StaticResource BgControlHoverBrush}"/>
+                                <Setter TargetName="bdr" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bdr" Property="Background" Value="#1A252F"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
 
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="340"/>
+            <ColumnDefinition Width="400"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="20" Margin="0,0,15,0">
+        <Border Grid.Column="0" Background="{StaticResource BgCardBrush}" CornerRadius="12" Padding="25,20" Margin="0,0,15,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#D1D8E0" Opacity="0.5"/>
+                <DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#000000" Opacity="0.5"/>
             </Border.Effect>
             <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
                 <StackPanel>
 
-                    <TextBlock Text="Kit Clínico UNAH-VS" FontSize="20" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
-                    <Button Command="{Binding AbrirManualCommand}" Background="#F39C12" Foreground="White" BorderThickness="0" Height="35" Cursor="Hand" Margin="0,0,0,20">
+                    <TextBlock Text="Kit Clínico UNAH-VS" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,20"/>
+
+                    <Button Command="{Binding AbrirManualCommand}" Background="#F39C12" Foreground="White" BorderThickness="0" Height="40" Cursor="Hand" Margin="0,0,0,20">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="6"/>
                             </Style>
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="FilePdfBox" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock Text="Ver Normativas del Manual" VerticalAlignment="Center" FontWeight="Bold"/>
+                            <iconPacks:PackIconMaterial Kind="FilePdfBox" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
+                            <TextBlock Text="Consultar Manual UNAH-VS" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding AbrirInstruccionesUsoCommand}" Background="#8E44AD" Foreground="White" BorderThickness="0" Height="40" Cursor="Hand" Margin="0,0,0,20">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="HelpCircleOutline" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
+                            <TextBlock Text="¿Cómo usar este Odontograma?" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/>
                         </StackPanel>
                     </Button>
 
-                    <TextBlock Text="1. Rellenos de Caras" Foreground="#7F8C8D" FontWeight="Bold" Margin="0,0,0,5"/>
-                    <Button Command="{Binding ActivarHerramientaCommand}" CommandParameter="Pintar|#E74C3C||Pintar Caries (Rojo)" Background="White" BorderBrush="#E74C3C" BorderThickness="1.5" Height="35" Cursor="Hand" Margin="0,0,0,5">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="5"/>
-                            </Style>
-                        </Button.Resources>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10,0,0,0">
-                            <Ellipse Width="14" Height="14" Fill="#E74C3C" Margin="0,0,10,0"/>
-                            <TextBlock Text="Caries (Rojo)" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#2C3E50"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Command="{Binding ActivarHerramientaCommand}" CommandParameter="Pintar|#3498DB||Pintar Obturación (Azul)" Background="White" BorderBrush="#3498DB" BorderThickness="1.5" Height="35" Cursor="Hand" Margin="0,0,0,15">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="5"/>
-                            </Style>
-                        </Button.Resources>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10,0,0,0">
-                            <Ellipse Width="14" Height="14" Fill="#3498DB" Margin="0,0,10,0"/>
-                            <TextBlock Text="Obturación Sana (Azul)" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#2C3E50"/>
-                        </StackPanel>
-                    </Button>
-
-                    <TextBlock Text="2. Estados y Extracciones" Foreground="#7F8C8D" FontWeight="Bold" Margin="0,0,0,5"/>
-                    <Button Command="{Binding ActivarHerramientaCommand}" CommandParameter="Cruz|#E74C3C||Extracción Indicada (X)" Background="White" BorderBrush="#E74C3C" BorderThickness="1.5" Height="35" Cursor="Hand" Margin="0,0,0,5">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="5"/>
-                            </Style>
-                        </Button.Resources>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10,0,0,0">
-                            <iconPacks:PackIconMaterial Kind="CloseThick" Foreground="#E74C3C" Width="14" Height="14" Margin="0,0,10,0"/>
-                            <TextBlock Text="Extracción Indicada (X)" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#2C3E50"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Command="{Binding ActivarHerramientaCommand}" CommandParameter="Diagonal|#3498DB||Diente Ausente (/)" Background="White" BorderBrush="#3498DB" BorderThickness="1.5" Height="35" Cursor="Hand" Margin="0,0,0,15">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="5"/>
-                            </Style>
-                        </Button.Resources>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="10,0,0,0">
-                            <iconPacks:PackIconMaterial Kind="SlashForward" Foreground="#3498DB" Width="14" Height="14" Margin="0,0,10,0"/>
-                            <TextBlock Text="Diente Ausente (/)" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#2C3E50"/>
-                        </StackPanel>
-                    </Button>
-
-                    <TextBlock Text="3. Tratamientos y Coronas" Foreground="#7F8C8D" FontWeight="Bold" Margin="0,0,0,5"/>
-                    <Grid Margin="0,0,0,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Command="{Binding ActivarHerramientaCommand}" CommandParameter="Circulo|#3498DB||Corona Buena" Background="White" BorderBrush="#3498DB" BorderThickness="1.5" Height="35" Cursor="Hand" Margin="0,0,2,0">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
-                            <TextBlock Text="Corona (O Azul)" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#2C3E50"/>
-                        </Button>
-                        <Button Grid.Column="1" Command="{Binding ActivarHerramientaCommand}" CommandParameter="Raiz|#3498DB||Endodoncia Buena" Background="White" BorderBrush="#3498DB" BorderThickness="1.5" Height="35" Cursor="Hand" Margin="2,0,0,0">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
-                            <TextBlock Text="Endodoncia (| Azul)" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#2C3E50"/>
-                        </Button>
-                    </Grid>
-                    <Grid Margin="0,0,0,15">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Command="{Binding ActivarHerramientaCommand}" CommandParameter="Circulo|#E74C3C||Corona Mala" Background="White" BorderBrush="#E74C3C" BorderThickness="1.5" Height="35" Cursor="Hand" Margin="0,0,2,0">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
-                            <TextBlock Text="Corona (O Roja)" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#2C3E50"/>
-                        </Button>
-                        <Button Grid.Column="1" Command="{Binding ActivarHerramientaCommand}" CommandParameter="Raiz|#E74C3C||Endodoncia Mala" Background="White" BorderBrush="#E74C3C" BorderThickness="1.5" Height="35" Cursor="Hand" Margin="2,0,0,0">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
-                            <TextBlock Text="Endodoncia (| Roja)" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#2C3E50"/>
-                        </Button>
-                    </Grid>
-
-                    <TextBlock Text="4. Anotaciones Especiales" Foreground="#7F8C8D" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <TextBlock Text="1. Estado / Color" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold" FontSize="11" Margin="0,0,0,10"/>
                     <WrapPanel Margin="0,0,0,15">
-                        <Button Command="{Binding ActivarHerramientaCommand}" CommandParameter="Siglas|#E74C3C|RR|Remanente Radicular (RR)" Content="RR" Width="40" Background="#FADBD8" Foreground="#C0392B" FontWeight="Bold" Margin="0,0,5,5"/>
-                        <Button Command="{Binding ActivarHerramientaCommand}" CommandParameter="Siglas|#E74C3C|ME|Mal Estado (ME)" Content="ME" Width="40" Background="#FADBD8" Foreground="#C0392B" FontWeight="Bold" Margin="0,0,5,5"/>
-                        <Button Command="{Binding ActivarHerramientaCommand}" CommandParameter="Siglas|#E74C3C|S|Sellante Malo (S)" Content="S" Width="40" Background="#FADBD8" Foreground="#C0392B" FontWeight="Bold" Margin="0,0,5,5"/>
-                        <Button Command="{Binding ActivarHerramientaCommand}" CommandParameter="Siglas|#3498DB|IMP|Implante (IMP)" Content="IMP" Width="40" Background="#D6EAF8" Foreground="#2980B9" FontWeight="Bold" Margin="0,0,5,5"/>
-                        <Button Command="{Binding ActivarHerramientaCommand}" CommandParameter="Siglas|#3498DB|MAC|Macrodoncia (MAC)" Content="MAC" Width="45" Background="#D6EAF8" Foreground="#2980B9" FontWeight="Bold" Margin="0,0,5,5"/>
-                        <Button Command="{Binding ActivarHerramientaCommand}" CommandParameter="Siglas|#3498DB|M1|Movilidad Grado 1 (M1)" Content="M1" Width="40" Background="#D6EAF8" Foreground="#2980B9" FontWeight="Bold" Margin="0,0,5,5"/>
+                        <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#E74C3C|Rojo (Mal Estado / Caries / PC-M2-PMA)" Style="{StaticResource KitButtonUnah}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="15" Height="15" Fill="#E74C3C" Margin="0,0,8,0"/>
+                                <TextBlock Text="Rojo (Caries/PC)" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#3498DB|Azul (Buen Estado / Definitivo / TCC-M1-CC-PP)" Style="{StaticResource KitButtonUnah}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="15" Height="15" Fill="#3498DB" Margin="0,0,8,0"/>
+                                <TextBlock Text="Azul (Sano/Definitivo)" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#27AE60|Verde (Temporal / Preventivo / CT-Ausente)" Style="{StaticResource KitButtonUnah}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="15" Height="15" Fill="#27AE60" Margin="0,0,8,0"/>
+                                <TextBlock Text="Verde (Temporal/Prev)" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#E67E22|Naranja (Resina)" Style="{StaticResource KitButtonUnah}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="15" Height="15" Fill="#E67E22" Margin="0,0,8,0"/>
+                                <TextBlock Text="Naranja (Resina)" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
                     </WrapPanel>
 
-                    <TextBlock Text="5. Controles Universales" Foreground="#7F8C8D" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <TextBlock Text="2. Hallazgos Individuales (Diente/Raíz)" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold" FontSize="11" Margin="0,0,0,10"/>
+                    <WrapPanel Margin="0,0,0,15">
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Pintar||Pintar Cara (Obturación/Caries)" Content="Pintar Cara" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Cruz||Extracción Indicada (X)" Content="Extraer (X)" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Diagonal||Diente Ausente (/)" Content="Ausente (/)" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Circulo||Corona (O)" Content="Corona (O)" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Raiz||Endodoncia (|)" Content="Conducto (|)" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Fractura||Fractura (Zigzag)" Content="Fractura" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Furca||Compromiso de Furca (II)" Content="Furca (II)" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Impactado||Diente Impactado" Content="Impactado" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                    </WrapPanel>
+
+                    <TextBlock Text="3. Siglas y Códigos UNAH-VS (Dar clic al centro del diente)" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold" FontSize="11" Margin="0,0,0,10"/>
+                    <Border Background="{StaticResource BgControlBrush}" CornerRadius="8" Padding="15,15,7,7" Margin="0,0,0,20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Height="150">
+                            <StackPanel>
+                                <TextBlock Text="Tratamiento Pulpar:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,5"/>
+                                <WrapPanel>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|TCC|TCC (Conducto Completo)" Content="TCC" Width="45" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|PC|PC (Pulpectomía)" Content="PC" Width="40" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|PP|PP (Pulpotomía)" Content="PP" Width="40" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                </WrapPanel>
+                                <TextBlock Text="Coronas Definitive:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" FontSize="11" Margin="0,5,0,5"/>
+                                <WrapPanel>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|CM|CM (Metal)" Content="CM" Width="40" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|CMP|CMP (Metal/Porc)" Content="CMP" Width="50" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|CMA|CMA (Metal/Acril)" Content="CMA" Width="50" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|CPP|CPP (Porc libre Metal)" Content="CPP" Width="50" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                </WrapPanel>
+                                <TextBlock Text="Otras Siglas:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" FontSize="11" Margin="0,5,0,5"/>
+                                <WrapPanel>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|RR|Remanente Radicular (RR)" Content="RR" Width="40" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|S|Sellante (S)" Content="S" Width="35" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|ME|Mal Estado (ME)" Content="ME" Width="40" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|IMP|Implante (IMP)" Content="IMP" Width="45" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|MIC|Microdoncia (MIC)" Content="MIC" Width="45" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                    <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|MAC|Macrodoncia (MAC)" Content="MAC" Width="45" Height="30" Style="{StaticResource KitButtonUnah}"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <TextBlock Text="4. Hallazgos Complejos (Entre Dientes / Arco)" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold" FontSize="11" Margin="0,0,0,10"/>
+                    <WrapPanel Margin="0,0,0,20">
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|Puente|Puente Fijo (Arco)" Content="Puente Fijo" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|OrthoFijo|Ortodoncia Fija (Brackets)" Content="Ortho Fija" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|OrthoRem|Ortodoncia Removible (Zigzag)" Content="Ortho Rem" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|Diastema||Diastema (Paren)" Content="Diastema )(" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                        <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|Edentulo||Edentulo Total (Línea Horizontal)" Content="Edentulo Tot" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
+                    </WrapPanel>
+
+                    <Border Background="#1A252F" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="ACCIÓN CLÍNICA SELECCIONADA:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding TextoHerramienta}" FontSize="15" Foreground="#2ECC71" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Command="{Binding ActivarHerramientaCommand}" CommandParameter="Borrador|#FFFFFF||Borrador Activo" Background="#ECF0F1" Foreground="#2C3E50" BorderThickness="0" Height="35" Cursor="Hand" Margin="0,0,5,0">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
+                        <Button Grid.Column="0" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Borrador||Borrador (Borrar Caras/Formas)" Style="{StaticResource KitButtonUnah}" Margin="0,0,5,0" Padding="15,10">
                             <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="Eraser" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="Borrador" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                <iconPacks:PackIconMaterial Kind="Eraser" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Borrador" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <Button Grid.Column="1" Command="{Binding ActivarHerramientaCommand}" CommandParameter="Ninguno|#FFFFFF||Cursor Normal" Background="#ECF0F1" Foreground="#2C3E50" BorderThickness="0" Height="35" Cursor="Hand" Margin="5,0,0,0">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
+                        <Button Grid.Column="1" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Ninguno||Cursor Normal" Style="{StaticResource KitButtonUnah}" Margin="5,0,0,0" Padding="15,10">
                             <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="CursorDefaultOutline" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="Soltar" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                <iconPacks:PackIconMaterial Kind="CursorDefaultOutline" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Soltar" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </Grid>
 
-                    <Button Command="{Binding LimpiarTodoCommand}" Background="#E74C3C" Foreground="White" BorderThickness="0" Height="35" Cursor="Hand" Margin="0,10,0,0">
+                    <Button Command="{Binding LimpiarTodoCommand}" Background="#E74C3C" Foreground="White" BorderThickness="0" Height="40" Cursor="Hand" Margin="0,15,0,0">
                         <Button.Resources>
                             <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="5"/>
+                                <Setter Property="CornerRadius" Value="6"/>
                             </Style>
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
                             <iconPacks:PackIconMaterial Kind="Broom" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Limpiar Todo el Mapa" VerticalAlignment="Center" FontWeight="Bold"/>
+                            <TextBlock Text="LIMPIAR TODO EL MAPA" VerticalAlignment="Center" FontWeight="Bold"/>
                         </StackPanel>
                     </Button>
-
-                    <Border Background="#2C3E50" CornerRadius="8" Padding="15" Margin="0,20,0,0">
-                        <StackPanel>
-                            <TextBlock Text="HERRAMIENTA ACTIVA:" FontSize="11" Foreground="#95A5A6" FontWeight="Bold"/>
-                            <TextBlock Text="{Binding TextoHerramienta}" FontSize="14" Foreground="#2ECC71" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </Border>
                 </StackPanel>
             </ScrollViewer>
         </Border>
 
-        <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="25">
+        <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#D1D8E0" Opacity="0.5"/>
+                <DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#000000" Opacity="0.5"/>
             </Border.Effect>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="Mapeo Dental del Paciente" FontSize="22" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15" HorizontalAlignment="Center"/>
+                <Grid Grid.Row="0" Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Mapeo Dental UNAH-VS" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" VerticalAlignment="Center"/>
 
-                <Border Grid.Row="1" Background="#F4F6F7" CornerRadius="8" Padding="15" Margin="0,0,0,15">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="200"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                    <Border Grid.Column="1" Background="#F4F6F7" CornerRadius="8" Padding="10" BorderBrush="#BDC3C7" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Evoluciones:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#7F8C8D" Margin="0,0,10,0"/>
+                            <ComboBox ItemsSource="{Binding FechasGuardadas}" SelectedItem="{Binding FechaSeleccionada}" FontSize="13" Padding="5" Width="180">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding StringFormat=dd/MM/yyyy hh:mm tt}" FontWeight="Bold" Foreground="#2980B9"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Command="{Binding EliminarOdontogramaCommand}" Background="Transparent" Foreground="#E74C3C" BorderThickness="0" Margin="10,0,0,0" ToolTip="Eliminar fecha">
+                                <iconPacks:PackIconMaterial Kind="TrashCan"/>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </Grid>
 
-                        <TextBlock Grid.Column="0" Text="Ver Historial Guardado:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#7F8C8D" Margin="0,0,10,0"/>
-
-                        <ComboBox Grid.Column="1" ItemsSource="{Binding FechasGuardadas}" SelectedItem="{Binding FechaSeleccionada}" FontSize="14" Padding="5">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding StringFormat=dd/MM/yyyy - hh:mm tt}" FontWeight="Bold" Foreground="#2980B9"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-
-                        <Button Grid.Column="3" Command="{Binding EliminarOdontogramaCommand}" Background="Transparent" Foreground="#E74C3C" BorderBrush="#E74C3C" BorderThickness="1" Padding="15,5" Cursor="Hand" ToolTip="Eliminar esta fecha guardada">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="4"/>
-                                </Style>
-                            </Button.Resources>
-                            <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="TrashCan" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                <TextBlock Text="Eliminar Fecha" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                    </Grid>
+                <Border Grid.Row="1" Background="#2C3E50" CornerRadius="6" Padding="10,5" Margin="0,0,0,5" VerticalAlignment="Top" HorizontalAlignment="Center" Panel.ZIndex="10">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="LightbulbOnOutline" Foreground="#F1C40F" Margin="0,0,8,0" VerticalAlignment="Center" Width="14" Height="14"/>
+                        <TextBlock Text="TIP: Usa las flechas de dirección (↑ ↓ → ←) o la rueda del mouse para desplazarte por los dientes." Foreground="White" FontSize="11" FontStyle="Italic"/>
+                    </StackPanel>
                 </Border>
 
-                <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10">
-                        <TextBlock Text="Maxilar Superior" Foreground="#7F8C8D" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                        <ItemsControl ItemsSource="{Binding DientesSuperiores}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <local:PiezaDentalControl Margin="2"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                <Border Grid.Row="1" Background="#FDFEFE" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="10,25">
+                        <Grid Name="OdontogramaGridRoot" Width="950" Height="420" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="110"/>
+                                <RowDefinition Height="20"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="110"/>
+                            </Grid.RowDefinitions>
 
-                        <Border Height="2" Background="#BDC3C7" Margin="0,20" Opacity="0.5"/>
+                            <TextBlock Grid.Row="0" Text="MAXILAR SUPERIOR" Foreground="#7F8C8D" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                            <Grid Grid.Row="1">
+                                <ItemsControl ItemsSource="{Binding DientesSuperiores}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <local:PiezaDentalControl Margin="2,0"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
 
-                        <TextBlock Text="Maxilar Inferior" Foreground="#7F8C8D" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                        <ItemsControl ItemsSource="{Binding DientesInferiores}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <local:PiezaDentalControl Margin="2"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </ScrollViewer>
+                                <ItemsControl ItemsSource="{Binding FigurasSuperiores}" HorizontalAlignment="Center" IsHitTestVisible="False">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <Canvas Width="864" Height="110" Background="Transparent"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Path Data="{Binding Geometria}" Stroke="{Binding ColorTrazo}" StrokeThickness="{Binding GrosorTrazo}" StrokeDashArray="{Binding PatronGuiones}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
 
-                <Button Grid.Row="3" Command="{Binding GuardarOdontogramaCommand}" HorizontalAlignment="Right" Height="45" Background="#27AE60" Foreground="White" BorderThickness="0" Padding="25,0" Cursor="Hand" Margin="0,20,0,0">
+                            <Border Grid.Row="2" Height="1" Background="{StaticResource BorderBrush}" Margin="20,0" Opacity="0.3"/>
+
+                            <TextBlock Grid.Row="3" Text="MAXILAR INFERIOR" Foreground="#7F8C8D" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                            <Grid Grid.Row="4">
+                                <ItemsControl ItemsSource="{Binding DientesInferiores}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <local:PiezaDentalControl Margin="2,0"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <ItemsControl ItemsSource="{Binding FigurasInferiores}" HorizontalAlignment="Center" IsHitTestVisible="False">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <Canvas Width="864" Height="110" Background="Transparent"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Path Data="{Binding Geometria}" Stroke="{Binding ColorTrazo}" StrokeThickness="{Binding GrosorTrazo}" StrokeDashArray="{Binding PatronGuiones}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </Grid>
+                    </ScrollViewer>
+                </Border>
+
+                <Button Grid.Row="2" Command="{Binding GuardarOdontogramaCommand}" HorizontalAlignment="Right" Height="45" Background="{StaticResource SuccessBrush}" Foreground="White" BorderThickness="0" Padding="25,0" Cursor="Hand" Margin="0,15,0,0">
                     <Button.Resources>
                         <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="6"/>
+                            <Setter Property="CornerRadius" Value="8"/>
                         </Style>
                     </Button.Resources>
                     <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="ContentSaveCheck" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="Guardar Evolución Odontológica" VerticalAlignment="Center" FontSize="15" FontWeight="Bold"/>
+                        <iconPacks:PackIconMaterial Kind="ContentSaveCheck" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White" Width="20" Height="20"/>
+                        <TextBlock Text="Guardar Evolución Odontológica" VerticalAlignment="Center" FontSize="15" FontWeight="Bold" Foreground="White"/>
                     </StackPanel>
                 </Button>
             </Grid>

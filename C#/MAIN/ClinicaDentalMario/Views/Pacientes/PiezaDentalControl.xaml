@@ -9,6 +9,8 @@
         <Viewbox Width="45" Height="65">
             <Grid Width="50" Height="70">
 
+                <Path Data="M 18,5 L 25,18 M 25,5 L 32,18" Stroke="{Binding ColorFurca}" StrokeThickness="2" IsHitTestVisible="False"/>
+
                 <Path Data="M 25,0 L 25,20" Stroke="{Binding ColorRaiz}" StrokeThickness="4" IsHitTestVisible="False"/>
 
                 <Grid Margin="0,20,0,0" Width="50" Height="50" VerticalAlignment="Top">
@@ -37,11 +39,15 @@
                             <MouseBinding MouseAction="LeftClick" Command="{Binding DataContext.InteraccionarCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" CommandParameter="Centro"/>
                         </Path.InputBindings>
                     </Path>
-
-                    <Path Data="M 0,50 L 50,0" Stroke="{Binding ColorDiagonal}" StrokeThickness="4" IsHitTestVisible="False"/>
-                    <Path Data="M 0,0 L 50,50 M 50,0 L 0,50" Stroke="{Binding ColorCruz}" StrokeThickness="4" IsHitTestVisible="False"/>
-                    <Ellipse Stroke="{Binding ColorCirculo}" StrokeThickness="3.5" Fill="Transparent" Margin="-5" IsHitTestVisible="False"/>
                 </Grid>
+
+                <Path Data="M 0,70 L 50,20" Stroke="{Binding ColorDiagonal}" StrokeThickness="4" IsHitTestVisible="False"/>
+                <Path Data="M 0,20 L 50,70 M 50,20 L 0,70" Stroke="{Binding ColorCruz}" StrokeThickness="4" IsHitTestVisible="False"/>
+                <Ellipse Stroke="{Binding ColorCirculo}" StrokeThickness="3.5" Fill="Transparent" Margin="-5,15,-5,-5" IsHitTestVisible="False"/>
+
+                <Path Data="M 10,45 L 40,45" Stroke="{Binding ColorImpactadoRojo}" StrokeThickness="4" IsHitTestVisible="False"/>
+
+                <Path Data="M 5,35 L 45,35 M 5,55 L 45,55" Stroke="{Binding ColorRemanenteLineas}" StrokeThickness="2.5" IsHitTestVisible="False"/>
 
                 <TextBlock Text="{Binding Siglas}" Foreground="{Binding ColorSiglas}" FontSize="16" FontWeight="ExtraBold" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-8" IsHitTestVisible="False"/>
             </Grid>

@@ -4,38 +4,26 @@
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         Title="Acceso al Sistema - CDMario Dental" Height="525" Width="400"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
-        Background="#F5F6FA">
+        Background="{StaticResource BgWindowBrush}">
 
     <Grid>
-        <Border Background="White" CornerRadius="15" Padding="30" Margin="25" VerticalAlignment="Center">
+        <Border Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="30" Margin="25" VerticalAlignment="Center" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#D1D8E0" Opacity="0.6"/>
+                <DropShadowEffect BlurRadius="25" ShadowDepth="4" Color="#000000" Opacity="0.6"/>
             </Border.Effect>
 
             <StackPanel>
-                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,20">
-                    <iconPacks:PackIconMaterial Kind="ToothOutline" Width="48" Height="48" Foreground="#2980B9" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                    <TextBlock Text="CDMario Dental" FontSize="22" FontWeight="Bold" Foreground="#2C3E50" TextAlignment="Center"/>
-                    <TextBlock Text="Sistema de Gestión Clínica" FontSize="12" Foreground="#7F8C8D" TextAlignment="Center"/>
+                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,25">
+                    <iconPacks:PackIconMaterial Kind="ToothOutline" Width="48" Height="48" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock Text="CDMario Dental" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" TextAlignment="Center"/>
+                    <TextBlock Text="Sistema de Gestión Clínica" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" TextAlignment="Center" Margin="0,4,0,0"/>
                 </StackPanel>
 
-                <TextBlock Text="Usuario:" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox Text="{Binding Usuario, UpdateSourceTrigger=PropertyChanged}" FontSize="14" Padding="10" BorderBrush="#BDC3C7" BorderThickness="1" Margin="0,0,0,15">
-                    <TextBox.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="5"/>
-                        </Style>
-                    </TextBox.Resources>
-                </TextBox>
+                <TextBlock Text="Usuario:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                <TextBox Text="{Binding Usuario, UpdateSourceTrigger=PropertyChanged}" FontSize="14" Padding="10" Margin="0,0,0,15"/>
 
-                <TextBlock Text="Contraseña:" Foreground="#7F8C8D" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <PasswordBox x:Name="txtPassword" FontSize="14" Padding="10" BorderBrush="#BDC3C7" BorderThickness="1" Margin="0,0,0,15">
-                    <PasswordBox.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="5"/>
-                        </Style>
-                    </PasswordBox.Resources>
-                </PasswordBox>
+                <TextBlock Text="Contraseña:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                <PasswordBox x:Name="txtPassword" FontSize="14" Padding="10" Margin="0,0,0,15"/>
 
                 <TextBlock Text="{Binding MensajeError}" Foreground="#E74C3C" FontWeight="Bold" TextAlignment="Center" TextWrapping="Wrap" Margin="0,0,0,15"/>
 
@@ -46,15 +34,15 @@
                         <ColumnDefinition Width="2*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0" Command="{Binding SalirCommand}" Background="#ECF0F1" Foreground="#7F8C8D" BorderThickness="0" Height="45" Cursor="Hand">
+                    <Button Grid.Column="0" Command="{Binding SalirCommand}" Background="{StaticResource BgControlBrush}" Foreground="{StaticResource TextSecondaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Height="45" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="8"/>
                             </Style>
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="ExitToApp" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                            <TextBlock Text="Salir" VerticalAlignment="Center" FontSize="15" FontWeight="SemiBold"/>
+                            <iconPacks:PackIconMaterial Kind="ExitToApp" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock Text="Salir" VerticalAlignment="Center" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}"/>
                         </StackPanel>
                     </Button>
 
@@ -66,8 +54,8 @@
                             </Style>
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="Login" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock Text="Acceder al Sistema" VerticalAlignment="Center" FontSize="15" FontWeight="SemiBold"/>
+                            <iconPacks:PackIconMaterial Kind="Login" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
+                            <TextBlock Text="Acceder al Sistema" VerticalAlignment="Center" FontSize="15" FontWeight="Bold" Foreground="White"/>
                         </StackPanel>
                     </Button>
                 </Grid>

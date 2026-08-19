@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-             Background="Transparent">
+             Background="{StaticResource BgWindowBrush}">
 
     <Grid Margin="15">
         <Grid.RowDefinitions>
@@ -10,14 +10,14 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="White" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+        <Border Grid.Row="0" Background="{StaticResource BgCardBrush}" CornerRadius="12" Padding="18" Margin="0,0,0,15" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#D1D8E0" Opacity="0.5"/>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Color="#000000" Opacity="0.4"/>
             </Border.Effect>
             <Grid>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <iconPacks:PackIconMaterial Kind="AccountGroup" Width="28" Height="28" Foreground="#2980B9" Margin="0,0,10,0"/>
-                    <TextBlock Text="Usuarios del Sistema" FontSize="20" FontWeight="Bold" Foreground="#2C3E50" VerticalAlignment="Center"/>
+                    <iconPacks:PackIconMaterial Kind="AccountGroup" Width="28" Height="28" Foreground="{StaticResource AccentBrush}" Margin="0,0,12,0"/>
+                    <TextBlock Text="Usuarios del Sistema" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <Button Command="{Binding NuevoUsuarioCommand}" HorizontalAlignment="Right" Background="#27AE60" Foreground="White" BorderThickness="0" Padding="15,8" Cursor="Hand">
@@ -27,32 +27,102 @@
                         </Style>
                     </Button.Resources>
                     <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="AccountPlus" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="Nuevo Usuario" VerticalAlignment="Center" FontWeight="Bold"/>
+                        <iconPacks:PackIconMaterial Kind="AccountPlus" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
+                        <TextBlock Text="Nuevo Usuario" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/>
                     </StackPanel>
                 </Button>
             </Grid>
         </Border>
 
-        <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="15">
+        <Border Grid.Row="1" Background="{StaticResource BgCardBrush}" CornerRadius="12" Padding="15" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#D1D8E0" Opacity="0.5"/>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Color="#000000" Opacity="0.4"/>
             </Border.Effect>
 
-            <DataGrid ItemsSource="{Binding Usuarios}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent" BorderThickness="0">
+            <DataGrid ItemsSource="{Binding Usuarios}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" 
+                      Background="{StaticResource BgCardBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}"
+                      RowBackground="{StaticResource BgCardBrush}" AlternatingRowBackground="#242424"
+                      GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{StaticResource BorderBrush}"
+                      HeadersVisibility="Column" RowHeight="42" FontSize="13">
+
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="{StaticResource BgControlBrush}"/>
+                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Padding" Value="10,8"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                    </Style>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Padding" Value="10,0"/>
+                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridCell">
+                                    <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                        <ContentPresenter VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#2C3E50"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.Resources>
+
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding IdUsuario}" Width="60"/>
+                    <DataGridTextColumn Header="ID" Binding="{Binding IdUsuario}" Width="60">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
                     <DataGridTextColumn Header="Nombre Completo" Binding="{Binding NombreCompleto}" Width="*"/>
-                    <DataGridTextColumn Header="Usuario" Binding="{Binding NombreUsuario}" Width="120"/>
+
+                    <DataGridTextColumn Header="Usuario" Binding="{Binding NombreUsuario}" Width="120">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#3498DB"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
                     <DataGridTextColumn Header="Correo" Binding="{Binding Correo}" Width="180"/>
-                    <DataGridTextColumn Header="Rol" Binding="{Binding NombreRol}" Width="120"/>
+
+                    <DataGridTextColumn Header="Rol" Binding="{Binding NombreRol}" Width="120">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#E67E22"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
                     <DataGridCheckBoxColumn Header="Activo" Binding="{Binding Activo}" Width="80"/>
 
                     <DataGridTemplateColumn Header="Acciones" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Command="{Binding DataContext.EditarUsuarioCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" CommandParameter="{Binding}"
-                                        Background="#F39C12" Foreground="White" BorderThickness="0" Padding="8,4" Cursor="Hand" Content="Editar"/>
+                                        Background="#F39C12" Foreground="White" BorderThickness="0" Padding="10,5" Cursor="Hand" Content="Editar" HorizontalAlignment="Center">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

@@ -2,39 +2,112 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-             Background="White">
+             Background="{StaticResource BgWindowBrush}">
 
-    <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <Border Background="{StaticResource BgCardBrush}" CornerRadius="12" Margin="10" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#000000" Opacity="0.4"/>
+        </Border.Effect>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
-            <TextBox Text="{Binding TextoBusqueda, UpdateSourceTrigger=PropertyChanged}" 
-                     Width="300" FontSize="14" Padding="8" BorderBrush="#BDC3C7" Margin="0,0,10,0"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <Button Command="{Binding BuscarCommand}" Background="#34495E" Foreground="White" BorderThickness="0" Padding="15,0" Cursor="Hand">
-                <Button.Resources>
-                    <Style TargetType="Border">
-                        <Setter Property="CornerRadius" Value="5"/>
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
+                <TextBox Text="{Binding TextoBusqueda, UpdateSourceTrigger=PropertyChanged}" 
+                         Width="300" FontSize="14" Padding="8" Margin="0,0,10,0"/>
+
+                <Button Command="{Binding BuscarCommand}" Background="{StaticResource AccentBrush}" Foreground="White" BorderThickness="0" Padding="15,0" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </Button.Resources>
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="Magnify" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="White"/>
+                        <TextBlock Text="Buscar" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <DataGrid Grid.Row="1" ItemsSource="{Binding RegistrosAuditoria}" AutoGenerateColumns="False" IsReadOnly="True" 
+                      CanUserAddRows="False" Background="{StaticResource BgCardBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}"
+                      RowBackground="{StaticResource BgCardBrush}" AlternatingRowBackground="#242424"
+                      GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{StaticResource BorderBrush}"
+                      HeadersVisibility="Column" RowHeight="38" FontSize="13">
+
+                <DataGrid.Resources>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="{StaticResource BgControlBrush}"/>
+                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Padding" Value="10,8"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
                     </Style>
-                </Button.Resources>
-                <StackPanel Orientation="Horizontal">
-                    <iconPacks:PackIconMaterial Kind="Magnify" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                    <TextBlock Text="Buscar" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                </StackPanel>
-            </Button>
-        </StackPanel>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Padding" Value="10,0"/>
+                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridCell">
+                                    <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                        <ContentPresenter VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#2C3E50"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.Resources>
 
-        <DataGrid Grid.Row="1" ItemsSource="{Binding RegistrosAuditoria}" AutoGenerateColumns="False" IsReadOnly="True" 
-                  CanUserAddRows="False" GridLinesVisibility="Horizontal" HeadersVisibility="Column" BorderThickness="1" BorderBrush="#E1E5EA" RowHeight="35">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Fecha y Hora" Binding="{Binding Fecha, StringFormat={}{0:dd/MM/yyyy hh:mm tt}}" Width="140"/>
-                <DataGridTextColumn Header="Usuario" Binding="{Binding NombreUsuario}" Width="120" FontWeight="Bold"/>
-                <DataGridTextColumn Header="Acción" Binding="{Binding Accion}" Width="150" Foreground="#E67E22"/>
-                <DataGridTextColumn Header="Detalles" Binding="{Binding Detalles}" Width="*"/>
-            </DataGrid.Columns>
-        </DataGrid>
-    </Grid>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Fecha y Hora" Binding="{Binding Fecha, StringFormat={}{0:dd/MM/yyyy hh:mm tt}}" Width="140">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Usuario" Binding="{Binding NombreUsuario}" Width="120" FontWeight="Bold">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#3498DB"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Acción" Binding="{Binding Accion}" Width="150">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#E67E22"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Detalles" Binding="{Binding Detalles}" Width="*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </Border>
 </UserControl>

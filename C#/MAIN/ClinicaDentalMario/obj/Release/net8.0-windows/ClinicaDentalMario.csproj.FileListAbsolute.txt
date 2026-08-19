@@ -155,3 +155,13 @@ C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\ClinicaDentalMario.pdb
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\ClinicaDentalMario.genruntimeconfig.cache
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\ref\ClinicaDentalMario.dll
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\Themes\DarkTheme.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\Views\Configuracion\BitacoraView.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\Views\Tratamientos\EditarTratamientoWindow.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\Views\Usuarios\NuevoEditarUsuarioWindow.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\Views\Usuarios\UsuariosView.baml
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\Views\Configuracion\BitacoraView.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\Views\Tratamientos\EditarTratamientoWindow.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\Views\Usuarios\NuevoEditarUsuarioWindow.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\Views\Usuarios\UsuariosView.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\App.baml

@@ -7,15 +7,26 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace ClinicaDentalMario.ViewModel.Dashboard
 {
     public class DashboardViewModel : ViewModelBase
     {
+        // --- VARIABLES DE INTERFAZ (TIEMPO Y SALUDO) ---
+        private string _saludoDinamico;
+        public string SaludoDinamico { get => _saludoDinamico; set => SetProperty(ref _saludoDinamico, value); }
+
+        private string _fechaHoraActual;
+        public string FechaHoraActual { get => _fechaHoraActual; set => SetProperty(ref _fechaHoraActual, value); }
+
+        private DispatcherTimer _timerReloj;
+
+        // --- DEPENDENCIAS ---
         private readonly DashboardRepository _dashboardRepo;
         private readonly Action<object> _cambiarVista;
 
-        // --- MÉTRICAS ---
+        // --- MÉTRICAS (TARJETAS) ---
         private decimal _ingresosHoy;
         public decimal IngresosHoy { get => _ingresosHoy; set => SetProperty(ref _ingresosHoy, value); }
 
@@ -29,6 +40,7 @@ namespace ClinicaDentalMario.ViewModel.Dashboard
         public ObservableCollection<dynamic> ListaCitasHoy { get; set; } = new();
         public ObservableCollection<dynamic> TopMorosos { get; set; } = new();
 
+        // --- COMANDOS ---
         public ICommand AbrirConfiguracionCommand { get; }
 
         public DashboardViewModel(Action<object> cambiarVista)
@@ -39,7 +51,46 @@ namespace ClinicaDentalMario.ViewModel.Dashboard
 
             AbrirConfiguracionCommand = new RelayCommand(AbrirConfiguracion);
 
+            // 1. Iniciar el Reloj y el Saludo Dinámico
+            IniciarRelojYSaludo();
+
+            // 2. Cargar los datos desde SQL
             _ = CargarDatosDashboardAsync();
+        }
+
+        private void IniciarRelojYSaludo()
+        {
+            // Configurar Saludo Inicial
+            ActualizarSaludo();
+
+            // Configurar Reloj en tiempo real (Cada 1 segundo)
+            _timerReloj = new DispatcherTimer();
+            _timerReloj.Interval = TimeSpan.FromSeconds(1);
+            _timerReloj.Tick += (s, e) =>
+            {
+                // Formato premium: "martes, 18 de agosto 2026 • 08:40:00 PM"
+                FechaHoraActual = DateTime.Now.ToString("dddd, dd 'de' MMMM yyyy  •  hh:mm:ss tt");
+
+                // Opción pro: Actualizar el saludo si el usuario deja el programa abierto y cambia de mañana a tarde
+                if (DateTime.Now.Minute == 0 && DateTime.Now.Second == 0)
+                {
+                    ActualizarSaludo();
+                }
+            };
+            _timerReloj.Start();
+        }
+
+        private void ActualizarSaludo()
+        {
+            int hora = DateTime.Now.Hour;
+            string usuario = "Dr. Mario"; // En el futuro puedes reemplazar esto leyendo la variable de sesión
+
+            if (hora >= 5 && hora < 12)
+                SaludoDinamico = $"¡Buenos días, {usuario}!";
+            else if (hora >= 12 && hora < 19)
+                SaludoDinamico = $"¡Buenas tardes, {usuario}!";
+            else
+                SaludoDinamico = $"¡Buenas noches, {usuario}!";
         }
 
         public async Task CargarDatosDashboardAsync()
@@ -53,7 +104,6 @@ namespace ClinicaDentalMario.ViewModel.Dashboard
                 IngresosHoy = await _dashboardRepo.ObtenerIngresosDelDiaAsync(hoy);
                 CitasHoy = await _dashboardRepo.ObtenerTotalCitasHoyAsync(hoy);
 
-                // (Opcional: Si no tienes este método en tu repo, puedes ponerle un número estático por ahora o crearlo luego)
                 // TratamientosActivos = await _dashboardRepo.ObtenerTratamientosActivosTotalesAsync();
                 TratamientosActivos = 12; // Número de ejemplo mientras creas el método en Dapper
 

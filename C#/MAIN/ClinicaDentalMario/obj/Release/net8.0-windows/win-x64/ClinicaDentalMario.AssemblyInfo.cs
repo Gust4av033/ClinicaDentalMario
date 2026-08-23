@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ClinicaDentalMario")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c130d26ad2d3c2057668a79e4b2dc93e6bcd382d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3fc6c7033e325acb70f8bd4219e2d693be8ba417")]
 [assembly: System.Reflection.AssemblyProductAttribute("ClinicaDentalMario")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ClinicaDentalMario")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

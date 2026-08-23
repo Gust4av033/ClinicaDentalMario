@@ -559,11 +559,9 @@ C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\ClinicaDentalMario.genruntimeconfig.cache
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\ref\ClinicaDentalMario.dll
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Agenda\EditarCitaView.baml
-C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Pacientes\NuevaConsultaView.baml
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Tratamientos\NuevoTratamientoView.baml
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Tratamientos\TratamientosView.baml
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Agenda\EditarCitaView.g.cs
-C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Pacientes\NuevaConsultaView.g.cs
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Tratamientos\NuevoTratamientoView.g.cs
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Tratamientos\TratamientosView.g.cs
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Release\net8.0-windows\win-x64\Views\Pacientes\NuevaConsultaWindow.baml

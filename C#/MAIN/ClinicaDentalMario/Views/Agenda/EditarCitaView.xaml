@@ -5,26 +5,52 @@
              Background="{StaticResource BgWindowBrush}">
 
     <Grid>
-        <Border Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="30" MaxWidth="600" VerticalAlignment="Center" HorizontalAlignment="Center" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+        <Border Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="35" MaxWidth="650" VerticalAlignment="Center" HorizontalAlignment="Center" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="20" ShadowDepth="4" Color="#000000" Opacity="0.5"/>
             </Border.Effect>
 
             <StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                    <iconPacks:PackIconMaterial Kind="CalendarEdit" Width="28" Height="28" Foreground="#F39C12" Margin="0,0,12,0"/>
-                    <TextBlock Text="Reprogramar o Editar Cita" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                    <iconPacks:PackIconMaterial Kind="CalendarEdit" Width="30" Height="30" Foreground="#F39C12" Margin="0,0,12,0"/>
+                    <TextBlock Text="Reprogramar o Editar Cita" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <Border Background="{StaticResource BgControlBrush}" CornerRadius="8" Padding="15" Margin="0,0,0,20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                <Border Background="#3A1C1C" BorderBrush="{StaticResource DangerBrush}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,15">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MensajeError}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding MensajeError}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
                     <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="Account" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <TextBlock Text="Paciente: " Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding NombrePaciente}" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                        <iconPacks:PackIconMaterial Kind="AlertCircle" Foreground="{StaticResource DangerBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding MensajeError}" Foreground="{StaticResource DangerBrush}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
 
-                <Grid Margin="0,0,0,15">
+                <Border Background="{StaticResource BgControlBrush}" CornerRadius="8" Padding="15" Margin="0,0,0,25" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <iconPacks:PackIconMaterial Kind="Account" Foreground="{StaticResource AccentBrush}" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Paciente Seleccionado:" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                            <TextBlock Text="{Binding NombrePaciente}" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Bold" FontSize="18"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Grid Margin="0,0,0,20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="20"/>
@@ -32,31 +58,72 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Nueva Fecha:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <DatePicker SelectedDate="{Binding FechaSeleccionada, UpdateSourceTrigger=PropertyChanged}" FontSize="14" Padding="5"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="Nueva Fecha" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                            <TextBlock Text=" *" Foreground="{StaticResource DangerBrush}" FontWeight="Bold"/>
+                        </StackPanel>
+                        <DatePicker SelectedDate="{Binding FechaSeleccionada, UpdateSourceTrigger=PropertyChanged}" FontSize="15" Padding="8,6"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2">
-                        <TextBlock Text="Nueva Hora (Ej. 14:30):" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding HoraSeleccionada, UpdateSourceTrigger=PropertyChanged}" FontSize="14" Padding="8"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <TextBlock Text="Nueva Hora" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                            <TextBlock Text=" *" Foreground="{StaticResource DangerBrush}" FontWeight="Bold"/>
+                        </StackPanel>
+
+                        <Grid>
+                            <TextBox x:Name="txtHora" Text="{Binding HoraSeleccionada, UpdateSourceTrigger=PropertyChanged}" FontSize="15" Padding="10,8"/>
+                            <TextBlock Text="Ej. 14:30 o 02:30 PM" Foreground="{StaticResource TextSecondaryBrush}" IsHitTestVisible="False" VerticalAlignment="Center" Margin="12,0,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=txtHora}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Text, ElementName=txtHora}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
                     </StackPanel>
                 </Grid>
 
-                <TextBlock Text="Motivo / Observaciones:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox Text="{Binding Observaciones, UpdateSourceTrigger=PropertyChanged}" 
-                         FontSize="14" Padding="8" Height="80" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,25"/>
+                <StackPanel Margin="0,0,0,20">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <TextBlock Text="Estado de la Cita" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                        <TextBlock Text=" *" Foreground="{StaticResource DangerBrush}" FontWeight="Bold"/>
+                    </StackPanel>
+
+                    <ComboBox SelectedValue="{Binding IdEstadoSeleccionado}" SelectedValuePath="Tag" FontSize="15" Padding="8">
+                        <ComboBoxItem Content="Pendiente (Agendada)" Tag="1"/>
+                        <ComboBoxItem Content="Confirmada (Llamada)" Tag="2"/>
+                        <ComboBoxItem Content="En Progreso (En Sala)" Tag="3"/>
+                        <ComboBoxItem Content="Completada" Tag="4"/>
+                        <ComboBoxItem Content="No Asistió" Tag="5"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,30">
+                    <TextBlock Text="Motivo / Observaciones:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding Observaciones, UpdateSourceTrigger=PropertyChanged}" 
+                             FontSize="14" Padding="10" Height="80" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                </StackPanel>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Command="{Binding VolverCommand}" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Height="40" Padding="20,0" Margin="0,0,15,0" Cursor="Hand">
+                    <Button Command="{Binding VolverCommand}" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Height="42" Padding="25,0" Margin="0,0,15,0" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="6"/>
                             </Style>
                         </Button.Resources>
-                        <TextBlock Text="Cancelar" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <TextBlock Text="Cancelar" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </Button>
 
-                    <Button Command="{Binding ActualizarCommand}" Background="#F39C12" Foreground="White" BorderThickness="0" Height="40" Padding="25,0" Cursor="Hand">
+                    <Button Command="{Binding ActualizarCommand}" Background="#F39C12" Foreground="White" BorderThickness="0" Height="42" Padding="30,0" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="6"/>
@@ -64,7 +131,7 @@
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
                             <iconPacks:PackIconMaterial Kind="ContentSaveEdit" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
-                            <TextBlock Text="Actualizar Cita" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Actualizar Cita" VerticalAlignment="Center" FontSize="15" FontWeight="Bold" Foreground="White"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>

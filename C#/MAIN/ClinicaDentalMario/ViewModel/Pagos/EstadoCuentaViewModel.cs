@@ -2,8 +2,12 @@
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Pagos;
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data; // 🔥 NECESARIO PARA EL FILTRO
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Pagos
@@ -32,6 +36,38 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                 if (SetProperty(ref _pacienteSeleccionado, value) && value != null)
                 {
                     _ = CargarTratamientosPacienteAsync(value.IdPaciente);
+                }
+            }
+        }
+
+        // 🔥 NUEVA PROPIEDAD: FILTRO DE BÚSQUEDA EN TIEMPO REAL 🔥
+        private string _busquedaPaciente = string.Empty;
+        public string BusquedaPaciente
+        {
+            get => _busquedaPaciente;
+            set
+            {
+                if (SetProperty(ref _busquedaPaciente, value))
+                {
+                    // Obtenemos la vista por defecto de la lista de pacientes
+                    var vista = CollectionViewSource.GetDefaultView(ListaPacientes);
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        vista.Filter = null; // Si borró el texto, mostramos todos
+                    }
+                    else
+                    {
+                        // Filtramos para mostrar solo los que contengan el texto escrito (sin importar mayúsculas)
+                        vista.Filter = obj =>
+                        {
+                            if (obj is PacienteModel p && !string.IsNullOrWhiteSpace(p.NombreCompleto))
+                            {
+                                return p.NombreCompleto.Contains(value, StringComparison.OrdinalIgnoreCase);
+                            }
+                            return false;
+                        };
+                    }
+                    vista.Refresh(); // Refrescar visualmente el ComboBox
                 }
             }
         }
@@ -177,8 +213,6 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                 string nombreTratamiento = TratamientoSeleccionado.NombreTratamiento ?? "Tratamiento Dental";
                 var modal = new NuevoPagoWindow(TratamientoSeleccionado.Id, nombreTratamiento, SaldoPendiente);
 
-                // 🔥 Eliminamos la línea conflictiva del modal.Owner 🔥
-
                 if (modal.ShowDialog() == true && modal.PagoRealizado)
                 {
                     _ = CargarEstadoCuentaTratamientoAsync(TratamientoSeleccionado);
@@ -239,7 +273,6 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                     HistorialPagos
                 );
 
-                // ventanaPrevia.Owner = Application.Current.MainWindow;
                 ventanaPrevia.ShowDialog();
             }
             catch (Exception ex)

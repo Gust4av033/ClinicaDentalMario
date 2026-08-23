@@ -3,20 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\views\\pacientes\\odontogramaview.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:views\\pacientes\\odontogramaview.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\views\\pacientes\\nuevaconsultawindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:views\\pacientes\\nuevaconsultawindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\viewmodel\\odontograma\\odontogramaviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:viewmodel\\odontograma\\odontogramaviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\viewmodel\\odontograma\\piezadentalviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:viewmodel\\odontograma\\piezadentalviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\views\\pacientes\\piezadentalcontrol.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:views\\pacientes\\piezadentalcontrol.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\viewmodel\\pacientes\\historialpacienteviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:viewmodel\\pacientes\\historialpacienteviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,56 +18,31 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "PiezaDentalViewModel.cs",
-              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Odontograma\\PiezaDentalViewModel.cs",
-              "RelativeDocumentMoniker": "ViewModel\\Odontograma\\PiezaDentalViewModel.cs",
-              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Odontograma\\PiezaDentalViewModel.cs",
-              "RelativeToolTip": "ViewModel\\Odontograma\\PiezaDentalViewModel.cs",
-              "ViewState": "AgIAAE4AAAAAAAAAAAAowGUAAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-19T04:44:01.659Z",
+              "DocumentIndex": 0,
+              "Title": "NuevaConsultaWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\NuevaConsultaWindow.xaml",
+              "RelativeDocumentMoniker": "Views\\Pacientes\\NuevaConsultaWindow.xaml",
+              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\NuevaConsultaWindow.xaml",
+              "RelativeToolTip": "Views\\Pacientes\\NuevaConsultaWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-08-23T03:35:05.27Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "OdontogramaViewModel.cs",
-              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Odontograma\\OdontogramaViewModel.cs",
-              "RelativeDocumentMoniker": "ViewModel\\Odontograma\\OdontogramaViewModel.cs",
-              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Odontograma\\OdontogramaViewModel.cs",
-              "RelativeToolTip": "ViewModel\\Odontograma\\OdontogramaViewModel.cs",
-              "ViewState": "AgIAAMEBAAAAAAAAAAAowOIBAAAJAAAAAAAAAA==",
+              "Title": "HistorialPacienteViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Pacientes\\HistorialPacienteViewModel.cs",
+              "RelativeDocumentMoniker": "ViewModel\\Pacientes\\HistorialPacienteViewModel.cs",
+              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Pacientes\\HistorialPacienteViewModel.cs",
+              "RelativeToolTip": "ViewModel\\Pacientes\\HistorialPacienteViewModel.cs",
+              "ViewState": "AgIAAFgAAAAAAAAAAAAowGoAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-08-19T04:40:41.003Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "PiezaDentalControl.xaml",
-              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\PiezaDentalControl.xaml",
-              "RelativeDocumentMoniker": "Views\\Pacientes\\PiezaDentalControl.xaml",
-              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\PiezaDentalControl.xaml",
-              "RelativeToolTip": "Views\\Pacientes\\PiezaDentalControl.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-08-19T03:33:50.59Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "OdontogramaView.xaml",
-              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\OdontogramaView.xaml",
-              "RelativeDocumentMoniker": "Views\\Pacientes\\OdontogramaView.xaml",
-              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\OdontogramaView.xaml",
-              "RelativeToolTip": "Views\\Pacientes\\OdontogramaView.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2026-08-19T03:33:39.022Z",
+              "WhenOpened": "2026-08-23T03:34:04.552Z",
               "EditorCaption": ""
             }
           ]

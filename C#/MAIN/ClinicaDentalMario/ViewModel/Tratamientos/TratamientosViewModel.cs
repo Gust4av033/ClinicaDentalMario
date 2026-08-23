@@ -4,8 +4,10 @@ using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Tratamientos;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data; // 🔥 NECESARIO PARA EL FILTRO
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Tratamientos
@@ -32,6 +34,38 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
                 if (SetProperty(ref _pacienteSeleccionado, value) && value != null)
                 {
                     _ = CargarTratamientosAsync(value.IdPaciente);
+                }
+            }
+        }
+
+        // 🔥 NUEVA PROPIEDAD: FILTRO DE BÚSQUEDA EN TIEMPO REAL 🔥
+        private string _busquedaPaciente = string.Empty;
+        public string BusquedaPaciente
+        {
+            get => _busquedaPaciente;
+            set
+            {
+                if (SetProperty(ref _busquedaPaciente, value))
+                {
+                    // Obtenemos la vista de la lista de pacientes
+                    var vista = CollectionViewSource.GetDefaultView(ListaPacientes);
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        vista.Filter = null; // Mostramos todos si está vacío
+                    }
+                    else
+                    {
+                        // Filtramos ignorando mayúsculas y minúsculas
+                        vista.Filter = obj =>
+                        {
+                            if (obj is PacienteModel p && !string.IsNullOrWhiteSpace(p.NombreCompleto))
+                            {
+                                return p.NombreCompleto.Contains(value, StringComparison.OrdinalIgnoreCase);
+                            }
+                            return false;
+                        };
+                    }
+                    vista.Refresh(); // Refresca el ComboBox visualmente
                 }
             }
         }
@@ -126,7 +160,6 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
             {
                 var vistaNuevo = new NuevoTratamientoView();
 
-                // 🔥 AQUÍ ESTÁ LA CORRECCIÓN: Le pasamos IdPaciente, NombreCompleto y Action
                 var viewModelNuevo = new NuevoTratamientoViewModel(
                     PacienteSeleccionado.IdPaciente,
                     PacienteSeleccionado.NombreCompleto,
@@ -142,7 +175,6 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
         {
             if (parameter != null)
             {
-                // 🔥 CORRECCIÓN: Asignamos el objeto directamente a una variable dynamic
                 dynamic tratamiento = parameter;
 
                 try
@@ -170,19 +202,15 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
             {
                 dynamic t = parameter;
 
-                // Bloqueo de seguridad: No se edita lo que ya se finalizó
                 if (t.Estado == "Finalizado")
                 {
                     MessageBox.Show("No se pueden editar los costos ni detalles de un tratamiento que ya fue finalizado.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                // Pasamos los datos al ViewModel de edición (Asegúrate de mandar el t.Id que es la llave de TratamientosPaciente)
                 var vmEdicion = new EditarTratamientoViewModel(t.Id, t.NombreTratamiento, t.CostoTotal, t.Observaciones);
-
                 var modal = new EditarTratamientoWindow { DataContext = vmEdicion };
 
-                // Si la ventana se cierra y dice que guardó, refrescamos la tabla
                 if (modal.ShowDialog() == true)
                 {
                     _ = CargarTratamientosAsync(PacienteSeleccionado.IdPaciente);

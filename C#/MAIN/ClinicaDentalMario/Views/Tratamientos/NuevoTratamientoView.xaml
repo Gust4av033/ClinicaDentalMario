@@ -5,22 +5,22 @@
              Background="{StaticResource BgWindowBrush}">
 
     <Grid>
-        <Border Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="30" MaxWidth="600" VerticalAlignment="Center" HorizontalAlignment="Center" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+        <Border Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="35" MaxWidth="650" VerticalAlignment="Center" HorizontalAlignment="Center" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="20" ShadowDepth="4" Color="#000000" Opacity="0.5"/>
             </Border.Effect>
 
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                    <iconPacks:PackIconMaterial Kind="ToothOutline" Width="28" Height="28" Foreground="{StaticResource AccentBrush}" Margin="0,0,10,0"/>
-                    <TextBlock Text="Asignar Nuevo Tratamiento" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                    <iconPacks:PackIconMaterial Kind="ToothOutline" Width="30" Height="30" Foreground="{StaticResource AccentBrush}" Margin="0,0,12,0"/>
+                    <TextBlock Text="Asignar Nuevo Tratamiento" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <TextBlock Text="{Binding NombrePacienteTexto}" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,20" FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding NombrePacienteTexto}" FontSize="15" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,20" FontWeight="SemiBold"/>
 
-                <TextBlock Text="{Binding MensajeError}" Foreground="#E74C3C" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,15">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
+                <Border Background="#3A1C1C" BorderBrush="{StaticResource DangerBrush}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,20">
+                    <Border.Style>
+                        <Style TargetType="Border">
                             <Setter Property="Visibility" Value="Visible"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding MensajeError}" Value="">
@@ -31,36 +31,53 @@
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                    </Border.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="AlertCircle" Foreground="{StaticResource DangerBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding MensajeError}" Foreground="{StaticResource DangerBrush}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
 
-                <TextBlock Text="Tratamiento Base a realizar:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <ComboBox ItemsSource="{Binding ListaCatalogo}" 
-                          SelectedItem="{Binding TratamientoSeleccionado}" 
-                          DisplayMemberPath="Nombre" 
-                          FontSize="14" Padding="8" Margin="0,0,0,15"/>
+                <StackPanel Margin="0,0,0,15">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <TextBlock Text="Tratamiento Base a realizar" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                        <TextBlock Text=" *" Foreground="{StaticResource DangerBrush}" FontWeight="Bold"/>
+                    </StackPanel>
+                    <ComboBox ItemsSource="{Binding ListaCatalogo}" 
+                              SelectedItem="{Binding TratamientoSeleccionado}" 
+                              DisplayMemberPath="Nombre" 
+                              FontSize="15" Padding="8"/>
+                </StackPanel>
 
-                <TextBlock Text="Costo Total Acordado ($):" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                <TextBox Text="{Binding NuevoTratamiento.CostoTotal, UpdateSourceTrigger=PropertyChanged}" 
-                         FontSize="18" FontWeight="Bold" Foreground="#27AE60" Padding="8" Margin="0,0,0,15"/>
+                <StackPanel Margin="0,0,0,15">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <TextBlock Text="Costo Total Acordado ($)" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                        <TextBlock Text=" *" Foreground="{StaticResource DangerBrush}" FontWeight="Bold"/>
+                    </StackPanel>
+                    <TextBox Text="{Binding NuevoTratamiento.CostoTotal, UpdateSourceTrigger=PropertyChanged}" 
+                             FontSize="18" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}" 
+                             Padding="8" PreviewTextInput="ValidarNumerosYDecimales_PreviewTextInput"/>
+                </StackPanel>
 
-                <TextBlock Text="Plan de Tratamiento (Detalle y Materiales):" Foreground="#3498DB" FontWeight="Bold" Margin="0,0,0,5"/>
-                <TextBlock Text="Ej: Puente de Zirconia, Piezas #14 a #16..." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,5" FontStyle="Italic"/>
-                <TextBox Text="{Binding NuevoTratamiento.Observaciones, UpdateSourceTrigger=PropertyChanged}" 
-                         FontSize="14" Padding="8" BorderBrush="#3498DB" BorderThickness="1.5" 
-                         Height="80" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,25"/>
+                <StackPanel Margin="0,0,0,25">
+                    <TextBlock Text="Plan de Tratamiento (Detalle y Materiales):" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" Margin="0,0,0,5"/>
+                    <TextBlock Text="Ej: Puente de Zirconia, Piezas #14 a #16..." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,5" FontStyle="Italic"/>
+                    <TextBox Text="{Binding NuevoTratamiento.Observaciones, UpdateSourceTrigger=PropertyChanged}" 
+                             FontSize="14" Padding="10" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1.5" 
+                             Height="90" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                </StackPanel>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Command="{Binding CancelarCommand}" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Height="40" Padding="20,0" Margin="0,0,15,0" Cursor="Hand">
+                    <Button Command="{Binding CancelarCommand}" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Height="42" Padding="25,0" Margin="0,0,15,0" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="6"/>
                             </Style>
                         </Button.Resources>
-                        <TextBlock Text="Cancelar" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <TextBlock Text="Cancelar" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </Button>
 
-                    <Button Command="{Binding GuardarCommand}" Background="{StaticResource AccentBrush}" Foreground="White" BorderThickness="0" Height="40" Padding="25,0" Cursor="Hand">
+                    <Button Command="{Binding GuardarCommand}" Background="{StaticResource AccentBrush}" Foreground="White" BorderThickness="0" Height="42" Padding="30,0" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="6"/>
@@ -68,10 +85,11 @@
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
                             <iconPacks:PackIconMaterial Kind="ContentSave" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
-                            <TextBlock Text="Guardar y Asignar" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Guardar y Asignar" VerticalAlignment="Center" FontSize="15" FontWeight="Bold" Foreground="White"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
+
             </StackPanel>
         </Border>
     </Grid>

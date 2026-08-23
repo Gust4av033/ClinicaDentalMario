@@ -6,7 +6,9 @@ using ClinicaDentalMario.ViewModel.Odontograma;
 using ClinicaDentalMario.ViewModel.Tratamientos;
 using ClinicaDentalMario.Views.Pacientes;
 using ClinicaDentalMario.Views.Tratamientos;
+using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -53,7 +55,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
             // INSTANCIAMOS LOS VIEWMODELS DE LAS PESTAÑAS (TABS)
             GaleriaVM = new ImagenesPacienteViewModel(PacienteActual.IdPaciente, _cambiarVista);
-            OdontogramaVM = new OdontogramaViewModel(PacienteActual.IdPaciente); // <--- LA PIEZA FALTANTE
+            OdontogramaVM = new OdontogramaViewModel(PacienteActual.IdPaciente);
 
             AbrirNuevaConsultaCommand = new RelayCommand(AbrirNuevaConsulta);
             AbrirNuevoTratamientoCommand = new RelayCommand(AbrirNuevoTratamiento);
@@ -87,13 +89,21 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
             try
             {
-                var modalConsulta = new NuevaConsultaWindow(PacienteActual.IdPaciente, PacienteActual.NombreCompleto);
+                var vm = new NuevaConsultaViewModel(PacienteActual.IdPaciente, PacienteActual.NombreCompleto);
 
-                if (modalConsulta.ShowDialog() == true && modalConsulta.ConsultaGuardada)
+                // 🔥 FÍJATE AQUÍ: Ya no existe la línea de Owner 🔥
+                var ventana = new NuevaConsultaWindow
+                {
+                    DataContext = vm
+                };
+
+                ventana.ShowDialog();
+
+                if (vm.ConsultaGuardada)
                 {
                     _ = CargarHistorialAsync();
 
-                    if (modalConsulta.DeseaAsignarTratamiento)
+                    if (vm.DeseaAsignarTratamiento)
                     {
                         AbrirNuevoTratamiento(null);
                     }
@@ -113,7 +123,6 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             {
                 var vistaNuevoTratamiento = new NuevoTratamientoView();
 
-                // 🔥 CORRECCIÓN: Aquí le agregamos 'PacienteActual.NombreCompleto' como segundo parámetro
                 vistaNuevoTratamiento.DataContext = new NuevoTratamientoViewModel(
                     PacienteActual.IdPaciente,
                     PacienteActual.NombreCompleto,

@@ -17,8 +17,8 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,20">
-                <iconPacks:PackIconMaterial Kind="Tooth" Width="28" Height="28" Foreground="{StaticResource AccentBrush}" Margin="0,0,12,0"/>
-                <TextBlock Text="Gestión de Tratamientos" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                <iconPacks:PackIconMaterial Kind="Tooth" Width="30" Height="30" Foreground="{StaticResource AccentBrush}" Margin="0,0,12,0"/>
+                <TextBlock Text="Gestión de Tratamientos y Presupuestos" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
             </StackPanel>
 
             <Grid Grid.Row="1" Margin="0,0,0,20">
@@ -29,18 +29,20 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Text="Seleccionar Paciente:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="14"/>
+                <TextBlock Grid.Column="0" Text="Seleccionar Paciente:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0" FontSize="15"/>
 
+                <!-- 🔥 COMBOBOX CON FILTRO EN TIEMPO REAL 🔥 -->
                 <ComboBox Grid.Column="1" ItemsSource="{Binding ListaPacientes}" 
                           SelectedItem="{Binding PacienteSeleccionado}" 
+                          Text="{Binding BusquedaPaciente, UpdateSourceTrigger=PropertyChanged}"
                           DisplayMemberPath="NombreCompleto" 
-                          IsEditable="True" TextSearch.TextPath="NombreCompleto"
-                          FontSize="14" Padding="5" Margin="0,0,20,0"/>
+                          IsEditable="True" StaysOpenOnEdit="True" IsTextSearchEnabled="False"
+                          FontSize="15" Padding="8" Margin="0,0,20,0" VerticalAlignment="Center"/>
 
-                <Button Grid.Column="2" Command="{Binding FinalizarTratamientoCommand}" Height="40" Background="#E67E22" Foreground="White" BorderThickness="0" Padding="15,0" Margin="0,0,10,0" Cursor="Hand">
+                <Button Grid.Column="2" Command="{Binding FinalizarTratamientoCommand}" Height="42" Background="#E67E22" Foreground="White" BorderThickness="0" Padding="20,0" Margin="0,0,12,0" Cursor="Hand">
                     <Button.Resources>
                         <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="20"/>
+                            <Setter Property="CornerRadius" Value="21"/>
                         </Style>
                     </Button.Resources>
                     <StackPanel Orientation="Horizontal">
@@ -49,113 +51,105 @@
                     </StackPanel>
                 </Button>
 
-                <Button Grid.Column="3" Command="{Binding NuevoTratamientoCommand}" Height="40" Background="{StaticResource AccentBrush}" Foreground="White" BorderThickness="0" Padding="15,0" Cursor="Hand">
+                <Button Grid.Column="3" Command="{Binding NuevoTratamientoCommand}" Height="42" Background="{StaticResource AccentBrush}" Foreground="White" BorderThickness="0" Padding="20,0" Cursor="Hand">
                     <Button.Resources>
                         <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="20"/>
+                            <Setter Property="CornerRadius" Value="21"/>
                         </Style>
                     </Button.Resources>
                     <StackPanel Orientation="Horizontal">
                         <iconPacks:PackIconMaterial Kind="PlusCircle" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
-                        <TextBlock Text="Asignar Nuevo Tratamiento" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="White"/>
+                        <TextBlock Text="Asignar Nuevo Tratamiento" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="White"/>
                     </StackPanel>
                 </Button>
             </Grid>
 
-            <DataGrid Grid.Row="2" ItemsSource="{Binding TratamientosDelPaciente}" SelectedItem="{Binding TratamientoSeleccionado}" AutoGenerateColumns="False" 
-                      CanUserAddRows="False" Background="{StaticResource BgCardBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" 
-                      RowBackground="{StaticResource BgCardBrush}" AlternatingRowBackground="#242424"
-                      GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{StaticResource BorderBrush}"
-                      HeadersVisibility="Column" RowHeight="45" FontSize="14">
+            <Grid Grid.Row="2">
+                <DataGrid ItemsSource="{Binding TratamientosDelPaciente}" SelectedItem="{Binding TratamientoSeleccionado}" AutoGenerateColumns="False" 
+                          CanUserAddRows="False" Background="Transparent" BorderThickness="0" 
+                          RowHeight="50" FontSize="14">
 
-                <DataGrid.Resources>
-                    <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="{StaticResource BgControlBrush}"/>
-                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-                        <Setter Property="FontWeight" Value="SemiBold"/>
-                        <Setter Property="Padding" Value="10,12"/>
-                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-                    </Style>
-                    <Style TargetType="DataGridCell">
-                        <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="Padding" Value="10,0"/>
-                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="DataGridCell">
-                                    <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-                                        <ContentPresenter VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="#2C3E50"/>
-                                <Setter Property="Foreground" Value="White"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </DataGrid.Resources>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Fecha Inicio" Binding="{Binding FechaInicio, StringFormat={}{0:dd/MM/yyyy}}" Width="130">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Fecha Inicio" Binding="{Binding FechaInicio, StringFormat=dd/MM/yyyy}" Width="120">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                        <DataGridTextColumn Header="Tratamiento / Descripción" Binding="{Binding NombreTratamiento}" Width="2*"/>
 
-                    <DataGridTextColumn Header="Tratamiento" Binding="{Binding NombreTratamiento}" Width="*"/>
+                        <DataGridTextColumn Header="Costo Total" Binding="{Binding CostoTotal, StringFormat={}{0:C}}" Width="130">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Costo Total" Binding="{Binding CostoTotal, StringFormat=C}" Width="120" FontWeight="Bold">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#27AE60"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                        <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="130">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Estado}" Value="En progreso">
+                                            <Setter Property="Foreground" Value="#E67E22"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Estado}" Value="Finalizado">
+                                            <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="120">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="FontWeight" Value="Bold"/>
-                                <Setter Property="VerticalAlignment" Value="Center"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Estado}" Value="En progreso">
-                                        <Setter Property="Foreground" Value="#E67E22"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Estado}" Value="Finalizado">
-                                        <Setter Property="Foreground" Value="#27AE60"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+                        <DataGridTemplateColumn Header="Acciones" Width="110">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Command="{Binding DataContext.VerDetalleCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                                CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,12,0" ToolTip="Ver detalles del plan">
+                                            <iconPacks:PackIconMaterial Kind="Eye" Foreground="{StaticResource AccentBrush}" Width="20" Height="20"/>
+                                        </Button>
 
-                    <DataGridTemplateColumn Header="Acciones" Width="100">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <Button Command="{Binding DataContext.VerDetalleCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
-                                            CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" ToolTip="Ver detalles del plan">
-                                        <iconPacks:PackIconMaterial Kind="Eye" Foreground="#3498DB" Width="18" Height="18"/>
-                                    </Button>
+                                        <Button Command="{Binding DataContext.EditarTratamientoCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                                CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Editar costo o detalles">
+                                            <iconPacks:PackIconMaterial Kind="Pencil" Foreground="#F39C12" Width="20" Height="20"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
 
-                                    <Button Command="{Binding DataContext.EditarTratamientoCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
-                                            CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Editar costo o detalles">
-                                        <iconPacks:PackIconMaterial Kind="Pencil" Foreground="#F39C12" Width="18" Height="18"/>
-                                    </Button>
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+                <Border Background="{StaticResource BgCardBrush}" Margin="0,40,0,0">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding TratamientosDelPaciente.Count}" Value="0">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding TratamientosDelPaciente}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <iconPacks:PackIconMaterial Kind="ToothOutline" Width="80" Height="80" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.3" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+                        <TextBlock Text="Sin tratamientos asignados" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Selecciona un paciente o haz clic en 'Asignar Nuevo Tratamiento'." FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.8" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Grid>
     </Border>
 </UserControl>

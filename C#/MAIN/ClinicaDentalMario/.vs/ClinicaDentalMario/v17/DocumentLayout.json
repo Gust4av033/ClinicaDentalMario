@@ -1,12 +1,53 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\viewmodel\\pacientes\\historialpacienteviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:viewmodel\\pacientes\\historialpacienteviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|c:\\users\\bryan\\documents\\proyectos\\clinicadentalmario\\c#\\main\\clinicadentalmario\\views\\pacientes\\nuevaconsultawindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{26D1E2BD-7392-4CCA-82BA-C9ED13B62AE0}|ClinicaDentalMario.csproj|solutionrelative:views\\pacientes\\nuevaconsultawindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": []
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "NuevaConsultaWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\NuevaConsultaWindow.xaml",
+              "RelativeDocumentMoniker": "Views\\Pacientes\\NuevaConsultaWindow.xaml",
+              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\Views\\Pacientes\\NuevaConsultaWindow.xaml",
+              "RelativeToolTip": "Views\\Pacientes\\NuevaConsultaWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-08-23T03:35:05.27Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "HistorialPacienteViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Pacientes\\HistorialPacienteViewModel.cs",
+              "RelativeDocumentMoniker": "ViewModel\\Pacientes\\HistorialPacienteViewModel.cs",
+              "ToolTip": "C:\\Users\\Bryan\\Documents\\Proyectos\\ClinicaDentalMario\\C#\\MAIN\\ClinicaDentalMario\\ViewModel\\Pacientes\\HistorialPacienteViewModel.cs",
+              "RelativeToolTip": "ViewModel\\Pacientes\\HistorialPacienteViewModel.cs",
+              "ViewState": "AgIAAFUAAAAAAAAAAAAowGUAAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-23T03:34:04.552Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
     }
   ]
 }

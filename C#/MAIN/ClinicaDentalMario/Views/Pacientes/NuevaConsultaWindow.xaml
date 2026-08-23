@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
         Title="Nueva Consulta Clínica" Height="650" Width="600"
-        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
         Background="{StaticResource BgWindowBrush}">
 
     <Border Padding="25" Background="{StaticResource BgCardBrush}" CornerRadius="12" Margin="15" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
@@ -18,20 +18,45 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
-                <Border Background="{StaticResource BgControlBrush}" Padding="10" CornerRadius="8" Margin="0,0,15,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                    <iconPacks:PackIconMaterial Kind="Stethoscope" Width="26" Height="26" Foreground="{StaticResource AccentBrush}"/>
-                </Border>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Registrar Nueva Consulta" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
-                    <TextBlock x:Name="TxtNombrePaciente" Text="Paciente: Cargando..." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}"/>
+            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <Border Background="{StaticResource BgControlBrush}" Padding="10" CornerRadius="8" Margin="0,0,15,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                        <iconPacks:PackIconMaterial Kind="Stethoscope" Width="26" Height="26" Foreground="{StaticResource AccentBrush}"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Registrar Nueva Consulta" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                            <TextBlock Text="Paciente: " FontSize="13" Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock Text="{Binding NombrePaciente}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}"/>
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
+
+                <Border Background="#3A1C1C" BorderBrush="{StaticResource DangerBrush}" BorderThickness="1" CornerRadius="6" Padding="10">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MensajeError}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding MensajeError}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="AlertCircle" Foreground="{StaticResource DangerBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding MensajeError}" Foreground="{StaticResource DangerBrush}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
             </StackPanel>
 
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
                 <StackPanel>
                     <TextBlock Text="Motivo de la Consulta:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,5,0,5"/>
-                    <TextBox x:Name="TxtMotivo" Height="50" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8" FontSize="14"/>
+                    <TextBox Text="{Binding MotivoConsulta, UpdateSourceTrigger=PropertyChanged}" Height="55" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8" FontSize="14" MaxLength="500"/>
 
                     <Grid Margin="0,15,0,0">
                         <Grid.ColumnDefinitions>
@@ -42,23 +67,31 @@
 
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Antecedentes Médicos:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                            <TextBox x:Name="TxtAntMedicos" Height="70" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8" FontSize="13"/>
+                            <TextBox Text="{Binding AntecedentesMedicos, UpdateSourceTrigger=PropertyChanged}" Height="75" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8" FontSize="13" MaxLength="1000"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Antecedentes Odontológicos:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                            <TextBox x:Name="TxtAntOdontologicos" Height="70" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8" FontSize="13"/>
+                            <TextBox Text="{Binding AntecedentesOdontologicos, UpdateSourceTrigger=PropertyChanged}" Height="75" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8" FontSize="13" MaxLength="1000"/>
                         </StackPanel>
                     </Grid>
 
-                    <TextBlock Text="Diagnóstico Clínico:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,15,0,5"/>
-                    <TextBox x:Name="TxtDiagnostico" Height="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8" FontSize="14"/>
-
-                    <StackPanel Margin="0,15,0,0">
-                        <TextBlock Text="Plan de Tratamiento (Detalle de Materiales, Piezas, etc.):" Foreground="#3498DB" FontWeight="Bold" Margin="0,0,0,5"/>
-                        <TextBlock Text="Ej: Extracción pieza #36 / Puente de Zirconia / Resina Estética..." Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,5" FontStyle="Italic"/>
-                        <TextBox x:Name="TxtPlanTratamiento" Height="100" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="10" FontSize="14" BorderBrush="#3498DB" BorderThickness="1.5"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,15,0,5">
+                        <TextBlock Text="Diagnóstico Clínico" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                        <TextBlock Text=" *" Foreground="{StaticResource DangerBrush}" FontWeight="Bold"/>
                     </StackPanel>
+                    <TextBox Text="{Binding Diagnostico, UpdateSourceTrigger=PropertyChanged}" Height="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8" FontSize="14" MaxLength="1000"/>
+
+                    <Border Background="#1A252F" CornerRadius="8" Padding="15" Margin="0,20,0,0" BorderBrush="#2C3E50" BorderThickness="1">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                <TextBlock Text="Plan de Tratamiento y Observaciones" Foreground="#3498DB" FontWeight="Bold"/>
+                                <TextBlock Text=" *" Foreground="{StaticResource DangerBrush}" FontWeight="Bold"/>
+                            </StackPanel>
+                            <TextBlock Text="Ej: Extracción pieza #36 / Puente de Zirconia / Resina Estética..." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,10" FontStyle="Italic"/>
+                            <TextBox Text="{Binding PlanTratamiento, UpdateSourceTrigger=PropertyChanged}" Height="90" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="10" FontSize="14" BorderBrush="#3498DB" BorderThickness="1.5" MaxLength="2000"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
 
@@ -69,20 +102,28 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="0" Content="Cancelar" Click="BtnCancelar_Click" Height="40" Background="{StaticResource BgControlBrush}" Foreground="{StaticResource TextSecondaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Cursor="Hand" FontWeight="SemiBold">
+                <Button Grid.Column="0" Command="{Binding CerrarVentanaCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" Height="42" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Cursor="Hand" FontWeight="SemiBold">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="6"/>
                         </Style>
                     </Button.Resources>
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="Cancel" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        <TextBlock Text="Cancelar" VerticalAlignment="Center"/>
+                    </StackPanel>
                 </Button>
 
-                <Button Grid.Column="2" Content="Guardar Historial" Click="BtnGuardar_Click" Height="40" Background="{StaticResource AccentBrush}" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
+                <Button Grid.Column="2" Command="{Binding GuardarConsultaCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" Height="42" Background="{StaticResource SuccessBrush}" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="6"/>
                         </Style>
                     </Button.Resources>
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="ContentSave" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
+                        <TextBlock Text="Guardar Historial" VerticalAlignment="Center"/>
+                    </StackPanel>
                 </Button>
             </Grid>
         </Grid>

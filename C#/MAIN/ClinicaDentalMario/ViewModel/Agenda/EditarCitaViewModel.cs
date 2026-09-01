@@ -341,7 +341,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         {
             var vistaAgenda = new AgendaView
             {
-                DataContext = new AgendaViewModel(_cambiarVista)
+                DataContext = new AgendaViewModel(_cambiarVista, FechaSeleccionada)
             };
 
             _cambiarVista(vistaAgenda);

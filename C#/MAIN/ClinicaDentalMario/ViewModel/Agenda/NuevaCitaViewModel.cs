@@ -19,6 +19,8 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         private readonly IMessageService _messageService;
         private readonly IExceptionHandler _exceptionHandler;
 
+        private bool _listasCargadas;
+
         private ObservableCollection<PacienteModel> _listaPacientes = new();
         public ObservableCollection<PacienteModel> ListaPacientes
         {
@@ -137,7 +139,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
 
             Titulo = "Agendar Nueva Cita";
-            GuardarCommand = new AsyncRelayCommand(_ => GuardarAsync(), _ => !EstaCargando);
+            GuardarCommand = new AsyncRelayCommand(_ => GuardarAsync(), _ => !EstaCargando && _listasCargadas);
             CancelarCommand = new RelayCommand(_ => VolverAAgenda());
 
             _ = CargarListasAsync();
@@ -146,6 +148,8 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         private async Task CargarListasAsync()
         {
             MensajeError = string.Empty;
+            _listasCargadas = false;
+            GuardarCommand.NotificarCanExecuteChanged();
 
             await EjecutarConCargaAsync(async () =>
             {
@@ -156,19 +160,29 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
                     ListaPacientes = new ObservableCollection<PacienteModel>(pacientes);
                     ListaDoctores = new ObservableCollection<DoctorModel>(doctores);
+                    _listasCargadas = true;
                 }
                 catch (Exception ex)
                 {
+                    _listasCargadas = false;
                     MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
                         ex,
                         "No fue posible cargar pacientes y doctores.");
                 }
             });
+
+            GuardarCommand.NotificarCanExecuteChanged();
         }
 
         private async Task GuardarAsync()
         {
             MensajeError = string.Empty;
+
+            if (!_listasCargadas)
+            {
+                MensajeError = "La información de pacientes y doctores todavía no está disponible.";
+                return;
+            }
 
             if (!ValidarFormulario(out DateTime fechaHora))
             {

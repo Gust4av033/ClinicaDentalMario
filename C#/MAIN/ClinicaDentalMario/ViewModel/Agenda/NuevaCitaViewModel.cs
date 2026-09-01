@@ -214,6 +214,15 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                         return;
                     }
 
+                    if (await _citaRepository.ExisteConflictoPacienteAsync(
+                            PacienteSeleccionado!.IdPaciente,
+                            fechaHora,
+                            DuracionMinutos))
+                    {
+                        MensajeError = $"El paciente ya tiene otra cita que se cruza con el intervalo {fechaHora:HH:mm} - {fechaHora.AddMinutes(DuracionMinutos):HH:mm}.";
+                        return;
+                    }
+
                     int? idPendiente = await _citaRepository.ObtenerIdEstadoAsync("Pendiente");
                     if (!idPendiente.HasValue)
                     {
@@ -223,7 +232,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
                     var cita = new CitaModel
                     {
-                        IdPaciente = PacienteSeleccionado!.IdPaciente,
+                        IdPaciente = PacienteSeleccionado.IdPaciente,
                         IdDoctor = DoctorSeleccionado.IdDoctor,
                         IdEstado = idPendiente.Value,
                         FechaHora = fechaHora,

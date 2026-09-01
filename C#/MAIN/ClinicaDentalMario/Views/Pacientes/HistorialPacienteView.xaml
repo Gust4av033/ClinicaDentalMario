@@ -274,12 +274,14 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Fecha"
                                                     Binding="{Binding FechaConsulta, StringFormat={}{0:dd/MM/yyyy HH:mm}}"
-                                                    Width="150"/>
+                                                    Width="145"/>
+                                <DataGridTextColumn Header="Doctor" Binding="{Binding Doctor}"
+                                                    Width="*"/>
                                 <DataGridTextColumn Header="Motivo de consulta" Binding="{Binding MotivoConsulta}"
-                                                    Width="2*"/>
+                                                    Width="1.5*"/>
                                 <DataGridTextColumn Header="Diagnóstico" Binding="{Binding Diagnostico}"
-                                                    Width="2*"/>
-                                <DataGridTemplateColumn Header="Detalle" Width="90">
+                                                    Width="1.5*"/>
+                                <DataGridTemplateColumn Header="Detalle" Width="85">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Command="{Binding DataContext.VerDetalleConsultaCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"

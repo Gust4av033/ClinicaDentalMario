@@ -29,16 +29,17 @@ namespace ClinicaDentalMario.Validators
         {
             if (string.IsNullOrWhiteSpace(valor))
             {
-                yield break;
+                return Enumerable.Empty<string>();
             }
 
             try
             {
                 _ = new MailAddress(valor.Trim());
+                return Enumerable.Empty<string>();
             }
             catch (FormatException)
             {
-                yield return $"{nombreCampo} no tiene un formato válido.";
+                return new[] { $"{nombreCampo} no tiene un formato válido." };
             }
         }
 

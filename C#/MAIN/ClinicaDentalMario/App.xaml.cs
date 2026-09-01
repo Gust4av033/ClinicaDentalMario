@@ -28,16 +28,7 @@ namespace ClinicaDentalMario
             try
             {
                 await DatabaseInitializer.InicializarBaseDeDatosAsync();
-
-                LoginView loginWindow = new LoginView
-                {
-                    DataContext = new LoginViewModel(
-                        new UsuarioRepository(),
-                        _exceptionHandler)
-                };
-
-                Current.MainWindow = loginWindow;
-                loginWindow.Show();
+                MostrarLogin();
             }
             catch (Exception ex)
             {
@@ -47,6 +38,19 @@ namespace ClinicaDentalMario
 
                 Current.Shutdown();
             }
+        }
+
+        public void MostrarLogin()
+        {
+            LoginView loginWindow = new LoginView
+            {
+                DataContext = new LoginViewModel(
+                    new UsuarioRepository(),
+                    _exceptionHandler)
+            };
+
+            Current.MainWindow = loginWindow;
+            loginWindow.Show();
         }
 
         private void OnDispatcherUnhandledException(

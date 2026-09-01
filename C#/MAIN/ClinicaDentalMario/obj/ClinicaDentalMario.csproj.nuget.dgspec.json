@@ -51,21 +51,9 @@
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
           "dependencies": {
-            "CommunityToolkit.Mvvm": {
-              "target": "Package",
-              "version": "[8.4.2, )"
-            },
             "Dapper": {
               "target": "Package",
               "version": "[2.1.79, )"
-            },
-            "Dapper.Contrib": {
-              "target": "Package",
-              "version": "[2.0.78, )"
-            },
-            "Dapper.SqlBuilder": {
-              "target": "Package",
-              "version": "[2.1.66, )"
             },
             "MahApps.Metro.IconPacks.Material": {
               "target": "Package",
@@ -78,10 +66,6 @@
             "QuestPDF": {
               "target": "Package",
               "version": "[2026.7.2, )"
-            },
-            "System.Data.SqlClient": {
-              "target": "Package",
-              "version": "[4.9.1, )"
             }
           },
           "imports": [

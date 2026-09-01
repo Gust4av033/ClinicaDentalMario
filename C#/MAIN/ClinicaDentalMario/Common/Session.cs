@@ -1,35 +1,51 @@
-﻿using ClinicaDentalMario.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ClinicaDentalMario.Models;
 
 namespace ClinicaDentalMario.Common
 {
+    /// <summary>
+    /// Representa la sesión actual de la aplicación.
+    /// Mantiene los datos mínimos del usuario autenticado y evita repetir lógica de roles.
+    /// </summary>
     public static class UsuarioActual
     {
-        // Guarda los datos del usuario logueado
         public static UsuarioModel? Detalles { get; private set; }
 
-        // Guarda el nombre del rol (Administrador, Doctor, etc.)
         public static string NombreRol { get; private set; } = string.Empty;
 
-        // Método que se llama cuando el login es correcto
+        public static bool EstaAutenticado => Detalles is not null;
+
+        public static string NombreCompleto => Detalles?.NombreCompleto ?? string.Empty;
+
+        public static string NombreUsuario => Detalles?.NombreUsuario ?? string.Empty;
+
+        public static bool EsAdministrador => TieneRol(RolesSistema.Administrador);
+
+        public static bool EsDoctor => TieneRol(RolesSistema.Doctor);
+
+        public static bool EsRecepcionista => TieneRol(RolesSistema.Recepcionista);
+
+        public static event EventHandler? SesionCambiada;
+
         public static void IniciarSesion(UsuarioModel usuario, string rol)
         {
+            ArgumentNullException.ThrowIfNull(usuario);
+
             Detalles = usuario;
-            NombreRol = rol;
+            NombreRol = rol?.Trim() ?? string.Empty;
+            SesionCambiada?.Invoke(null, EventArgs.Empty);
         }
 
-        // Método para cuando le den al botón de "Salir"
         public static void CerrarSesion()
         {
             Detalles = null;
             NombreRol = string.Empty;
+            SesionCambiada?.Invoke(null, EventArgs.Empty);
         }
 
-        // Para comprobar rápidamente si hay alguien conectado
-        public static bool EstaAutenticado => Detalles != null;
+        public static bool TieneRol(string rol)
+        {
+            return EstaAutenticado &&
+                   string.Equals(NombreRol, rol, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

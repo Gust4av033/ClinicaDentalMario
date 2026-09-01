@@ -75,7 +75,7 @@ namespace ClinicaDentalMario.Repositories
 
             try
             {
-                var parameters = CrearParametrosPaciente(paciente);
+                DynamicParameters parameters = CrearParametrosPaciente(paciente);
 
                 int idPaciente = await db.ExecuteScalarAsync<int>(
                     "Pacientes.sp_InsertarPaciente",
@@ -214,34 +214,28 @@ namespace ClinicaDentalMario.Repositories
             await db.ExecuteAsync(sql, new { IdPaciente = idPaciente });
         }
 
-        private static object CrearParametrosPaciente(PacienteModel paciente, bool incluirIdPaciente = false)
+        private static DynamicParameters CrearParametrosPaciente(
+            PacienteModel paciente,
+            bool incluirIdPaciente = false)
         {
-            return incluirIdPaciente
-                ? new
-                {
-                    paciente.IdPaciente,
-                    paciente.NombreCompleto,
-                    paciente.Direccion,
-                    paciente.FechaNacimiento,
-                    paciente.Sexo,
-                    paciente.DUI,
-                    paciente.Telefono,
-                    paciente.NombreEncargado,
-                    paciente.ContactoEmergencia,
-                    paciente.TelefonoEmergencia
-                }
-                : new
-                {
-                    paciente.NombreCompleto,
-                    paciente.Direccion,
-                    paciente.FechaNacimiento,
-                    paciente.Sexo,
-                    paciente.DUI,
-                    paciente.Telefono,
-                    paciente.NombreEncargado,
-                    paciente.ContactoEmergencia,
-                    paciente.TelefonoEmergencia
-                };
+            var parameters = new DynamicParameters();
+
+            if (incluirIdPaciente)
+            {
+                parameters.Add("IdPaciente", paciente.IdPaciente);
+            }
+
+            parameters.Add("NombreCompleto", paciente.NombreCompleto);
+            parameters.Add("Direccion", paciente.Direccion);
+            parameters.Add("FechaNacimiento", paciente.FechaNacimiento);
+            parameters.Add("Sexo", paciente.Sexo);
+            parameters.Add("DUI", paciente.DUI);
+            parameters.Add("Telefono", paciente.Telefono);
+            parameters.Add("NombreEncargado", paciente.NombreEncargado);
+            parameters.Add("ContactoEmergencia", paciente.ContactoEmergencia);
+            parameters.Add("TelefonoEmergencia", paciente.TelefonoEmergencia);
+
+            return parameters;
         }
     }
 }

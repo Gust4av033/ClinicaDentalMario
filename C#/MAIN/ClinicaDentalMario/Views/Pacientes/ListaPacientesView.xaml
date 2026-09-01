@@ -30,10 +30,10 @@
                     <iconPacks:PackIconMaterial Kind="AccountGroup" Width="26" Height="26" Foreground="{StaticResource AccentBrush}" Margin="0,0,12,0"/>
                     <StackPanel>
                         <TextBlock Text="Pacientes" FontSize="22" FontWeight="Bold"/>
-                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
-                            <Run Text="Registros mostrados: "/>
-                            <Run Text="{Binding Pacientes.Count}" FontWeight="Bold"/>
-                        </TextBlock>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Registros mostrados: " Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
+                            <TextBlock Text="{Binding CantidadPacientes}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" FontWeight="Bold"/>
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
 
@@ -88,9 +88,13 @@
                         Height="42"
                         Width="42"
                         Margin="0,0,10,0"
+                        Background="{StaticResource BgControlBrush}"
+                        Foreground="{StaticResource TextPrimaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
                         ToolTip="Recargar"
                         Cursor="Hand">
-                    <iconPacks:PackIconMaterial Kind="Refresh" Width="18" Height="18"/>
+                    <iconPacks:PackIconMaterial Kind="Refresh" Width="18" Height="18" Foreground="{StaticResource TextPrimaryBrush}"/>
                 </Button>
 
                 <ToggleButton Grid.Column="3"
@@ -98,13 +102,13 @@
                               Margin="0,0,15,0"
                               Height="42"
                               Padding="15,0"
-                              Background="Transparent"
                               Foreground="{StaticResource TextSecondaryBrush}"
                               BorderThickness="1"
-                              BorderBrush="{StaticResource BorderBrush}"
                               Cursor="Hand">
                     <ToggleButton.Style>
                         <Style TargetType="ToggleButton">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
                             <Style.Triggers>
                                 <Trigger Property="IsChecked" Value="True">
                                     <Setter Property="Background" Value="#1AE74C3C"/>
@@ -242,7 +246,7 @@
                         <Style TargetType="StackPanel">
                             <Setter Property="Visibility" Value="Collapsed"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Pacientes.Count}" Value="0">
+                                <DataTrigger Binding="{Binding SinResultados}" Value="True">
                                     <Setter Property="Visibility" Value="Visible"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -253,7 +257,17 @@
                     <TextBlock Text="Prueba con otro término o cambia el filtro de estado." FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
 
-                <Border Background="#AA121212" Visibility="{Binding EstaCargando, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Border Background="#AA121212">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding EstaCargando}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock Text="Cargando pacientes..." Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold"/>
                     </StackPanel>

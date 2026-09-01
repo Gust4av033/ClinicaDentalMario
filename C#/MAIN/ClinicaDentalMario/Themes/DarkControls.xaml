@@ -91,10 +91,7 @@
     </Style>
 
     <!-- ================= CALENDAR ================= -->
-    <!--
-        Importante: NO reemplazamos CalendarItem.Template.
-        La plantilla nativa conserva Month / Year / Decade y la navegación correcta.
-    -->
+    <!-- Conservamos CalendarItem nativo para mantener Month / Year / Decade. -->
     <Style x:Key="DarkCalendarDayButtonSafe" TargetType="CalendarDayButton">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
@@ -146,7 +143,7 @@
     </Style>
 
     <!-- ================= DATE PICKER ================= -->
-    <!-- Conservamos el template nativo para no romper sus PART_* ni la navegación del Calendar. -->
+    <!-- Conservamos el template nativo para no romper PART_* ni navegación del Calendar. -->
     <Style TargetType="DatePicker">
         <Setter Property="Background" Value="{StaticResource BgControlBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
@@ -169,17 +166,6 @@
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="Padding" Value="8,6"/>
-    </Style>
-
-    <!-- ================= DATAGRID POLISH ================= -->
-    <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
-        <Setter Property="RowHeaderWidth" Value="0"/>
-        <Setter Property="CanUserResizeRows" Value="False"/>
-        <Setter Property="SelectionMode" Value="Single"/>
-        <Setter Property="SelectionUnit" Value="FullRow"/>
-        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderBrush}"/>
-        <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
     </Style>
 
 </ResourceDictionary>

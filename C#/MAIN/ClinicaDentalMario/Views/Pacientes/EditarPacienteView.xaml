@@ -19,6 +19,8 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Margin="0,0,0,25">
@@ -27,7 +29,6 @@
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Margin="0,0,15,0"
-                                Cursor="Hand"
                                 ToolTip="Regresar al listado">
                             <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="28" Height="28" Foreground="{StaticResource TextSecondaryBrush}"/>
                         </Button>
@@ -35,7 +36,7 @@
                         <TextBlock Text="Editar Datos del Paciente" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <TextBlock Text="El historial clínico, odontograma, archivos, tratamientos y pagos se gestionan desde el expediente del paciente."
+                    <TextBlock Text="Aquí se actualizan los datos generales y antecedentes base. Las consultas, odontograma, tratamientos, pagos y archivos se gestionan desde el expediente clínico."
                                Foreground="{StaticResource TextSecondaryBrush}"
                                TextWrapping="Wrap"
                                Margin="45,0,0,12"/>
@@ -66,7 +67,12 @@
                     </Border>
                 </StackPanel>
 
-                <TextBlock Grid.Row="1" Text="Datos personales" FontSize="16" FontWeight="Bold" Foreground="#F39C12" Margin="0,0,0,15"/>
+                <TextBlock Grid.Row="1"
+                           Text="Datos personales"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           Foreground="#F39C12"
+                           Margin="0,0,0,15"/>
 
                 <Grid Grid.Row="2" Margin="0,0,0,20">
                     <Grid.ColumnDefinitions>
@@ -130,9 +136,75 @@
                     </StackPanel>
                 </Grid>
 
-                <TextBlock Grid.Row="3" Text="Contacto y emergencia" FontSize="16" FontWeight="Bold" Foreground="#F39C12" Margin="0,0,0,15"/>
+                <StackPanel Grid.Row="3" Margin="0,0,0,15">
+                    <TextBlock Text="Antecedentes generales" FontSize="16" FontWeight="Bold" Foreground="#F39C12"/>
+                    <TextBlock Text="Estos datos forman parte del expediente base del paciente y pueden actualizarse cuando cambie su condición."
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="12"
+                               Margin="0,4,0,0"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
 
-                <Grid Grid.Row="4">
+                <Grid Grid.Row="4" Margin="0,0,0,22">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Background="{StaticResource BgControlBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="16">
+                        <StackPanel>
+                            <CheckBox IsChecked="{Binding TieneAntecedentesMedicos, UpdateSourceTrigger=PropertyChanged}"
+                                      Content="Presenta antecedentes médicos"
+                                      FontWeight="SemiBold"
+                                      Margin="0,0,0,10"/>
+                            <TextBlock Text="Detalle" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                            <TextBox Height="82"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"
+                                     IsEnabled="{Binding TieneAntecedentesMedicos}"
+                                     Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                     Text="{Binding DetalleAntecedentesMedicos, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2"
+                            Background="{StaticResource BgControlBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="16">
+                        <StackPanel>
+                            <CheckBox IsChecked="{Binding TieneAntecedentesOdontologicos, UpdateSourceTrigger=PropertyChanged}"
+                                      Content="Presenta antecedentes odontológicos"
+                                      FontWeight="SemiBold"
+                                      Margin="0,0,0,10"/>
+                            <TextBlock Text="Detalle" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                            <TextBox Height="82"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"
+                                     IsEnabled="{Binding TieneAntecedentesOdontologicos}"
+                                     Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                     Text="{Binding DetalleAntecedentesOdontologicos, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <TextBlock Grid.Row="5"
+                           Text="Contacto y emergencia"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           Foreground="#F39C12"
+                           Margin="0,0,0,15"/>
+
+                <Grid Grid.Row="6">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="20"/>
@@ -173,11 +245,11 @@
                             Grid.Column="0"
                             Command="{Binding CambiarEstadoCommand}"
                             BorderThickness="0"
-                            Padding="20,10"
-                            Cursor="Hand">
+                            Padding="20,10">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Background" Value="#E74C3C"/>
+                                <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="Content" Value="Desactivar Paciente"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Activo}" Value="False">
@@ -190,7 +262,7 @@
                     </Button>
 
                     <StackPanel Grid.Row="2" Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Command="{Binding RegresarCommand}" Height="42" Padding="20,0" Margin="0,0,12,0" Cursor="Hand">
+                        <Button Command="{Binding RegresarCommand}" Height="42" Padding="20,0" Margin="0,0,12,0">
                             <TextBlock Text="Regresar" FontWeight="SemiBold"/>
                         </Button>
 
@@ -199,8 +271,7 @@
                                 Foreground="White"
                                 BorderThickness="0"
                                 Height="42"
-                                Padding="25,0"
-                                Cursor="Hand">
+                                Padding="25,0">
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Kind="ContentSaveEdit" Margin="0,0,8,0" Foreground="White"/>
                                 <TextBlock Text="Actualizar Datos" FontWeight="Bold" Foreground="White"/>

@@ -1,15 +1,13 @@
-﻿using ClinicaDentalMario.Models;
+using ClinicaDentalMario.Models;
 using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Services;
 using ClinicaDentalMario.ViewModel.Archivos;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.ViewModel.Odontograma;
 using ClinicaDentalMario.ViewModel.Tratamientos;
 using ClinicaDentalMario.Views.Pacientes;
 using ClinicaDentalMario.Views.Tratamientos;
-using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Pacientes
@@ -17,81 +15,172 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
     public class HistorialPacienteViewModel : ViewModelBase
     {
         private readonly HistorialClinicoRepository _historialRepo;
+        private readonly PacienteRepository _pacienteRepository;
+        private readonly IMessageService _messageService;
+        private readonly IExceptionHandler _exceptionHandler;
         private readonly Action<object> _cambiarVista;
 
         private PacienteModel _pacienteActual;
         public PacienteModel PacienteActual
         {
             get => _pacienteActual;
-            set => SetProperty(ref _pacienteActual, value);
+            private set => SetProperty(ref _pacienteActual, value);
         }
+
+        private AntecedentesPacienteModel? _antecedentesGenerales;
+        public AntecedentesPacienteModel? AntecedentesGenerales
+        {
+            get => _antecedentesGenerales;
+            private set
+            {
+                if (SetProperty(ref _antecedentesGenerales, value))
+                {
+                    OnPropertyChanged(nameof(TieneAntecedentesRegistrados));
+                    OnPropertyChanged(nameof(ResumenAntecedentesMedicos));
+                    OnPropertyChanged(nameof(ResumenAntecedentesOdontologicos));
+                }
+            }
+        }
+
+        public bool TieneAntecedentesRegistrados => AntecedentesGenerales is not null;
+
+        public string ResumenAntecedentesMedicos => AntecedentesGenerales switch
+        {
+            null => "Pendiente de registrar",
+            { TieneAntecedentesMedicos: false } => "Sin antecedentes médicos registrados",
+            _ => string.IsNullOrWhiteSpace(AntecedentesGenerales.DetalleAntecedentesMedicos)
+                ? "Antecedentes médicos indicados sin detalle"
+                : AntecedentesGenerales.DetalleAntecedentesMedicos!
+        };
+
+        public string ResumenAntecedentesOdontologicos => AntecedentesGenerales switch
+        {
+            null => "Pendiente de registrar",
+            { TieneAntecedentesOdontologicos: false } => "Sin antecedentes odontológicos registrados",
+            _ => string.IsNullOrWhiteSpace(AntecedentesGenerales.DetalleAntecedentesOdontologicos)
+                ? "Antecedentes odontológicos indicados sin detalle"
+                : AntecedentesGenerales.DetalleAntecedentesOdontologicos!
+        };
 
         private ObservableCollection<HistorialClinicoModel> _historialConsultas = new();
         public ObservableCollection<HistorialClinicoModel> HistorialConsultas
         {
             get => _historialConsultas;
-            set => SetProperty(ref _historialConsultas, value);
+            private set
+            {
+                if (SetProperty(ref _historialConsultas, value))
+                {
+                    OnPropertyChanged(nameof(SinConsultas));
+                }
+            }
         }
 
-        // 🔥 PROPIEDAD PARA CONECTAR LA GALERÍA DE IMÁGENES 🔥
-        public ImagenesPacienteViewModel GaleriaVM { get; }
+        public bool SinConsultas => !EstaCargando && HistorialConsultas.Count == 0;
 
-        // 🔥 PROPIEDAD PARA CONECTAR EL ODONTOGRAMA 🔥
+        private string _mensajeError = string.Empty;
+        public string MensajeError
+        {
+            get => _mensajeError;
+            private set => SetProperty(ref _mensajeError, value);
+        }
+
+        public ImagenesPacienteViewModel GaleriaVM { get; }
         public OdontogramaViewModel OdontogramaVM { get; }
 
-        // COMANDOS
         public ICommand AbrirNuevaConsultaCommand { get; }
         public ICommand AbrirNuevoTratamientoCommand { get; }
         public ICommand VolverCommand { get; }
         public ICommand VerDetalleConsultaCommand { get; }
+        public AsyncRelayCommand RecargarCommand { get; }
 
         public HistorialPacienteViewModel(PacienteModel paciente, Action<object> cambiarVista)
+            : this(
+                paciente,
+                cambiarVista,
+                new HistorialClinicoRepository(),
+                new PacienteRepository(),
+                new MessageService(),
+                new ExceptionHandler(new MessageService()))
         {
-            Titulo = $"Historial Clínico - {paciente.NombreCompleto}";
-            PacienteActual = paciente;
-            _cambiarVista = cambiarVista;
+        }
 
-            _historialRepo = new HistorialClinicoRepository();
+        public HistorialPacienteViewModel(
+            PacienteModel paciente,
+            Action<object> cambiarVista,
+            HistorialClinicoRepository historialRepo,
+            PacienteRepository pacienteRepository,
+            IMessageService messageService,
+            IExceptionHandler exceptionHandler)
+        {
+            ArgumentNullException.ThrowIfNull(paciente);
+            if (paciente.IdPaciente <= 0)
+            {
+                throw new ArgumentException("El paciente no tiene un identificador válido.", nameof(paciente));
+            }
 
-            // INSTANCIAMOS LOS VIEWMODELS DE LAS PESTAÑAS (TABS)
+            _pacienteActual = paciente;
+            _cambiarVista = cambiarVista ?? throw new ArgumentNullException(nameof(cambiarVista));
+            _historialRepo = historialRepo ?? throw new ArgumentNullException(nameof(historialRepo));
+            _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+
+            Titulo = $"Expediente Clínico - {paciente.NombreCompleto}";
+
             GaleriaVM = new ImagenesPacienteViewModel(PacienteActual.IdPaciente, _cambiarVista);
             OdontogramaVM = new OdontogramaViewModel(PacienteActual.IdPaciente);
 
-            AbrirNuevaConsultaCommand = new RelayCommand(AbrirNuevaConsulta);
-            AbrirNuevoTratamientoCommand = new RelayCommand(AbrirNuevoTratamiento);
-            VolverCommand = new RelayCommand(Volver);
+            AbrirNuevaConsultaCommand = new RelayCommand(_ => AbrirNuevaConsulta());
+            AbrirNuevoTratamientoCommand = new RelayCommand(_ => AbrirNuevoTratamiento());
+            VolverCommand = new RelayCommand(_ => Volver());
             VerDetalleConsultaCommand = new RelayCommand(VerDetalleConsulta);
+            RecargarCommand = new AsyncRelayCommand(_ => CargarExpedienteAsync());
 
-            _ = CargarHistorialAsync();
+            _ = CargarExpedienteAsync();
         }
 
-        private async Task CargarHistorialAsync()
+        private async Task CargarExpedienteAsync()
         {
+            MensajeError = string.Empty;
             EstaCargando = true;
+            OnPropertyChanged(nameof(SinConsultas));
+
             try
             {
-                var consultas = await _historialRepo.ListarConsultasAsync(PacienteActual.IdPaciente);
-                HistorialConsultas = new ObservableCollection<HistorialClinicoModel>(consultas);
+                Task<IEnumerable<HistorialClinicoModel>> historialTask =
+                    _historialRepo.ListarConsultasAsync(PacienteActual.IdPaciente);
+                Task<AntecedentesPacienteModel?> antecedentesTask =
+                    _pacienteRepository.ObtenerAntecedentesAsync(PacienteActual.IdPaciente);
+
+                await Task.WhenAll(historialTask, antecedentesTask);
+
+                HistorialConsultas = new ObservableCollection<HistorialClinicoModel>(
+                    await historialTask);
+                AntecedentesGenerales = await antecedentesTask;
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al cargar el historial: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                HistorialConsultas = new ObservableCollection<HistorialClinicoModel>();
+                AntecedentesGenerales = null;
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible cargar el expediente clínico del paciente.");
             }
             finally
             {
                 EstaCargando = false;
+                OnPropertyChanged(nameof(SinConsultas));
             }
         }
 
-        private void AbrirNuevaConsulta(object? parameter)
+        private void AbrirNuevaConsulta()
         {
-            if (PacienteActual == null) return;
-
             try
             {
-                var vm = new NuevaConsultaViewModel(PacienteActual.IdPaciente, PacienteActual.NombreCompleto);
+                var vm = new NuevaConsultaViewModel(
+                    PacienteActual.IdPaciente,
+                    PacienteActual.NombreCompleto);
 
-                // 🔥 FÍJATE AQUÍ: Ya no existe la línea de Owner 🔥
                 var ventana = new NuevaConsultaWindow
                 {
                     DataContext = vm
@@ -99,66 +188,81 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
                 ventana.ShowDialog();
 
-                if (vm.ConsultaGuardada)
+                if (!vm.ConsultaGuardada)
                 {
-                    _ = CargarHistorialAsync();
+                    return;
+                }
 
-                    if (vm.DeseaAsignarTratamiento)
-                    {
-                        AbrirNuevoTratamiento(null);
-                    }
+                _ = CargarExpedienteAsync();
+
+                if (vm.DeseaAsignarTratamiento)
+                {
+                    AbrirNuevoTratamiento();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al abrir la ventana: {ex.Message}", "Error Fatal", MessageBoxButton.OK, MessageBoxImage.Error);
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible abrir el registro de una nueva consulta.");
             }
         }
 
-        private void AbrirNuevoTratamiento(object? parameter)
+        private void AbrirNuevoTratamiento()
         {
-            if (PacienteActual == null || _cambiarVista == null) return;
-
             try
             {
-                var vistaNuevoTratamiento = new NuevoTratamientoView();
+                var vista = new NuevoTratamientoView
+                {
+                    DataContext = new NuevoTratamientoViewModel(
+                        PacienteActual.IdPaciente,
+                        PacienteActual.NombreCompleto,
+                        _cambiarVista)
+                };
 
-                vistaNuevoTratamiento.DataContext = new NuevoTratamientoViewModel(
-                    PacienteActual.IdPaciente,
-                    PacienteActual.NombreCompleto,
-                    _cambiarVista
-                );
-
-                _cambiarVista(vistaNuevoTratamiento);
+                _cambiarVista(vista);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al abrir la pantalla de tratamiento: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible abrir el registro de tratamiento.");
             }
         }
 
-        private void Volver(object? parameter)
+        private void Volver()
         {
-            if (_cambiarVista != null)
+            var vistaLista = new ListaPacientesView
             {
-                var vistaLista = new ListaPacientesView();
-                vistaLista.DataContext = new ListaPacientesViewModel(_cambiarVista);
-                _cambiarVista(vistaLista);
-            }
+                DataContext = new ListaPacientesViewModel(_cambiarVista)
+            };
+
+            _cambiarVista(vistaLista);
         }
 
         private void VerDetalleConsulta(object? parameter)
         {
-            if (parameter is HistorialClinicoModel consultaSeleccionada)
+            if (parameter is not HistorialClinicoModel consulta)
             {
-                string mensaje = $"--- FECHA: {consultaSeleccionada.FechaConsulta:dd/MM/yyyy hh:mm tt} ---\n\n" +
-                                 $"📍 MOTIVO DE CONSULTA:\n{consultaSeleccionada.MotivoConsulta}\n\n" +
-                                 $"🦷 ANTECEDENTES ODONTOLÓGICOS:\n{(string.IsNullOrWhiteSpace(consultaSeleccionada.AntecedentesOdontologicos) ? "Ninguno" : consultaSeleccionada.AntecedentesOdontologicos)}\n\n" +
-                                 $"🩺 DIAGNÓSTICO:\n{consultaSeleccionada.Diagnostico}\n\n" +
-                                 $"🛠️ PLAN DE TRATAMIENTO:\n{consultaSeleccionada.PlanTratamiento}";
-
-                MessageBox.Show(mensaje, "Detalle Clínico", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
             }
+
+            string antecedentesMedicos = string.IsNullOrWhiteSpace(consulta.AntecedentesMedicos)
+                ? "Sin información registrada en esta consulta"
+                : consulta.AntecedentesMedicos;
+            string antecedentesOdontologicos = string.IsNullOrWhiteSpace(consulta.AntecedentesOdontologicos)
+                ? "Sin información registrada en esta consulta"
+                : consulta.AntecedentesOdontologicos;
+
+            string mensaje =
+                $"Fecha: {consulta.FechaConsulta:dd/MM/yyyy hh:mm tt}\n\n" +
+                $"Motivo de consulta:\n{consulta.MotivoConsulta ?? "Sin especificar"}\n\n" +
+                $"Antecedentes médicos de esta consulta:\n{antecedentesMedicos}\n\n" +
+                $"Antecedentes odontológicos de esta consulta:\n{antecedentesOdontologicos}\n\n" +
+                $"Diagnóstico:\n{consulta.Diagnostico ?? "Sin especificar"}\n\n" +
+                $"Plan de tratamiento:\n{consulta.PlanTratamiento ?? "Sin especificar"}";
+
+            _messageService.MostrarInformacion(mensaje, "Detalle clínico");
         }
     }
 }

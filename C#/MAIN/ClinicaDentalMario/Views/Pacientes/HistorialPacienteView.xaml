@@ -48,6 +48,17 @@
                     <iconPacks:PackIconMaterial Kind="Refresh" Width="19" Height="19"/>
                 </Button>
 
+                <Button Command="{Binding EditarPacienteCommand}" Height="42"
+                        Background="Transparent" Foreground="{StaticResource TextPrimaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                        Padding="14,0" Margin="0,0,10,0" ToolTip="Editar datos y antecedentes">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="AccountEdit" Margin="0,0,7,0"
+                                                    Foreground="#F39C12"/>
+                        <TextBlock Text="Editar datos" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
                 <Button Command="{Binding AbrirNuevaConsultaCommand}" Height="42"
                         Background="{StaticResource SuccessBrush}" Foreground="White"
                         BorderThickness="0" Padding="18,0">

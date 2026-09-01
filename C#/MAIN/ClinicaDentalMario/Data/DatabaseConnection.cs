@@ -4,7 +4,7 @@ using System.Data;
 
 namespace ClinicaDentalMario.Data
 {
-    public class DatabaseConnection
+    public static class DatabaseConnection
     {
         public static IDbConnection GetConnection()
         {

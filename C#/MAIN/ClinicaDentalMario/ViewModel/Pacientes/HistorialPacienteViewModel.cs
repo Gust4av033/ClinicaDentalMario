@@ -89,6 +89,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
         public ICommand AbrirNuevaConsultaCommand { get; }
         public ICommand AbrirNuevoTratamientoCommand { get; }
+        public ICommand EditarPacienteCommand { get; }
         public ICommand VolverCommand { get; }
         public ICommand VerDetalleConsultaCommand { get; }
         public AsyncRelayCommand RecargarCommand { get; }
@@ -132,6 +133,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
             AbrirNuevaConsultaCommand = new RelayCommand(_ => AbrirNuevaConsulta());
             AbrirNuevoTratamientoCommand = new RelayCommand(_ => AbrirNuevoTratamiento());
+            EditarPacienteCommand = new RelayCommand(_ => EditarPaciente());
             VolverCommand = new RelayCommand(_ => Volver());
             VerDetalleConsultaCommand = new RelayCommand(VerDetalleConsulta);
             RecargarCommand = new AsyncRelayCommand(_ => CargarExpedienteAsync());
@@ -170,6 +172,25 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             {
                 EstaCargando = false;
                 OnPropertyChanged(nameof(SinConsultas));
+            }
+        }
+
+        private void EditarPaciente()
+        {
+            try
+            {
+                var vista = new EditarPacienteView
+                {
+                    DataContext = new EditarPacienteViewModel(PacienteActual, _cambiarVista)
+                };
+
+                _cambiarVista(vista);
+            }
+            catch (Exception ex)
+            {
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible abrir la edición del paciente.");
             }
         }
 

@@ -28,65 +28,42 @@
                         BorderThickness="0"
                         Margin="0,0,12,0"
                         ToolTip="Regresar a pacientes">
-                    <iconPacks:PackIconMaterial Kind="ArrowLeft"
-                                                Width="27"
-                                                Height="27"
+                    <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="27" Height="27"
                                                 Foreground="{StaticResource TextSecondaryBrush}"/>
                 </Button>
 
-                <iconPacks:PackIconMaterial Kind="FolderAccount"
-                                            Width="31"
-                                            Height="31"
-                                            Foreground="{StaticResource AccentBrush}"
-                                            Margin="0,0,10,0"/>
+                <iconPacks:PackIconMaterial Kind="FolderAccount" Width="31" Height="31"
+                                            Foreground="{StaticResource AccentBrush}" Margin="0,0,10,0"/>
 
                 <StackPanel>
-                    <TextBlock Text="Expediente Clínico"
-                               FontSize="25"
-                               FontWeight="Bold"/>
-                    <TextBlock Text="{Binding PacienteActual.IdPaciente, StringFormat=Expediente #{0:00000}}"
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               FontSize="12"/>
+                    <TextBlock Text="Expediente Clínico" FontSize="25" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding PacienteActual.IdPaciente, StringFormat='Expediente #{0:00000}'}"
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                 </StackPanel>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Command="{Binding RecargarCommand}"
-                        Width="42"
-                        Height="42"
-                        Padding="0"
-                        Margin="0,0,10,0"
-                        ToolTip="Recargar expediente">
+                <Button Command="{Binding RecargarCommand}" Width="42" Height="42"
+                        Padding="0" Margin="0,0,10,0" ToolTip="Recargar expediente">
                     <iconPacks:PackIconMaterial Kind="Refresh" Width="19" Height="19"/>
                 </Button>
 
-                <Button Command="{Binding AbrirNuevaConsultaCommand}"
-                        Height="42"
-                        Background="{StaticResource SuccessBrush}"
-                        Foreground="White"
-                        BorderThickness="0"
-                        Padding="18,0">
+                <Button Command="{Binding AbrirNuevaConsultaCommand}" Height="42"
+                        Background="{StaticResource SuccessBrush}" Foreground="White"
+                        BorderThickness="0" Padding="18,0">
                     <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="Plus"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,8,0"
-                                                    Foreground="White"/>
-                        <TextBlock Text="Nueva Consulta"
-                                   FontWeight="Bold"
-                                   Foreground="White"
+                        <iconPacks:PackIconMaterial Kind="Plus" Margin="0,0,8,0" Foreground="White"/>
+                        <TextBlock Text="Nueva Consulta" FontWeight="Bold" Foreground="White"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
             </StackPanel>
         </Grid>
 
-        <!-- MENSAJES / CARGA -->
+        <!-- MENSAJES -->
         <StackPanel Grid.Row="1" Margin="0,0,0,14">
-            <Border Background="#3A1C1C"
-                    BorderBrush="{StaticResource DangerBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="10">
+            <Border Background="#3A1C1C" BorderBrush="{StaticResource DangerBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="10">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Setter Property="Visibility" Value="Visible"/>
@@ -101,22 +78,15 @@
                     </Style>
                 </Border.Style>
                 <StackPanel Orientation="Horizontal">
-                    <iconPacks:PackIconMaterial Kind="AlertCircleOutline"
-                                                Foreground="{StaticResource DangerBrush}"
+                    <iconPacks:PackIconMaterial Kind="Information" Foreground="{StaticResource DangerBrush}"
                                                 Margin="0,0,8,0"/>
-                    <TextBlock Text="{Binding MensajeError}"
-                               Foreground="{StaticResource DangerBrush}"
-                               FontWeight="SemiBold"
-                               TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding MensajeError}" Foreground="{StaticResource DangerBrush}"
+                               FontWeight="SemiBold" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
 
-            <Border Background="{StaticResource BgControlBrush}"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="9"
-                    Margin="0,8,0,0">
+            <Border Background="{StaticResource BgControlBrush}" BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="8" Padding="9" Margin="0,8,0,0">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -127,23 +97,15 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <iconPacks:PackIconMaterial Kind="Loading"
-                                                Foreground="{StaticResource AccentBrush}"
-                                                Margin="0,0,8,0"/>
-                    <TextBlock Text="Cargando expediente clínico..."
-                               Foreground="{StaticResource TextSecondaryBrush}"/>
-                </StackPanel>
+                <TextBlock Text="Cargando expediente clínico..."
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           HorizontalAlignment="Center"/>
             </Border>
         </StackPanel>
 
-        <!-- RESUMEN DEL PACIENTE -->
-        <Border Grid.Row="2"
-                Background="{StaticResource BgCardBrush}"
-                CornerRadius="12"
-                Padding="20"
-                Margin="0,0,0,14"
-                BorderBrush="{StaticResource BorderBrush}"
+        <!-- DATOS GENERALES -->
+        <Border Grid.Row="2" Background="{StaticResource BgCardBrush}" CornerRadius="12"
+                Padding="20" Margin="0,0,0,14" BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -152,59 +114,42 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="{Binding PacienteActual.NombreCompleto}"
-                               FontSize="22"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource AccentBrush}"/>
+                    <TextBlock Text="{Binding PacienteActual.NombreCompleto}" FontSize="22"
+                               FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
 
                     <WrapPanel Margin="0,10,0,0">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,22,7">
-                            <iconPacks:PackIconMaterial Kind="CalendarAccount"
-                                                        Foreground="{StaticResource TextSecondaryBrush}"
+                        <StackPanel Orientation="Horizontal" Margin="0,0,24,6">
+                            <iconPacks:PackIconMaterial Kind="CalendarClock" Foreground="{StaticResource TextSecondaryBrush}"
                                                         Margin="0,0,6,0"/>
                             <TextBlock Text="{Binding PacienteActual.Edad, StringFormat={}{0} años}"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,0,22,7">
-                            <iconPacks:PackIconMaterial Kind="GenderMaleFemale"
-                                                        Foreground="{StaticResource TextSecondaryBrush}"
-                                                        Margin="0,0,6,0"/>
-                            <TextBlock Text="{Binding PacienteActual.Sexo, TargetNullValue=No especificado}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,24,6">
+                            <TextBlock Text="Sexo: " Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock Text="{Binding PacienteActual.Sexo, TargetNullValue='No especificado'}"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,0,22,7">
-                            <iconPacks:PackIconMaterial Kind="Phone"
-                                                        Foreground="{StaticResource TextSecondaryBrush}"
+                        <StackPanel Orientation="Horizontal" Margin="0,0,24,6">
+                            <iconPacks:PackIconMaterial Kind="Phone" Foreground="{StaticResource TextSecondaryBrush}"
                                                         Margin="0,0,6,0"/>
-                            <TextBlock Text="{Binding PacienteActual.Telefono, TargetNullValue=Sin teléfono}"/>
+                            <TextBlock Text="{Binding PacienteActual.Telefono, TargetNullValue='Sin teléfono'}"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,0,22,7">
-                            <iconPacks:PackIconMaterial Kind="CardAccountDetailsOutline"
-                                                        Foreground="{StaticResource TextSecondaryBrush}"
+                        <StackPanel Orientation="Horizontal" Margin="0,0,24,6">
+                            <iconPacks:PackIconMaterial Kind="CardAccountDetails" Foreground="{StaticResource TextSecondaryBrush}"
                                                         Margin="0,0,6,0"/>
-                            <TextBlock Text="{Binding PacienteActual.DUI, TargetNullValue=Sin DUI}"/>
+                            <TextBlock Text="{Binding PacienteActual.DUI, TargetNullValue='Sin DUI'}"/>
                         </StackPanel>
                     </WrapPanel>
                 </StackPanel>
 
-                <Border Grid.Column="1"
-                        Background="{StaticResource BgControlBrush}"
-                        BorderBrush="{StaticResource BorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="12"
-                        Margin="20,0,0,0"
-                        MinWidth="185">
+                <Border Grid.Column="1" Background="{StaticResource BgControlBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="8" Padding="12" Margin="20,0,0,0" MinWidth="175">
                     <StackPanel>
-                        <TextBlock Text="Estado del expediente"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                        <TextBlock Text="Estado del expediente" Foreground="{StaticResource TextSecondaryBrush}"
                                    FontSize="12"/>
-                        <TextBlock Text="Activo"
-                                   Foreground="{StaticResource SuccessBrush}"
-                                   FontWeight="Bold"
-                                   FontSize="15"
-                                   Margin="0,4,0,0">
+                        <TextBlock FontWeight="Bold" FontSize="15" Margin="0,4,0,0">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Text" Value="Activo"/>
@@ -223,88 +168,42 @@
             </Grid>
         </Border>
 
-        <!-- ANTECEDENTES GENERALES -->
-        <Grid Grid.Row="3" Margin="0,0,0,14">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="14"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <!-- ANTECEDENTES BASE -->
+        <StackPanel Grid.Row="3" Margin="0,0,0,14">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="14"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0"
-                    Background="{StaticResource BgCardBrush}"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="16">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Border Width="42" Height="42" CornerRadius="21" Background="#2D2420" Margin="0,0,12,0">
-                        <iconPacks:PackIconMaterial Kind="HeartPulse"
-                                                    Width="21"
-                                                    Height="21"
-                                                    Foreground="#F39C12"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"/>
-                    </Border>
-
-                    <StackPanel Grid.Column="1">
-                        <TextBlock Text="Antecedentes médicos"
-                                   FontWeight="Bold"
-                                   FontSize="15"/>
+                <Border Grid.Column="0" Background="{StaticResource BgCardBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="12" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="Antecedentes médicos" FontWeight="Bold" FontSize="15"
+                                   Foreground="#F39C12"/>
                         <TextBlock Text="{Binding ResumenAntecedentesMedicos}"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   TextWrapping="Wrap"
-                                   Margin="0,5,0,0"/>
+                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"
+                                   Margin="0,6,0,0"/>
                     </StackPanel>
-                </Grid>
-            </Border>
+                </Border>
 
-            <Border Grid.Column="2"
-                    Background="{StaticResource BgCardBrush}"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="12"
-                    Padding="16">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Border Width="42" Height="42" CornerRadius="21" Background="#202D36" Margin="0,0,12,0">
-                        <iconPacks:PackIconMaterial Kind="ToothOutline"
-                                                    Width="21"
-                                                    Height="21"
-                                                    Foreground="{StaticResource AccentBrush}"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"/>
-                    </Border>
-
-                    <StackPanel Grid.Column="1">
-                        <TextBlock Text="Antecedentes odontológicos"
-                                   FontWeight="Bold"
-                                   FontSize="15"/>
+                <Border Grid.Column="2" Background="{StaticResource BgCardBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="12" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="Antecedentes odontológicos" FontWeight="Bold" FontSize="15"
+                                   Foreground="{StaticResource AccentBrush}"/>
                         <TextBlock Text="{Binding ResumenAntecedentesOdontologicos}"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   TextWrapping="Wrap"
-                                   Margin="0,5,0,0"/>
+                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"
+                                   Margin="0,6,0,0"/>
                     </StackPanel>
-                </Grid>
-            </Border>
+                </Border>
+            </Grid>
 
-            <Border Grid.ColumnSpan="3"
-                    VerticalAlignment="Bottom"
-                    Margin="0,82,0,0"
-                    Background="#3A3219"
-                    BorderBrush="#C99A20"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="9">
+            <Border Background="#3A3219" BorderBrush="#C99A20" BorderThickness="1"
+                    CornerRadius="8" Padding="9" Margin="0,8,0,0">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -315,14 +214,12 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
-                <TextBlock Text="Este expediente todavía no tiene antecedentes generales confirmados. Puedes registrarlos desde Editar Paciente."
-                           Foreground="#E6C965"
-                           TextWrapping="Wrap"
-                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Este paciente todavía no tiene antecedentes generales confirmados. Puedes registrarlos desde Editar Paciente."
+                           Foreground="#E6C965" TextWrapping="Wrap" HorizontalAlignment="Center"/>
             </Border>
-        </Grid>
+        </StackPanel>
 
-        <!-- PESTAÑAS DEL EXPEDIENTE -->
+        <!-- SECCIONES DEL EXPEDIENTE -->
         <TabControl Grid.Row="4" Background="Transparent" BorderThickness="0">
             <TabControl.Resources>
                 <Style TargetType="TabItem">
@@ -334,14 +231,10 @@
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="TabItem">
-                                <Border x:Name="Bd"
-                                        Background="{TemplateBinding Background}"
-                                        Padding="18,11"
-                                        BorderBrush="Transparent"
-                                        BorderThickness="0,0,0,3"
-                                        Margin="0,0,4,0">
-                                    <ContentPresenter ContentSource="Header"
-                                                      HorizontalAlignment="Center"
+                                <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                        Padding="18,11" BorderBrush="Transparent"
+                                        BorderThickness="0,0,0,3" Margin="0,0,4,0">
+                                    <ContentPresenter ContentSource="Header" HorizontalAlignment="Center"
                                                       VerticalAlignment="Center"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
@@ -361,42 +254,28 @@
             </TabControl.Resources>
 
             <TabItem Header="Historial Clínico">
-                <Border Background="{StaticResource BgCardBrush}"
-                        CornerRadius="0,8,8,8"
-                        Padding="15"
-                        BorderBrush="{StaticResource BorderBrush}"
-                        BorderThickness="1">
+                <Border Background="{StaticResource BgCardBrush}" CornerRadius="0,8,8,8"
+                        Padding="15" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <Grid>
-                        <DataGrid ItemsSource="{Binding HistorialConsultas}"
-                                  AutoGenerateColumns="False"
-                                  CanUserAddRows="False"
-                                  IsReadOnly="True"
-                                  RowHeight="46"
-                                  FontSize="14"
-                                  SelectionMode="Single">
+                        <DataGrid ItemsSource="{Binding HistorialConsultas}" AutoGenerateColumns="False"
+                                  CanUserAddRows="False" IsReadOnly="True" RowHeight="46"
+                                  FontSize="14" SelectionMode="Single">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Fecha"
                                                     Binding="{Binding FechaConsulta, StringFormat={}{0:dd/MM/yyyy HH:mm}}"
                                                     Width="150"/>
-                                <DataGridTextColumn Header="Motivo de consulta"
-                                                    Binding="{Binding MotivoConsulta}"
+                                <DataGridTextColumn Header="Motivo de consulta" Binding="{Binding MotivoConsulta}"
                                                     Width="2*"/>
-                                <DataGridTextColumn Header="Diagnóstico"
-                                                    Binding="{Binding Diagnostico}"
+                                <DataGridTextColumn Header="Diagnóstico" Binding="{Binding Diagnostico}"
                                                     Width="2*"/>
                                 <DataGridTemplateColumn Header="Detalle" Width="90">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Command="{Binding DataContext.VerDetalleConsultaCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                    CommandParameter="{Binding}"
-                                                    Background="Transparent"
-                                                    BorderThickness="0"
-                                                    Padding="5"
-                                                    ToolTip="Ver detalle de consulta">
-                                                <iconPacks:PackIconMaterial Kind="EyeOutline"
-                                                                            Foreground="{StaticResource AccentBrush}"
-                                                                            Width="20"
-                                                                            Height="20"/>
+                                                    CommandParameter="{Binding}" Background="Transparent"
+                                                    BorderThickness="0" Padding="5" ToolTip="Ver detalle de consulta">
+                                                <iconPacks:PackIconMaterial Kind="Eye" Foreground="{StaticResource AccentBrush}"
+                                                                            Width="20" Height="20"/>
                                             </Button>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -416,21 +295,13 @@
                                 </Style>
                             </Border.Style>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <iconPacks:PackIconMaterial Kind="ClipboardTextOffOutline"
-                                                            Width="62"
-                                                            Height="62"
-                                                            Foreground="{StaticResource TextSecondaryBrush}"
-                                                            Opacity="0.3"
-                                                            HorizontalAlignment="Center"
-                                                            Margin="0,0,0,12"/>
-                                <TextBlock Text="Aún no hay consultas clínicas"
-                                           FontSize="19"
-                                           FontWeight="Bold"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           HorizontalAlignment="Center"/>
+                                <iconPacks:PackIconMaterial Kind="ClipboardTextOffOutline" Width="62" Height="62"
+                                                            Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.3"
+                                                            HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                <TextBlock Text="Aún no hay consultas clínicas" FontSize="19" FontWeight="Bold"
+                                           Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
                                 <TextBlock Text="Usa Nueva Consulta para registrar la primera atención."
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           HorizontalAlignment="Center"
+                                           Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"
                                            Margin="0,4,0,0"/>
                             </StackPanel>
                         </Border>

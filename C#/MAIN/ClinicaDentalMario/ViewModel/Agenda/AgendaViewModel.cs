@@ -1,11 +1,10 @@
-﻿using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Models;
+using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Services;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Agenda;
-using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Agenda
 {
@@ -13,13 +12,23 @@ namespace ClinicaDentalMario.ViewModel.Agenda
     {
         private readonly Action<object> _cambiarVista;
         private readonly CitaRepository _citaRepository;
+        private readonly IMessageService _messageService;
+        private readonly IExceptionHandler _exceptionHandler;
 
-        private ObservableCollection<dynamic> _citasDelDia = new();
-        public ObservableCollection<dynamic> CitasDelDia
+        private ObservableCollection<AgendaCitaModel> _citasDelDia = new();
+        public ObservableCollection<AgendaCitaModel> CitasDelDia
         {
             get => _citasDelDia;
-            set => SetProperty(ref _citasDelDia, value);
+            private set
+            {
+                if (SetProperty(ref _citasDelDia, value))
+                {
+                    OnPropertyChanged(nameof(SinCitas));
+                }
+            }
         }
+
+        public bool SinCitas => !EstaCargando && CitasDelDia.Count == 0;
 
         private DateTime _fechaSeleccionada = DateTime.Today;
         public DateTime FechaSeleccionada
@@ -27,163 +36,205 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             get => _fechaSeleccionada;
             set
             {
-                if (SetProperty(ref _fechaSeleccionada, value))
+                if (SetProperty(ref _fechaSeleccionada, value.Date))
                 {
+                    CerrarDetalle();
                     _ = CargarCitasDelDiaAsync();
-                    CerrarDetalle(null); // Ocultar el panel si cambian de día
                 }
             }
         }
 
-        private dynamic? _citaSeleccionada;
-        public dynamic? CitaSeleccionada
+        private AgendaCitaModel? _citaSeleccionada;
+        public AgendaCitaModel? CitaSeleccionada
         {
             get => _citaSeleccionada;
             set
             {
                 if (SetProperty(ref _citaSeleccionada, value))
                 {
-                    // Lógica del Panel: Si seleccionan algo, se muestra. Si no, se oculta.
-                    PanelDetalleVisibility = value != null ? Visibility.Visible : Visibility.Collapsed;
-                    AnchoPanelDetalle = value != null ? 300 : 0;
+                    PanelDetalleVisibility = value is null
+                        ? Visibility.Collapsed
+                        : Visibility.Visible;
+                    AnchoPanelDetalle = value is null ? 0 : 340;
+                    EditarCitaCommand.NotificarCanExecuteChanged();
+                    CancelarCitaCommand.NotificarCanExecuteChanged();
+                    FinalizarCitaCommand.NotificarCanExecuteChanged();
                 }
             }
         }
 
-        // --- PROPIEDADES VISUALES PARA EL PANEL LATERAL ---
         private Visibility _panelDetalleVisibility = Visibility.Collapsed;
         public Visibility PanelDetalleVisibility
         {
             get => _panelDetalleVisibility;
-            set => SetProperty(ref _panelDetalleVisibility, value);
+            private set => SetProperty(ref _panelDetalleVisibility, value);
         }
 
-        private double _anchoPanelDetalle = 0;
+        private double _anchoPanelDetalle;
         public double AnchoPanelDetalle
         {
             get => _anchoPanelDetalle;
-            set => SetProperty(ref _anchoPanelDetalle, value);
+            private set => SetProperty(ref _anchoPanelDetalle, value);
         }
 
-        // --- COMANDOS ---
-        public ICommand NuevaCitaCommand { get; }
-        public ICommand EditarCitaCommand { get; }
-        public ICommand CancelarCitaCommand { get; }
-        public ICommand FinalizarCitaCommand { get; } // 🔥 NUEVO COMANDO 🔥
-        public ICommand CerrarDetalleCommand { get; }
+        private string _mensajeError = string.Empty;
+        public string MensajeError
+        {
+            get => _mensajeError;
+            private set => SetProperty(ref _mensajeError, value);
+        }
+
+        public RelayCommand NuevaCitaCommand { get; }
+        public RelayCommand EditarCitaCommand { get; }
+        public AsyncRelayCommand CancelarCitaCommand { get; }
+        public AsyncRelayCommand FinalizarCitaCommand { get; }
+        public RelayCommand CerrarDetalleCommand { get; }
+        public AsyncRelayCommand RecargarCommand { get; }
 
         public AgendaViewModel(Action<object> cambiarVista)
+            : this(
+                cambiarVista,
+                new CitaRepository(),
+                new MessageService(),
+                new ExceptionHandler(new MessageService()))
         {
-            Titulo = "Agenda Diaria";
-            _cambiarVista = cambiarVista;
-            _citaRepository = new CitaRepository();
+        }
 
-            NuevaCitaCommand = new RelayCommand(AbrirNuevaCita);
-            EditarCitaCommand = new RelayCommand(AbrirEditarCita);
-            CancelarCitaCommand = new RelayCommand(async (param) => await CancelarCitaAsync(param));
-            FinalizarCitaCommand = new RelayCommand(async (param) => await FinalizarCitaAsync(param)); // 🔥 INICIALIZADO 🔥
-            CerrarDetalleCommand = new RelayCommand(CerrarDetalle);
+        public AgendaViewModel(
+            Action<object> cambiarVista,
+            CitaRepository citaRepository,
+            IMessageService messageService,
+            IExceptionHandler exceptionHandler)
+        {
+            _cambiarVista = cambiarVista ?? throw new ArgumentNullException(nameof(cambiarVista));
+            _citaRepository = citaRepository ?? throw new ArgumentNullException(nameof(citaRepository));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+
+            Titulo = "Agenda de Citas";
+            NuevaCitaCommand = new RelayCommand(_ => AbrirNuevaCita());
+            EditarCitaCommand = new RelayCommand(_ => AbrirEditarCita(), _ => PuedeModificarSeleccionada());
+            CancelarCitaCommand = new AsyncRelayCommand(_ => CancelarCitaAsync(), _ => PuedeModificarSeleccionada());
+            FinalizarCitaCommand = new AsyncRelayCommand(_ => FinalizarCitaAsync(), _ => PuedeModificarSeleccionada());
+            CerrarDetalleCommand = new RelayCommand(_ => CerrarDetalle());
+            RecargarCommand = new AsyncRelayCommand(_ => CargarCitasDelDiaAsync());
 
             _ = CargarCitasDelDiaAsync();
         }
 
         private async Task CargarCitasDelDiaAsync()
         {
+            MensajeError = string.Empty;
             EstaCargando = true;
+            OnPropertyChanged(nameof(SinCitas));
+
             try
             {
                 var citas = await _citaRepository.ObtenerCitasPorFechaAsync(FechaSeleccionada);
-                CitasDelDia = new ObservableCollection<dynamic>(citas);
+                CitasDelDia = new ObservableCollection<AgendaCitaModel>(citas);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al cargar la agenda: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CitasDelDia = new ObservableCollection<AgendaCitaModel>();
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible cargar la agenda.");
             }
-            finally { EstaCargando = false; }
-        }
-
-        private void CerrarDetalle(object? parameter)
-        {
-            CitaSeleccionada = null; // Esto automáticamente oculta el panel
-        }
-
-        private void AbrirNuevaCita(object? parameter)
-        {
-            if (_cambiarVista != null)
+            finally
             {
-                var vistaNuevaCita = new NuevaCitaView();
-                vistaNuevaCita.DataContext = new NuevaCitaViewModel(_cambiarVista);
-                _cambiarVista(vistaNuevaCita);
+                EstaCargando = false;
+                OnPropertyChanged(nameof(SinCitas));
             }
         }
 
-        private void AbrirEditarCita(object? parameter)
+        private void AbrirNuevaCita()
         {
-            if (CitaSeleccionada != null && _cambiarVista != null)
+            var vista = new NuevaCitaView
             {
-                // 🔥 CAMBIO: "Atendida" en vez de "Finalizada"
-                if (CitaSeleccionada.Estado == "Atendida" || CitaSeleccionada.Estado == "Cancelada")
-                {
-                    MessageBox.Show("No puedes reprogramar una cita que ya fue atendida o cancelada.", "Acción denegada", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
+                DataContext = new NuevaCitaViewModel(_cambiarVista)
+            };
+            _cambiarVista(vista);
+        }
 
-                var vistaEditar = new EditarCitaView();
-                var viewModelEditar = new EditarCitaViewModel(CitaSeleccionada, _cambiarVista);
-                vistaEditar.DataContext = viewModelEditar;
-                _cambiarVista(vistaEditar);
+        private void AbrirEditarCita()
+        {
+            if (!PuedeModificarSeleccionada())
+            {
+                _messageService.MostrarAdvertencia(
+                    "La cita seleccionada ya está cerrada y no puede reprogramarse.",
+                    "Cita cerrada");
+                return;
+            }
+
+            var vista = new EditarCitaView
+            {
+                DataContext = new EditarCitaViewModel(CitaSeleccionada!, _cambiarVista)
+            };
+            _cambiarVista(vista);
+        }
+
+        private async Task CancelarCitaAsync()
+        {
+            if (!PuedeModificarSeleccionada()) return;
+
+            AgendaCitaModel cita = CitaSeleccionada!;
+            if (!_messageService.Confirmar(
+                    $"¿Deseas cancelar la cita de {cita.Paciente}?",
+                    "Cancelar cita"))
+            {
+                return;
+            }
+
+            try
+            {
+                await _citaRepository.CancelarCitaAsync(cita.IdCita);
+                _messageService.MostrarExito("La cita fue cancelada correctamente.", "Cita cancelada");
+                CerrarDetalle();
+                await CargarCitasDelDiaAsync();
+            }
+            catch (Exception ex)
+            {
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible cancelar la cita.");
             }
         }
 
-        private async Task CancelarCitaAsync(object? parameter)
+        private async Task FinalizarCitaAsync()
         {
-            if (CitaSeleccionada != null)
+            if (!PuedeModificarSeleccionada()) return;
+
+            AgendaCitaModel cita = CitaSeleccionada!;
+            if (!_messageService.Confirmar(
+                    $"¿Confirmas que {cita.Paciente} ya fue atendido?",
+                    "Marcar como atendida"))
             {
-                // 🔥 CAMBIO: "Atendida" en vez de "Finalizada"
-                if (CitaSeleccionada.Estado == "Atendida" || CitaSeleccionada.Estado == "Cancelada")
-                {
-                    MessageBox.Show("Esta cita ya está atendida o cancelada.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
+                return;
+            }
 
-                var result = MessageBox.Show($"¿Deseas cancelar la cita de {CitaSeleccionada.Paciente}?", "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    await _citaRepository.CancelarCitaAsync((int)CitaSeleccionada.IdCita);
-                    MessageBox.Show("Cita cancelada correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    CerrarDetalle(null);
-                    await CargarCitasDelDiaAsync();
-                }
+            try
+            {
+                await _citaRepository.CambiarEstadoCitaAsync(cita.IdCita, "Atendida");
+                _messageService.MostrarExito("La cita fue marcada como atendida.", "Cita atendida");
+                CerrarDetalle();
+                await CargarCitasDelDiaAsync();
+            }
+            catch (Exception ex)
+            {
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible actualizar el estado de la cita.");
             }
         }
 
-
-        // 🔥 NUEVA FUNCIÓN PARA FINALIZAR CITAS 🔥
-        private async Task FinalizarCitaAsync(object? parameter)
+        private bool PuedeModificarSeleccionada()
         {
-            if (CitaSeleccionada != null)
-            {
-                // 🔥 CAMBIO: "Atendida" en vez de "Finalizada"
-                if (CitaSeleccionada.Estado == "Atendida" || CitaSeleccionada.Estado == "Cancelada")
-                {
-                    MessageBox.Show("Esta cita ya está cerrada.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
+            return CitaSeleccionada is not null && !CitaSeleccionada.EstaCerrada;
+        }
 
-                var result = MessageBox.Show($"¿El paciente {CitaSeleccionada.Paciente} ya fue atendido? Se marcará la cita como Atendida.", "Finalizar Cita", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    // 🔥 CAMBIO VITAL: Le mandamos la palabra "Atendida" a SQL
-                    await _citaRepository.CambiarEstadoCitaAsync((int)CitaSeleccionada.IdCita, "Atendida");
-                    MessageBox.Show("Cita marcada como Atendida con éxito.", "Excelente", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    CerrarDetalle(null);
-                    await CargarCitasDelDiaAsync();
-                }
-            }
+        private void CerrarDetalle()
+        {
+            CitaSeleccionada = null;
         }
     }
 }

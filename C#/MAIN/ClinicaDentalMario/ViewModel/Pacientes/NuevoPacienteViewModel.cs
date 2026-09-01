@@ -71,12 +71,12 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                         return;
                     }
 
-                    var paciente = CrearModelo(
-                        idPaciente: 0,
-                        activo: true,
-                        fechaRegistro: DateTime.Now);
+                    var paciente = CrearModelo(0, true, DateTime.Now);
+                    var antecedentes = CrearAntecedentesModelo();
 
-                    int idPaciente = await _pacienteRepository.InsertarAsync(paciente);
+                    int idPaciente = await _pacienteRepository.InsertarConAntecedentesAsync(
+                        paciente,
+                        antecedentes);
 
                     if (idPaciente <= 0)
                     {
@@ -85,7 +85,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                     }
 
                     _messageService.MostrarExito(
-                        $"El expediente de {paciente.NombreCompleto} fue creado correctamente.",
+                        $"El expediente de {paciente.NombreCompleto} fue creado con sus antecedentes generales.",
                         "Paciente registrado");
 
                     Volver();

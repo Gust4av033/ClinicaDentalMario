@@ -1,4 +1,4 @@
-﻿using ClinicaDentalMario.Data;
+using ClinicaDentalMario.Data;
 using ClinicaDentalMario.Models;
 using Dapper;
 using System.Data;
@@ -10,9 +10,28 @@ namespace ClinicaDentalMario.Repositories
         public async Task<IEnumerable<HistorialClinicoModel>> ListarConsultasAsync(int idPaciente)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            var parameters = new { IdPaciente = idPaciente };
-            //[cite_start]// Llama al SP que lee de la vista vwHistorialPaciente [cite: 765, 832]
-            return await db.QueryAsync<HistorialClinicoModel>("Pacientes.sp_ListarConsultasPaciente", parameters, commandType: CommandType.StoredProcedure);
+
+            const string sql = @"
+                SELECT
+                    hc.IdHistorial,
+                    hc.IdPaciente,
+                    hc.IdDoctor,
+                    d.NombreCompleto AS Doctor,
+                    hc.MotivoConsulta,
+                    hc.AntecedentesMedicos,
+                    hc.AntecedentesOdontologicos,
+                    hc.Diagnostico,
+                    hc.PlanTratamiento,
+                    hc.Observaciones,
+                    hc.FechaConsulta
+                FROM Pacientes.HistorialClinico hc
+                INNER JOIN Personal.Doctores d ON d.IdDoctor = hc.IdDoctor
+                WHERE hc.IdPaciente = @IdPaciente
+                ORDER BY hc.FechaConsulta DESC;";
+
+            return await db.QueryAsync<HistorialClinicoModel>(
+                sql,
+                new { IdPaciente = idPaciente });
         }
 
         public async Task InsertarConsultaAsync(HistorialClinicoModel historial)
@@ -29,8 +48,11 @@ namespace ClinicaDentalMario.Repositories
                 historial.PlanTratamiento,
                 historial.Observaciones
             };
-            //[cite_start]// SP para guardar el récord médico [cite: 761, 831]
-            await db.ExecuteAsync("Pacientes.sp_InsertarConsulta", parameters, commandType: CommandType.StoredProcedure);
+
+            await db.ExecuteAsync(
+                "Pacientes.sp_InsertarConsulta",
+                parameters,
+                commandType: CommandType.StoredProcedure);
         }
 
         public async Task EditarConsultaAsync(HistorialClinicoModel historial)
@@ -44,30 +66,42 @@ namespace ClinicaDentalMario.Repositories
                 historial.AntecedentesOdontologicos
             };
 
-            await db.ExecuteAsync("Pacientes.sp_EditarConsulta", parameters, commandType: CommandType.StoredProcedure);
+            await db.ExecuteAsync(
+                "Pacientes.sp_EditarConsulta",
+                parameters,
+                commandType: CommandType.StoredProcedure);
         }
 
         public async Task<HistorialClinicoModel?> ObtenerPorIdPacienteAsync(int idPaciente)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            var parameters = new { IdPaciente = idPaciente };
 
-            // Usamos el procedimiento almacenado que ya usas para listar o una consulta directa al esquema
-            string sql = "SELECT TOP 1 * FROM Pacientes.HistorialClinico WHERE IdPaciente = @IdPaciente ORDER BY FechaConsulta DESC";
+            const string sql = @"
+                SELECT TOP 1
+                    hc.IdHistorial,
+                    hc.IdPaciente,
+                    hc.IdDoctor,
+                    d.NombreCompleto AS Doctor,
+                    hc.MotivoConsulta,
+                    hc.AntecedentesMedicos,
+                    hc.AntecedentesOdontologicos,
+                    hc.Diagnostico,
+                    hc.PlanTratamiento,
+                    hc.Observaciones,
+                    hc.FechaConsulta
+                FROM Pacientes.HistorialClinico hc
+                INNER JOIN Personal.Doctores d ON d.IdDoctor = hc.IdDoctor
+                WHERE hc.IdPaciente = @IdPaciente
+                ORDER BY hc.FechaConsulta DESC;";
 
-            return await db.QueryFirstOrDefaultAsync<HistorialClinicoModel>(sql, parameters);
+            return await db.QueryFirstOrDefaultAsync<HistorialClinicoModel>(
+                sql,
+                new { IdPaciente = idPaciente });
         }
-        public async Task<IEnumerable<HistorialClinicoModel>> ObtenerHistorialPorPacienteAsync(int idPaciente)
+
+        public Task<IEnumerable<HistorialClinicoModel>> ObtenerHistorialPorPacienteAsync(int idPaciente)
         {
-            using IDbConnection db = DatabaseConnection.GetConnection();
-            var parameters = new { IdPaciente = idPaciente };
-
-            // Consulta directa o usando tu procedimiento almacenado de consultas
-            string sql = "SELECT * FROM Pacientes.HistorialClinico WHERE IdPaciente = @IdPaciente ORDER BY FechaConsulta DESC";
-
-            return await db.QueryAsync<HistorialClinicoModel>(sql, parameters);
+            return ListarConsultasAsync(idPaciente);
         }
-
-
     }
 }

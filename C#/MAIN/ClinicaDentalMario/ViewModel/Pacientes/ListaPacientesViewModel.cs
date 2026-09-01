@@ -106,11 +106,6 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             _ = CargarSegunFiltroAsync();
         }
 
-        protected override void OnEstaCargandoChanged()
-        {
-            OnPropertyChanged(nameof(SinResultados));
-        }
-
         private void ProgramarBusqueda()
         {
             _busquedaCts?.Cancel();
@@ -135,6 +130,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         {
             MensajeError = string.Empty;
             EstaCargando = true;
+            OnPropertyChanged(nameof(SinResultados));
 
             try
             {
@@ -166,6 +162,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             finally
             {
                 EstaCargando = false;
+                OnPropertyChanged(nameof(SinResultados));
             }
         }
 

@@ -18,6 +18,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         private readonly IMessageService _messageService;
         private readonly IExceptionHandler _exceptionHandler;
         private readonly int _idCita;
+        private readonly int _idPaciente;
         private bool _catalogosCargados;
 
         public string NombrePaciente { get; }
@@ -139,6 +140,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             ArgumentNullException.ThrowIfNull(cita);
 
             _idCita = cita.IdCita;
+            _idPaciente = cita.IdPaciente;
             _cambiarVista = cambiarVista ?? throw new ArgumentNullException(nameof(cambiarVista));
             _citaRepository = citaRepository ?? throw new ArgumentNullException(nameof(citaRepository));
             _doctorRepository = doctorRepository ?? throw new ArgumentNullException(nameof(doctorRepository));
@@ -228,6 +230,16 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                             _idCita))
                     {
                         MensajeError = $"El doctor ya tiene otra cita que se cruza con el intervalo {nuevaFechaHora:HH:mm} - {nuevaFechaHora.AddMinutes(DuracionMinutos):HH:mm}.";
+                        return;
+                    }
+
+                    if (await _citaRepository.ExisteConflictoPacienteAsync(
+                            _idPaciente,
+                            nuevaFechaHora,
+                            DuracionMinutos,
+                            _idCita))
+                    {
+                        MensajeError = $"El paciente ya tiene otra cita que se cruza con el intervalo {nuevaFechaHora:HH:mm} - {nuevaFechaHora.AddMinutes(DuracionMinutos):HH:mm}.";
                         return;
                     }
 

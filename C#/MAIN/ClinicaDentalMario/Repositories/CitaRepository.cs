@@ -17,6 +17,7 @@ namespace ClinicaDentalMario.Repositories
                     c.IdDoctor,
                     c.IdEstado,
                     c.FechaHora,
+                    c.DuracionMinutos,
                     c.Observaciones,
                     p.NombreCompleto AS Paciente,
                     d.NombreCompleto AS Doctor,
@@ -58,25 +59,30 @@ namespace ClinicaDentalMario.Repositories
 
         public async Task<bool> ExisteConflictoDoctorAsync(
             int idDoctor,
-            DateTime fechaHora,
+            DateTime fechaHoraInicio,
+            int duracionMinutos,
             int? excluirIdCita = null)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
+            DateTime fechaHoraFin = fechaHoraInicio.AddMinutes(duracionMinutos);
+
             const string sql = @"
                 SELECT COUNT(1)
                 FROM Agenda.Citas c
                 INNER JOIN Catalogos.EstadosCita e ON c.IdEstado = e.IdEstado
                 WHERE c.IdDoctor = @IdDoctor
-                  AND c.FechaHora = @FechaHora
                   AND e.Nombre NOT IN ('Cancelada', 'No Asistió')
-                  AND (@ExcluirIdCita IS NULL OR c.IdCita <> @ExcluirIdCita);";
+                  AND (@ExcluirIdCita IS NULL OR c.IdCita <> @ExcluirIdCita)
+                  AND c.FechaHora < @FechaHoraFin
+                  AND DATEADD(MINUTE, c.DuracionMinutos, c.FechaHora) > @FechaHoraInicio;";
 
             int cantidad = await db.ExecuteScalarAsync<int>(
                 sql,
                 new
                 {
                     IdDoctor = idDoctor,
-                    FechaHora = fechaHora,
+                    FechaHoraInicio = fechaHoraInicio,
+                    FechaHoraFin = fechaHoraFin,
                     ExcluirIdCita = excluirIdCita
                 });
 
@@ -86,19 +92,23 @@ namespace ClinicaDentalMario.Repositories
         public async Task InsertarAsync(CitaModel cita)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            var parameters = new
+            const string sql = @"
+                INSERT INTO Agenda.Citas
+                    (IdPaciente, IdDoctor, IdEstado, FechaHora, DuracionMinutos, Observaciones)
+                VALUES
+                    (@IdPaciente, @IdDoctor, @IdEstado, @FechaHora, @DuracionMinutos, @Observaciones);";
+
+            await db.ExecuteAsync(sql, new
             {
                 cita.IdPaciente,
                 cita.IdDoctor,
                 cita.IdEstado,
                 cita.FechaHora,
-                cita.Observaciones
-            };
-
-            await db.ExecuteAsync(
-                "Agenda.sp_AgendarCita",
-                parameters,
-                commandType: CommandType.StoredProcedure);
+                cita.DuracionMinutos,
+                Observaciones = string.IsNullOrWhiteSpace(cita.Observaciones)
+                    ? null
+                    : cita.Observaciones.Trim()
+            });
         }
 
         public async Task ActualizarCitaAsync(
@@ -106,6 +116,7 @@ namespace ClinicaDentalMario.Repositories
             int idDoctor,
             int idEstado,
             DateTime fechaHora,
+            int duracionMinutos,
             string? observaciones)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
@@ -114,21 +125,21 @@ namespace ClinicaDentalMario.Repositories
                 SET IdDoctor = @IdDoctor,
                     IdEstado = @IdEstado,
                     FechaHora = @FechaHora,
+                    DuracionMinutos = @DuracionMinutos,
                     Observaciones = @Observaciones
                 WHERE IdCita = @IdCita;";
 
-            await db.ExecuteAsync(
-                sql,
-                new
-                {
-                    IdCita = idCita,
-                    IdDoctor = idDoctor,
-                    IdEstado = idEstado,
-                    FechaHora = fechaHora,
-                    Observaciones = string.IsNullOrWhiteSpace(observaciones)
-                        ? null
-                        : observaciones.Trim()
-                });
+            await db.ExecuteAsync(sql, new
+            {
+                IdCita = idCita,
+                IdDoctor = idDoctor,
+                IdEstado = idEstado,
+                FechaHora = fechaHora,
+                DuracionMinutos = duracionMinutos,
+                Observaciones = string.IsNullOrWhiteSpace(observaciones)
+                    ? null
+                    : observaciones.Trim()
+            });
         }
 
         public async Task CancelarCitaAsync(int idCita)
@@ -151,9 +162,7 @@ namespace ClinicaDentalMario.Repositories
                     WHERE Nombre = @NombreEstado)
                 WHERE IdCita = @IdCita;";
 
-            await db.ExecuteAsync(
-                sql,
-                new { IdCita = idCita, NombreEstado = nombreEstado });
+            await db.ExecuteAsync(sql, new { IdCita = idCita, NombreEstado = nombreEstado });
         }
     }
 }

@@ -44,9 +44,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             set
             {
                 if (SetProperty(ref _pacienteSeleccionado, value))
-                {
                     ValidarSeleccionPaciente();
-                }
             }
         }
 
@@ -57,22 +55,18 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             set
             {
                 if (SetProperty(ref _doctorSeleccionado, value))
-                {
                     ValidarSeleccionDoctor();
-                }
             }
         }
 
-        private DateTime _fechaSeleccionada = DateTime.Today.AddDays(1);
+        private DateTime _fechaSeleccionada;
         public DateTime FechaSeleccionada
         {
             get => _fechaSeleccionada;
             set
             {
                 if (SetProperty(ref _fechaSeleccionada, value.Date))
-                {
                     ValidarFecha();
-                }
             }
         }
 
@@ -83,9 +77,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             set
             {
                 if (SetProperty(ref _horaSeleccionada, value ?? string.Empty))
-                {
                     ValidarHora();
-                }
             }
         }
 
@@ -96,9 +88,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             set
             {
                 if (SetProperty(ref _duracionMinutos, value))
-                {
                     ValidarDuracion();
-                }
             }
         }
 
@@ -127,9 +117,10 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         public AsyncRelayCommand GuardarCommand { get; }
         public ICommand CancelarCommand { get; }
 
-        public NuevaCitaViewModel(Action<object> cambiarVista)
+        public NuevaCitaViewModel(Action<object> cambiarVista, DateTime? fechaInicial = null)
             : this(
                 cambiarVista,
+                fechaInicial,
                 new PacienteRepository(),
                 new DoctorRepository(),
                 new CitaRepository(),
@@ -140,6 +131,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
         public NuevaCitaViewModel(
             Action<object> cambiarVista,
+            DateTime? fechaInicial,
             PacienteRepository pacienteRepository,
             DoctorRepository doctorRepository,
             CitaRepository citaRepository,
@@ -152,6 +144,10 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             _citaRepository = citaRepository ?? throw new ArgumentNullException(nameof(citaRepository));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+
+            _fechaSeleccionada = fechaInicial?.Date ?? DateTime.Today.AddDays(1);
+            if (_fechaSeleccionada < DateTime.Today)
+                _fechaSeleccionada = DateTime.Today;
 
             Titulo = "Agendar Nueva Cita";
             GuardarCommand = new AsyncRelayCommand(_ => GuardarAsync(), _ => !EstaCargando && _listasCargadas);
@@ -267,9 +263,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
             fechaHora = default;
             if (HasErrors || !TryObtenerHora(out TimeSpan hora))
-            {
                 return false;
-            }
 
             fechaHora = FechaSeleccionada.Date.Add(hora);
             if (fechaHora <= DateTime.Now)
@@ -339,7 +333,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         {
             var vistaAgenda = new AgendaView
             {
-                DataContext = new AgendaViewModel(_cambiarVista)
+                DataContext = new AgendaViewModel(_cambiarVista, FechaSeleccionada)
             };
 
             _cambiarVista(vistaAgenda);

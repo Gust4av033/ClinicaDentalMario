@@ -284,19 +284,24 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             }
 
             string antecedentesMedicos = string.IsNullOrWhiteSpace(consulta.AntecedentesMedicos)
-                ? "Sin información registrada en esta consulta"
+                ? "Sin cambios médicos registrados en esta consulta"
                 : consulta.AntecedentesMedicos;
             string antecedentesOdontologicos = string.IsNullOrWhiteSpace(consulta.AntecedentesOdontologicos)
-                ? "Sin información registrada en esta consulta"
+                ? "Sin cambios odontológicos registrados en esta consulta"
                 : consulta.AntecedentesOdontologicos;
+            string observaciones = string.IsNullOrWhiteSpace(consulta.Observaciones)
+                ? "Sin observaciones adicionales"
+                : consulta.Observaciones;
 
             string mensaje =
-                $"Fecha: {consulta.FechaConsulta:dd/MM/yyyy hh:mm tt}\n\n" +
+                $"Fecha: {consulta.FechaConsulta:dd/MM/yyyy hh:mm tt}\n" +
+                $"Doctor: {(string.IsNullOrWhiteSpace(consulta.Doctor) ? "No especificado" : consulta.Doctor)}\n\n" +
                 $"Motivo de consulta:\n{consulta.MotivoConsulta ?? "Sin especificar"}\n\n" +
-                $"Antecedentes médicos de esta consulta:\n{antecedentesMedicos}\n\n" +
-                $"Antecedentes odontológicos de esta consulta:\n{antecedentesOdontologicos}\n\n" +
+                $"Cambios médicos de esta consulta:\n{antecedentesMedicos}\n\n" +
+                $"Cambios odontológicos de esta consulta:\n{antecedentesOdontologicos}\n\n" +
                 $"Diagnóstico:\n{consulta.Diagnostico ?? "Sin especificar"}\n\n" +
-                $"Plan de tratamiento:\n{consulta.PlanTratamiento ?? "Sin especificar"}";
+                $"Plan de tratamiento:\n{consulta.PlanTratamiento ?? "Sin especificar"}\n\n" +
+                $"Observaciones:\n{observaciones}";
 
             _messageService.MostrarInformacion(mensaje, "Detalle clínico");
         }

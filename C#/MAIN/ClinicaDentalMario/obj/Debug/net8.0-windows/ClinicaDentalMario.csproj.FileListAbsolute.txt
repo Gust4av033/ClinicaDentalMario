@@ -163,3 +163,4 @@ C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\ClinicaDentalMario.pdb
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\ClinicaDentalMario.genruntimeconfig.cache
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\ref\ClinicaDentalMario.dll
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\Themes\DarkControls.baml

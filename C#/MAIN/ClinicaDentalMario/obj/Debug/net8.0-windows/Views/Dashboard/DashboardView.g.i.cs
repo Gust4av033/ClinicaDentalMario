@@ -54,7 +54,7 @@ namespace ClinicaDentalMario.Views.Dashboard {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;V1.0.0.0;component/views/dashboard/dashboardview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;component/views/dashboard/dashboardview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Views\Dashboard\DashboardView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

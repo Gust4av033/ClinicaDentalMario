@@ -78,8 +78,7 @@ namespace ClinicaDentalMario.Views.Pagos {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;V1.0.0.0;component/views/pagos/vistapreviaestadoglobalwindow." +
-                    "xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;component/views/pagos/vistapreviaestadoglobalwindow.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Views\Pagos\VistaPreviaEstadoGlobalWindow.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

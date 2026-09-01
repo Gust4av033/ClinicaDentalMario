@@ -54,7 +54,7 @@ namespace ClinicaDentalMario.Views.Agenda {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;V1.0.0.0;component/views/agenda/nuevacitaview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;component/views/agenda/nuevacitaview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Views\Agenda\NuevaCitaView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

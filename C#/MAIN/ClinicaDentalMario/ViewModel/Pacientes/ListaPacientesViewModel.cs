@@ -19,8 +19,18 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         public ObservableCollection<PacienteModel> Pacientes
         {
             get => _pacientes;
-            private set => SetProperty(ref _pacientes, value);
+            private set
+            {
+                if (SetProperty(ref _pacientes, value))
+                {
+                    OnPropertyChanged(nameof(CantidadPacientes));
+                    OnPropertyChanged(nameof(SinResultados));
+                }
+            }
         }
+
+        public int CantidadPacientes => Pacientes.Count;
+        public bool SinResultados => !EstaCargando && Pacientes.Count == 0;
 
         private string _terminoBusqueda = string.Empty;
         public string TerminoBusqueda
@@ -96,6 +106,11 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             _ = CargarSegunFiltroAsync();
         }
 
+        protected override void OnEstaCargandoChanged()
+        {
+            OnPropertyChanged(nameof(SinResultados));
+        }
+
         private void ProgramarBusqueda()
         {
             _busquedaCts?.Cancel();
@@ -113,7 +128,6 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             }
             catch (OperationCanceledException)
             {
-                // Es normal al continuar escribiendo en el buscador.
             }
         }
 

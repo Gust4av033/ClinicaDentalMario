@@ -9,5 +9,17 @@ namespace ClinicaDentalMario.Common
         public const string Administrador = "Administrador";
         public const string Doctor = "Doctor";
         public const string Recepcionista = "Recepcionista";
+
+        public static bool EsRolReconocido(string? rol)
+        {
+            if (string.IsNullOrWhiteSpace(rol))
+            {
+                return false;
+            }
+
+            return rol.Equals(Administrador, StringComparison.OrdinalIgnoreCase)
+                || rol.Equals(Doctor, StringComparison.OrdinalIgnoreCase)
+                || rol.Equals(Recepcionista, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

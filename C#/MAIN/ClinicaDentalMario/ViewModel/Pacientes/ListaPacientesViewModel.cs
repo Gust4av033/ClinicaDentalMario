@@ -1,5 +1,6 @@
-﻿using ClinicaDentalMario.Models;
+using ClinicaDentalMario.Models;
 using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Services;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Pacientes;
 using System.Collections.ObjectModel;
@@ -10,16 +11,17 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
     public class ListaPacientesViewModel : ViewModelBase
     {
         private readonly PacienteRepository _pacienteRepository;
+        private readonly IExceptionHandler _exceptionHandler;
+        private readonly Action<object> _cambiarVista;
+        private CancellationTokenSource? _busquedaCts;
 
-        // Colección que notifica a la tabla de WPF cuando hay cambios
-        private ObservableCollection<PacienteModel> _pacientes = new ObservableCollection<PacienteModel>();
+        private ObservableCollection<PacienteModel> _pacientes = new();
         public ObservableCollection<PacienteModel> Pacientes
         {
             get => _pacientes;
-            set => SetProperty(ref _pacientes, value);
+            private set => SetProperty(ref _pacientes, value);
         }
 
-        // CORRECCIÓN: Se cambió a "TerminoBusqueda" para que haga match exacto con el XAML
         private string _terminoBusqueda = string.Empty;
         public string TerminoBusqueda
         {
@@ -28,8 +30,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             {
                 if (SetProperty(ref _terminoBusqueda, value))
                 {
-                    // Búsqueda en tiempo real conforme la recepcionista escribe
-                    _ = BuscarAsync();
+                    ProgramarBusqueda();
                 }
             }
         }
@@ -42,7 +43,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             {
                 if (SetProperty(ref _mostrarInactivos, value))
                 {
-                    _ = CargarPacientesAsync(); // Si tocan el botón, recargamos la lista
+                    _ = CargarSegunFiltroAsync();
                 }
             }
         }
@@ -54,115 +55,146 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             set => SetProperty(ref _pacienteSeleccionado, value);
         }
 
-        // Delegado para cambiar de vista en el contenedor principal (MainViewModel)
-        private readonly Action<object> _cambiarVista;
-
-        // Comandos para los botones
-        public ICommand BuscarCommand { get; }
-        public ICommand NuevoPacienteCommand { get; }
-        public ICommand EditarPacienteCommand { get; }
-        public ICommand VerHistorialCommand { get; } // Comando para el ojito
-
-        // Recibe la acción desde el MainViewModel
-        public ListaPacientesViewModel(Action<object> cambiarVistaAccion)
+        private string _mensajeError = string.Empty;
+        public string MensajeError
         {
-            Titulo = "Listado de Pacientes";
-            _pacienteRepository = new PacienteRepository();
-            _cambiarVista = cambiarVistaAccion; // Guardamos la referencia de navegación
-
-            BuscarCommand = new RelayCommand(async (param) => await BuscarAsync());
-            NuevoPacienteCommand = new RelayCommand(AbrirNuevoPaciente);
-            EditarPacienteCommand = new RelayCommand(AbrirEditarPaciente);
-            VerHistorialCommand = new RelayCommand(AbrirHistorialPaciente); // Inicializado
-
-            _ = CargarPacientesAsync();
+            get => _mensajeError;
+            private set => SetProperty(ref _mensajeError, value);
         }
 
-        private async Task CargarPacientesAsync()
+        public AsyncRelayCommand BuscarCommand { get; }
+        public AsyncRelayCommand RecargarCommand { get; }
+        public ICommand NuevoPacienteCommand { get; }
+        public ICommand EditarPacienteCommand { get; }
+        public ICommand VerHistorialCommand { get; }
+
+        public ListaPacientesViewModel(Action<object> cambiarVistaAccion)
+            : this(
+                cambiarVistaAccion,
+                new PacienteRepository(),
+                new ExceptionHandler(new MessageService()))
         {
-            EstaCargando = true;
+        }
+
+        public ListaPacientesViewModel(
+            Action<object> cambiarVistaAccion,
+            PacienteRepository pacienteRepository,
+            IExceptionHandler exceptionHandler)
+        {
+            _cambiarVista = cambiarVistaAccion ?? throw new ArgumentNullException(nameof(cambiarVistaAccion));
+            _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
+            _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+
+            Titulo = "Pacientes";
+
+            BuscarCommand = new AsyncRelayCommand(_ => CargarSegunFiltroAsync());
+            RecargarCommand = new AsyncRelayCommand(_ => CargarSegunFiltroAsync());
+            NuevoPacienteCommand = new RelayCommand(AbrirNuevoPaciente);
+            EditarPacienteCommand = new RelayCommand(AbrirEditarPaciente);
+            VerHistorialCommand = new RelayCommand(AbrirHistorialPaciente);
+
+            _ = CargarSegunFiltroAsync();
+        }
+
+        private void ProgramarBusqueda()
+        {
+            _busquedaCts?.Cancel();
+            _busquedaCts?.Dispose();
+            _busquedaCts = new CancellationTokenSource();
+            _ = BuscarConEsperaAsync(_busquedaCts.Token);
+        }
+
+        private async Task BuscarConEsperaAsync(CancellationToken cancellationToken)
+        {
             try
             {
-                // Alternamos entre la lista de activos y la de eliminados
-                var lista = MostrarInactivos
-                    ? await _pacienteRepository.ObtenerInactivosAsync()
-                    : await _pacienteRepository.ObtenerTodosAsync();
+                await Task.Delay(300, cancellationToken);
+                await CargarSegunFiltroAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                // Es normal al continuar escribiendo en el buscador.
+            }
+        }
+
+        private async Task CargarSegunFiltroAsync()
+        {
+            MensajeError = string.Empty;
+            EstaCargando = true;
+
+            try
+            {
+                IEnumerable<PacienteModel> lista;
+                string termino = TerminoBusqueda.Trim();
+
+                if (string.IsNullOrWhiteSpace(termino))
+                {
+                    lista = MostrarInactivos
+                        ? await _pacienteRepository.ObtenerInactivosAsync()
+                        : await _pacienteRepository.ObtenerTodosAsync();
+                }
+                else
+                {
+                    lista = await _pacienteRepository.BuscarAsync(
+                        termino,
+                        soloInactivos: MostrarInactivos);
+                }
 
                 Pacientes = new ObservableCollection<PacienteModel>(lista);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al cargar pacientes: " + ex.Message);
+                Pacientes = new ObservableCollection<PacienteModel>();
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible cargar los pacientes.");
             }
-            finally { EstaCargando = false; }
-        }
-
-        private async Task BuscarAsync()
-        {
-            if (string.IsNullOrWhiteSpace(TerminoBusqueda))
+            finally
             {
-                await CargarPacientesAsync();
-                return;
-            }
-
-            try
-            {
-                var resultados = await _pacienteRepository.BuscarAsync(TerminoBusqueda);
-                Pacientes = new ObservableCollection<PacienteModel>(resultados);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error al buscar pacientes: " + ex.Message);
+                EstaCargando = false;
             }
         }
 
         private void AbrirNuevoPaciente(object? parameter)
         {
-            if (_cambiarVista != null)
+            var vista = new NuevoPacienteView
             {
-                var vistaNuevo = new NuevoPacienteView();
+                DataContext = new NuevoPacienteViewModel(_cambiarVista)
+            };
 
-                // CORRECCIÓN: Ahora le pasamos el delegado _cambiarVista al constructor
-                var viewModelNuevo = new NuevoPacienteViewModel(_cambiarVista);
-
-                vistaNuevo.DataContext = viewModelNuevo;
-                _cambiarVista(vistaNuevo);
-            }
+            _cambiarVista(vista);
         }
 
         private void AbrirEditarPaciente(object? parameter)
         {
-            var pacienteAEditar = parameter as PacienteModel ?? PacienteSeleccionado;
-
-            if (pacienteAEditar != null && _cambiarVista != null)
+            var paciente = parameter as PacienteModel ?? PacienteSeleccionado;
+            if (paciente is null)
             {
-                var vistaEdicion = new EditarPacienteView();
-
-                // ¡AQUÍ ESTÁ LA SOLUCIÓN! Le agregamos , _cambiarVista
-                var viewModelEdicion = new EditarPacienteViewModel(pacienteAEditar, _cambiarVista);
-
-                vistaEdicion.DataContext = viewModelEdicion;
-                _cambiarVista(vistaEdicion);
+                return;
             }
+
+            var vista = new EditarPacienteView
+            {
+                DataContext = new EditarPacienteViewModel(paciente, _cambiarVista)
+            };
+
+            _cambiarVista(vista);
         }
 
-        // De paso corregimos el del historial para que no te dé el mismo error
         private void AbrirHistorialPaciente(object? parameter)
         {
-            var pacienteSeleccionado = parameter as PacienteModel ?? PacienteSeleccionado;
-
-            if (pacienteSeleccionado != null && _cambiarVista != null)
+            var paciente = parameter as PacienteModel ?? PacienteSeleccionado;
+            if (paciente is null)
             {
-                var vistaHistorial = new HistorialPacienteView();
-
-                // ¡AQUÍ TAMBIÉN LE AGREGAMOS LA NAVEGACIÓN!
-                var viewModelHistorial = new HistorialPacienteViewModel(pacienteSeleccionado, _cambiarVista);
-
-                vistaHistorial.DataContext = viewModelHistorial;
-                _cambiarVista(vistaHistorial);
+                return;
             }
+
+            var vista = new HistorialPacienteView
+            {
+                DataContext = new HistorialPacienteViewModel(paciente, _cambiarVista)
+            };
+
+            _cambiarVista(vista);
         }
-
-
     }
 }

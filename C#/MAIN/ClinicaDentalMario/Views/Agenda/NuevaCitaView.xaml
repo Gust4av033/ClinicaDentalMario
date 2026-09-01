@@ -8,7 +8,7 @@
         <Border Background="{StaticResource BgCardBrush}"
                 CornerRadius="15"
                 Padding="35"
-                MaxWidth="650"
+                MaxWidth="700"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
                 BorderBrush="{StaticResource BorderBrush}"
@@ -53,12 +53,14 @@
                 <Grid Margin="0,0,0,15">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Fecha de la cita *" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <TextBlock Text="Fecha *" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
                         <DatePicker SelectedDate="{Binding FechaSeleccionada, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
                                     Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"/>
                     </StackPanel>
@@ -69,6 +71,19 @@
                                  Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
                                  MaxLength="5"
                                  ToolTip="Formato HH:mm, por ejemplo 09:30 o 14:30"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="4">
+                        <TextBlock Text="Duración *" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                        <ComboBox ItemsSource="{Binding DuracionesDisponibles}"
+                                  SelectedItem="{Binding DuracionMinutos, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                  Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding StringFormat={}{0} min}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
                 </Grid>
 
@@ -82,6 +97,11 @@
                              AcceptsReturn="True"
                              VerticalScrollBarVisibility="Auto"/>
                 </StackPanel>
+
+                <Border Background="{StaticResource BgControlBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,20">
+                    <TextBlock Text="La agenda bloqueará cualquier cita que se cruce con otra cita activa del mismo doctor."
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" TextWrapping="Wrap"/>
+                </Border>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Command="{Binding CancelarCommand}" Background="Transparent" Margin="0,0,15,0">

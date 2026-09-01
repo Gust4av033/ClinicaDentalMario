@@ -4,6 +4,7 @@ using ClinicaDentalMario.Services;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Agenda;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 
 namespace ClinicaDentalMario.ViewModel.Agenda
@@ -24,13 +25,19 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                 if (SetProperty(ref _citasDelDia, value))
                 {
                     OnPropertyChanged(nameof(SinCitas));
+                    OnPropertyChanged(nameof(CantidadCitas));
+                    OnPropertyChanged(nameof(CantidadPendientes));
+                    OnPropertyChanged(nameof(CantidadConfirmadas));
                 }
             }
         }
 
         public bool SinCitas => !EstaCargando && CitasDelDia.Count == 0;
+        public int CantidadCitas => CitasDelDia.Count;
+        public int CantidadPendientes => CitasDelDia.Count(x => x.Estado.Equals("Pendiente", StringComparison.OrdinalIgnoreCase));
+        public int CantidadConfirmadas => CitasDelDia.Count(x => x.Estado.Equals("Confirmada", StringComparison.OrdinalIgnoreCase));
 
-        private DateTime _fechaSeleccionada = DateTime.Today;
+        private DateTime _fechaSeleccionada;
         public DateTime FechaSeleccionada
         {
             get => _fechaSeleccionada;
@@ -38,11 +45,18 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             {
                 if (SetProperty(ref _fechaSeleccionada, value.Date))
                 {
+                    OnPropertyChanged(nameof(FechaSeleccionadaTexto));
+                    OnPropertyChanged(nameof(EsHoy));
                     CerrarDetalle();
                     _ = CargarCitasDelDiaAsync();
                 }
             }
         }
+
+        public string FechaSeleccionadaTexto =>
+            FechaSeleccionada.ToString("dddd, dd 'de' MMMM 'de' yyyy", CultureInfo.CurrentCulture);
+
+        public bool EsHoy => FechaSeleccionada.Date == DateTime.Today;
 
         private AgendaCitaModel? _citaSeleccionada;
         public AgendaCitaModel? CitaSeleccionada
@@ -84,15 +98,20 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
         public RelayCommand NuevaCitaCommand { get; }
         public RelayCommand EditarCitaCommand { get; }
+        public AsyncRelayCommand ConfirmarCitaCommand { get; }
         public AsyncRelayCommand CancelarCitaCommand { get; }
         public AsyncRelayCommand FinalizarCitaCommand { get; }
         public AsyncRelayCommand NoAsistioCommand { get; }
         public RelayCommand CerrarDetalleCommand { get; }
         public AsyncRelayCommand RecargarCommand { get; }
+        public RelayCommand DiaAnteriorCommand { get; }
+        public RelayCommand IrHoyCommand { get; }
+        public RelayCommand DiaSiguienteCommand { get; }
 
-        public AgendaViewModel(Action<object> cambiarVista)
+        public AgendaViewModel(Action<object> cambiarVista, DateTime? fechaInicial = null)
             : this(
                 cambiarVista,
+                fechaInicial,
                 new CitaRepository(),
                 new MessageService(),
                 new ExceptionHandler(new MessageService()))
@@ -101,6 +120,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
         public AgendaViewModel(
             Action<object> cambiarVista,
+            DateTime? fechaInicial,
             CitaRepository citaRepository,
             IMessageService messageService,
             IExceptionHandler exceptionHandler)
@@ -109,15 +129,20 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             _citaRepository = citaRepository ?? throw new ArgumentNullException(nameof(citaRepository));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+            _fechaSeleccionada = fechaInicial?.Date ?? DateTime.Today;
 
             Titulo = "Agenda de Citas";
             NuevaCitaCommand = new RelayCommand(_ => AbrirNuevaCita());
             EditarCitaCommand = new RelayCommand(_ => AbrirEditarCita(), _ => PuedeReprogramarOCancelar());
+            ConfirmarCitaCommand = new AsyncRelayCommand(_ => ConfirmarCitaAsync(), _ => PuedeConfirmar());
             CancelarCitaCommand = new AsyncRelayCommand(_ => CancelarCitaAsync(), _ => PuedeReprogramarOCancelar());
             FinalizarCitaCommand = new AsyncRelayCommand(_ => FinalizarCitaAsync(), _ => PuedeMarcarAtendida());
             NoAsistioCommand = new AsyncRelayCommand(_ => MarcarNoAsistioAsync(), _ => PuedeMarcarNoAsistio());
             CerrarDetalleCommand = new RelayCommand(_ => CerrarDetalle());
             RecargarCommand = new AsyncRelayCommand(_ => CargarCitasDelDiaAsync());
+            DiaAnteriorCommand = new RelayCommand(_ => FechaSeleccionada = FechaSeleccionada.AddDays(-1));
+            IrHoyCommand = new RelayCommand(_ => FechaSeleccionada = DateTime.Today);
+            DiaSiguienteCommand = new RelayCommand(_ => FechaSeleccionada = FechaSeleccionada.AddDays(1));
 
             _ = CargarCitasDelDiaAsync();
         }
@@ -152,7 +177,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         {
             var vista = new NuevaCitaView
             {
-                DataContext = new NuevaCitaViewModel(_cambiarVista)
+                DataContext = new NuevaCitaViewModel(_cambiarVista, FechaSeleccionada)
             };
             _cambiarVista(vista);
         }
@@ -174,20 +199,33 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             _cambiarVista(vista);
         }
 
+        private async Task ConfirmarCitaAsync()
+        {
+            if (!PuedeConfirmar())
+                return;
+
+            AgendaCitaModel cita = CitaSeleccionada!;
+            if (!_messageService.Confirmar(
+                    $"¿Confirmas la cita de {cita.Paciente} para {cita.HorarioTexto}?",
+                    "Confirmar cita"))
+                return;
+
+            await CambiarEstadoSeleccionadaAsync(
+                "Confirmada",
+                "La cita fue confirmada correctamente.",
+                "Cita confirmada");
+        }
+
         private async Task CancelarCitaAsync()
         {
             if (!PuedeReprogramarOCancelar())
-            {
                 return;
-            }
 
             AgendaCitaModel cita = CitaSeleccionada!;
             if (!_messageService.Confirmar(
                     $"¿Deseas cancelar la cita de {cita.Paciente}?",
                     "Cancelar cita"))
-            {
                 return;
-            }
 
             await CambiarEstadoSeleccionadaAsync(
                 "Cancelada",
@@ -198,17 +236,13 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         private async Task FinalizarCitaAsync()
         {
             if (!PuedeMarcarAtendida())
-            {
                 return;
-            }
 
             AgendaCitaModel cita = CitaSeleccionada!;
             if (!_messageService.Confirmar(
                     $"¿Confirmas que {cita.Paciente} fue atendido?",
                     "Marcar como atendida"))
-            {
                 return;
-            }
 
             await CambiarEstadoSeleccionadaAsync(
                 "Atendida",
@@ -219,17 +253,13 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         private async Task MarcarNoAsistioAsync()
         {
             if (!PuedeMarcarNoAsistio())
-            {
                 return;
-            }
 
             AgendaCitaModel cita = CitaSeleccionada!;
             if (!_messageService.Confirmar(
                     $"¿Confirmas que {cita.Paciente} no asistió a la cita?",
                     "Marcar inasistencia"))
-            {
                 return;
-            }
 
             await CambiarEstadoSeleccionadaAsync(
                 "No Asistió",
@@ -259,6 +289,13 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             }
         }
 
+        private bool PuedeConfirmar()
+        {
+            return CitaSeleccionada is not null &&
+                   CitaSeleccionada.Estado.Equals("Pendiente", StringComparison.OrdinalIgnoreCase) &&
+                   CitaSeleccionada.FechaHora > DateTime.Now;
+        }
+
         private bool PuedeReprogramarOCancelar()
         {
             return CitaSeleccionada is not null &&
@@ -277,12 +314,13 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         {
             return CitaSeleccionada is not null &&
                    !CitaSeleccionada.EstaCerrada &&
-                   CitaSeleccionada.FechaHora < DateTime.Now;
+                   CitaSeleccionada.FechaHoraFin <= DateTime.Now;
         }
 
         private void NotificarComandosSeleccion()
         {
             EditarCitaCommand.NotificarCanExecuteChanged();
+            ConfirmarCitaCommand.NotificarCanExecuteChanged();
             CancelarCitaCommand.NotificarCanExecuteChanged();
             FinalizarCitaCommand.NotificarCanExecuteChanged();
             NoAsistioCommand.NotificarCanExecuteChanged();

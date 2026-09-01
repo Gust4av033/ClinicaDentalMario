@@ -91,7 +91,49 @@ namespace ClinicaDentalMario.Data
                     );
                 END;";
 
+            const string sqlDuracionCita = @"
+                IF OBJECT_ID('Agenda.Citas', 'U') IS NOT NULL
+                   AND COL_LENGTH('Agenda.Citas', 'DuracionMinutos') IS NULL
+                BEGIN
+                    ALTER TABLE Agenda.Citas
+                    ADD DuracionMinutos INT NOT NULL
+                        CONSTRAINT DF_Citas_DuracionMinutos DEFAULT 30 WITH VALUES;
+                END;
+
+                IF OBJECT_ID('Agenda.Citas', 'U') IS NOT NULL
+                   AND NOT EXISTS (
+                       SELECT 1
+                       FROM sys.check_constraints
+                       WHERE name = 'CK_Citas_DuracionMinutos')
+                BEGIN
+                    ALTER TABLE Agenda.Citas WITH CHECK
+                    ADD CONSTRAINT CK_Citas_DuracionMinutos
+                    CHECK (DuracionMinutos IN (15, 30, 45, 60, 90));
+                END;";
+
+            const string sqlFuncionProximaCita = @"
+                CREATE OR ALTER FUNCTION Agenda.fnProximaCita (@IdPaciente INT)
+                RETURNS DATETIME
+                AS
+                BEGIN
+                    DECLARE @Proxima DATETIME;
+
+                    SELECT TOP 1 @Proxima = c.FechaHora
+                    FROM Agenda.Citas c
+                    WHERE c.IdPaciente = @IdPaciente
+                      AND c.FechaHora >= GETDATE()
+                      AND c.IdEstado IN (
+                          SELECT IdEstado
+                          FROM Catalogos.EstadosCita
+                          WHERE Nombre IN ('Confirmada', 'Pendiente'))
+                    ORDER BY c.FechaHora ASC;
+
+                    RETURN @Proxima;
+                END;";
+
             await conn.ExecuteAsync(sqlAntecedentesPaciente);
+            await conn.ExecuteAsync(sqlDuracionCita);
+            await conn.ExecuteAsync(sqlFuncionProximaCita);
         }
     }
 }

@@ -38,6 +38,13 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             private set => SetProperty(ref _antecedentesCargados, value);
         }
 
+        private bool _mostrarAvisoAntecedentesSinRegistro;
+        public bool MostrarAvisoAntecedentesSinRegistro
+        {
+            get => _mostrarAvisoAntecedentesSinRegistro;
+            private set => SetProperty(ref _mostrarAvisoAntecedentesSinRegistro, value);
+        }
+
         public AsyncRelayCommand GuardarCambiosCommand { get; }
         public AsyncRelayCommand CambiarEstadoCommand { get; }
         public ICommand RegresarCommand { get; }
@@ -103,12 +110,14 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 AntecedentesPacienteModel? antecedentes =
                     await _pacienteRepository.ObtenerAntecedentesAsync(_idPaciente);
 
+                MostrarAvisoAntecedentesSinRegistro = antecedentes is null;
                 CargarAntecedentes(antecedentes);
                 AntecedentesCargados = true;
             }
             catch (Exception ex)
             {
                 AntecedentesCargados = false;
+                MostrarAvisoAntecedentesSinRegistro = false;
                 MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
                     ex,
                     "No fue posible cargar los antecedentes generales del paciente.");

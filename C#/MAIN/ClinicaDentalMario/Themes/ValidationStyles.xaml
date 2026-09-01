@@ -6,12 +6,14 @@
             <Border BorderBrush="#E74C3C"
                     BorderThickness="1"
                     CornerRadius="4">
-                <AdornedElementPlaceholder x:Name="adorner"/>
+                <AdornedElementPlaceholder/>
             </Border>
         </DockPanel>
     </ControlTemplate>
 
-    <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+    <Style x:Key="ValidatedTextBoxStyle"
+           TargetType="TextBox"
+           BasedOn="{StaticResource {x:Type TextBox}}">
         <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ValidationErrorTemplate}"/>
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="True">
@@ -21,7 +23,9 @@
         </Style.Triggers>
     </Style>
 
-    <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+    <Style x:Key="ValidatedComboBoxStyle"
+           TargetType="ComboBox"
+           BasedOn="{StaticResource {x:Type ComboBox}}">
         <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ValidationErrorTemplate}"/>
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="True">
@@ -31,7 +35,9 @@
         </Style.Triggers>
     </Style>
 
-    <Style TargetType="DatePicker" BasedOn="{StaticResource {x:Type DatePicker}}">
+    <Style x:Key="ValidatedDatePickerStyle"
+           TargetType="DatePicker"
+           BasedOn="{StaticResource {x:Type DatePicker}}">
         <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ValidationErrorTemplate}"/>
         <Style.Triggers>
             <Trigger Property="Validation.HasError" Value="True">

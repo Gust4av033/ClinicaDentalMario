@@ -56,9 +56,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                         ? Visibility.Collapsed
                         : Visibility.Visible;
                     AnchoPanelDetalle = value is null ? 0 : 340;
-                    EditarCitaCommand.NotificarCanExecuteChanged();
-                    CancelarCitaCommand.NotificarCanExecuteChanged();
-                    FinalizarCitaCommand.NotificarCanExecuteChanged();
+                    NotificarComandosSeleccion();
                 }
             }
         }
@@ -88,6 +86,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         public RelayCommand EditarCitaCommand { get; }
         public AsyncRelayCommand CancelarCitaCommand { get; }
         public AsyncRelayCommand FinalizarCitaCommand { get; }
+        public AsyncRelayCommand NoAsistioCommand { get; }
         public RelayCommand CerrarDetalleCommand { get; }
         public AsyncRelayCommand RecargarCommand { get; }
 
@@ -113,9 +112,10 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
             Titulo = "Agenda de Citas";
             NuevaCitaCommand = new RelayCommand(_ => AbrirNuevaCita());
-            EditarCitaCommand = new RelayCommand(_ => AbrirEditarCita(), _ => PuedeModificarSeleccionada());
-            CancelarCitaCommand = new AsyncRelayCommand(_ => CancelarCitaAsync(), _ => PuedeModificarSeleccionada());
-            FinalizarCitaCommand = new AsyncRelayCommand(_ => FinalizarCitaAsync(), _ => PuedeModificarSeleccionada());
+            EditarCitaCommand = new RelayCommand(_ => AbrirEditarCita(), _ => PuedeReprogramarOCancelar());
+            CancelarCitaCommand = new AsyncRelayCommand(_ => CancelarCitaAsync(), _ => PuedeReprogramarOCancelar());
+            FinalizarCitaCommand = new AsyncRelayCommand(_ => FinalizarCitaAsync(), _ => PuedeMarcarAtendida());
+            NoAsistioCommand = new AsyncRelayCommand(_ => MarcarNoAsistioAsync(), _ => PuedeMarcarNoAsistio());
             CerrarDetalleCommand = new RelayCommand(_ => CerrarDetalle());
             RecargarCommand = new AsyncRelayCommand(_ => CargarCitasDelDiaAsync());
 
@@ -144,6 +144,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             {
                 EstaCargando = false;
                 OnPropertyChanged(nameof(SinCitas));
+                NotificarComandosSeleccion();
             }
         }
 
@@ -158,11 +159,11 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
         private void AbrirEditarCita()
         {
-            if (!PuedeModificarSeleccionada())
+            if (!PuedeReprogramarOCancelar())
             {
                 _messageService.MostrarAdvertencia(
-                    "La cita seleccionada ya está cerrada y no puede reprogramarse.",
-                    "Cita cerrada");
+                    "Solo las citas futuras pendientes o confirmadas pueden reprogramarse.",
+                    "Cita no editable");
                 return;
             }
 
@@ -175,7 +176,10 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
         private async Task CancelarCitaAsync()
         {
-            if (!PuedeModificarSeleccionada()) return;
+            if (!PuedeReprogramarOCancelar())
+            {
+                return;
+            }
 
             AgendaCitaModel cita = CitaSeleccionada!;
             if (!_messageService.Confirmar(
@@ -185,37 +189,65 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                 return;
             }
 
-            try
-            {
-                await _citaRepository.CancelarCitaAsync(cita.IdCita);
-                _messageService.MostrarExito("La cita fue cancelada correctamente.", "Cita cancelada");
-                CerrarDetalle();
-                await CargarCitasDelDiaAsync();
-            }
-            catch (Exception ex)
-            {
-                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
-                    ex,
-                    "No fue posible cancelar la cita.");
-            }
+            await CambiarEstadoSeleccionadaAsync(
+                "Cancelada",
+                "La cita fue cancelada correctamente.",
+                "Cita cancelada");
         }
 
         private async Task FinalizarCitaAsync()
         {
-            if (!PuedeModificarSeleccionada()) return;
+            if (!PuedeMarcarAtendida())
+            {
+                return;
+            }
 
             AgendaCitaModel cita = CitaSeleccionada!;
             if (!_messageService.Confirmar(
-                    $"¿Confirmas que {cita.Paciente} ya fue atendido?",
+                    $"¿Confirmas que {cita.Paciente} fue atendido?",
                     "Marcar como atendida"))
             {
                 return;
             }
 
+            await CambiarEstadoSeleccionadaAsync(
+                "Atendida",
+                "La cita fue marcada como atendida.",
+                "Cita atendida");
+        }
+
+        private async Task MarcarNoAsistioAsync()
+        {
+            if (!PuedeMarcarNoAsistio())
+            {
+                return;
+            }
+
+            AgendaCitaModel cita = CitaSeleccionada!;
+            if (!_messageService.Confirmar(
+                    $"¿Confirmas que {cita.Paciente} no asistió a la cita?",
+                    "Marcar inasistencia"))
+            {
+                return;
+            }
+
+            await CambiarEstadoSeleccionadaAsync(
+                "No Asistió",
+                "La cita fue marcada como no asistida.",
+                "Inasistencia registrada");
+        }
+
+        private async Task CambiarEstadoSeleccionadaAsync(
+            string estado,
+            string mensajeExito,
+            string tituloExito)
+        {
+            AgendaCitaModel cita = CitaSeleccionada!;
+
             try
             {
-                await _citaRepository.CambiarEstadoCitaAsync(cita.IdCita, "Atendida");
-                _messageService.MostrarExito("La cita fue marcada como atendida.", "Cita atendida");
+                await _citaRepository.CambiarEstadoCitaAsync(cita.IdCita, estado);
+                _messageService.MostrarExito(mensajeExito, tituloExito);
                 CerrarDetalle();
                 await CargarCitasDelDiaAsync();
             }
@@ -227,9 +259,33 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             }
         }
 
-        private bool PuedeModificarSeleccionada()
+        private bool PuedeReprogramarOCancelar()
         {
-            return CitaSeleccionada is not null && !CitaSeleccionada.EstaCerrada;
+            return CitaSeleccionada is not null &&
+                   !CitaSeleccionada.EstaCerrada &&
+                   CitaSeleccionada.FechaHora > DateTime.Now;
+        }
+
+        private bool PuedeMarcarAtendida()
+        {
+            return CitaSeleccionada is not null &&
+                   !CitaSeleccionada.EstaCerrada &&
+                   CitaSeleccionada.FechaHora <= DateTime.Now;
+        }
+
+        private bool PuedeMarcarNoAsistio()
+        {
+            return CitaSeleccionada is not null &&
+                   !CitaSeleccionada.EstaCerrada &&
+                   CitaSeleccionada.FechaHora < DateTime.Now;
+        }
+
+        private void NotificarComandosSeleccion()
+        {
+            EditarCitaCommand.NotificarCanExecuteChanged();
+            CancelarCitaCommand.NotificarCanExecuteChanged();
+            FinalizarCitaCommand.NotificarCanExecuteChanged();
+            NoAsistioCommand.NotificarCanExecuteChanged();
         }
 
         private void CerrarDetalle()

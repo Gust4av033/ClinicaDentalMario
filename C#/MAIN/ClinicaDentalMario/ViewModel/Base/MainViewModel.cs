@@ -1,20 +1,6 @@
 using ClinicaDentalMario.Common;
 using ClinicaDentalMario.Navigation;
 using ClinicaDentalMario.Services;
-using ClinicaDentalMario.ViewModel.Agenda;
-using ClinicaDentalMario.ViewModel.Configuracion;
-using ClinicaDentalMario.ViewModel.Dashboard;
-using ClinicaDentalMario.ViewModel.Pacientes;
-using ClinicaDentalMario.ViewModel.Pagos;
-using ClinicaDentalMario.ViewModel.Reportes;
-using ClinicaDentalMario.ViewModel.Tratamientos;
-using ClinicaDentalMario.Views.Agenda;
-using ClinicaDentalMario.Views.Configuracion;
-using ClinicaDentalMario.Views.Dashboard;
-using ClinicaDentalMario.Views.Pacientes;
-using ClinicaDentalMario.Views.Pagos;
-using ClinicaDentalMario.Views.Reportes;
-using ClinicaDentalMario.Views.Tratamientos;
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Base
@@ -22,8 +8,12 @@ namespace ClinicaDentalMario.ViewModel.Base
     public class MainViewModel : ViewModelBase
     {
         private readonly INavigationService _navigationService;
+        private readonly IShellViewFactory _viewFactory;
         private readonly IPermissionService _permissionService;
         private readonly IMessageService _messageService;
+        private readonly IExceptionHandler _exceptionHandler;
+
+        private PermisoSistema? _moduloActual;
 
         private object? _vistaActual;
         public object? VistaActual
@@ -39,15 +29,19 @@ namespace ClinicaDentalMario.ViewModel.Base
 
         public string RolActual => UsuarioActual.NombreRol;
 
-        public bool PuedeVerConfiguracion =>
-            _permissionService.TienePermiso(PermisoSistema.AdministrarConfiguracion);
+        public bool PuedeVerDashboard => TienePermiso(PermisoSistema.VerDashboard);
+        public bool PuedeVerPacientes => TienePermiso(PermisoSistema.GestionarPacientes);
+        public bool PuedeVerAgenda => TienePermiso(PermisoSistema.GestionarAgenda);
+        public bool PuedeVerTratamientos => TienePermiso(PermisoSistema.GestionarTratamientos);
+        public bool PuedeVerPagos => TienePermiso(PermisoSistema.GestionarPagos);
+        public bool PuedeVerReportes => TienePermiso(PermisoSistema.VerReportes);
+        public bool PuedeVerConfiguracion => TienePermiso(PermisoSistema.AdministrarConfiguracion);
 
         public ICommand NavegarDashboardCommand { get; }
         public ICommand NavegarPacientesCommand { get; }
         public ICommand NavegarAgendaCommand { get; }
         public ICommand NavegarTratamientosCommand { get; }
         public ICommand NavegarPagosCommand { get; }
-        public ICommand NavegarOdontogramaCommand { get; }
         public ICommand NavegarReportesCommand { get; }
         public ICommand NavegarConfiguracionCommand { get; }
         public ICommand CerrarSesionCommand { get; }
@@ -57,35 +51,127 @@ namespace ClinicaDentalMario.ViewModel.Base
         public MainViewModel()
             : this(
                 new NavigationService(),
+                new ShellViewFactory(),
                 new PermissionService(),
-                new MessageService())
+                new MessageService(),
+                new ExceptionHandler(new MessageService()))
         {
         }
 
         public MainViewModel(
             INavigationService navigationService,
+            IShellViewFactory viewFactory,
             IPermissionService permissionService,
-            IMessageService messageService)
+            IMessageService messageService,
+            IExceptionHandler exceptionHandler)
         {
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _viewFactory = viewFactory ?? throw new ArgumentNullException(nameof(viewFactory));
             _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
 
             _navigationService.VistaActualChanged += OnVistaActualChanged;
 
-            NavegarDashboardCommand = new RelayCommand(_ => CargarDashboard());
-            NavegarPacientesCommand = new RelayCommand(_ => CargarPacientes());
-            NavegarAgendaCommand = new RelayCommand(_ => CargarAgenda());
-            NavegarTratamientosCommand = new RelayCommand(_ => CargarTratamientos());
-            NavegarPagosCommand = new RelayCommand(_ => CargarPagos());
-            NavegarOdontogramaCommand = new RelayCommand(_ => { /* Próximamente */ });
-            NavegarReportesCommand = new RelayCommand(_ => CargarReportes());
-            NavegarConfiguracionCommand = new RelayCommand(
-                _ => CargarConfiguracion(),
-                _ => PuedeVerConfiguracion);
+            NavegarDashboardCommand = CrearComandoNavegacion(
+                PermisoSistema.VerDashboard,
+                () => _viewFactory.CrearDashboard(CambiarVista),
+                "Dashboard");
+
+            NavegarPacientesCommand = CrearComandoNavegacion(
+                PermisoSistema.GestionarPacientes,
+                () => _viewFactory.CrearPacientes(CambiarVista),
+                "Pacientes");
+
+            NavegarAgendaCommand = CrearComandoNavegacion(
+                PermisoSistema.GestionarAgenda,
+                () => _viewFactory.CrearAgenda(CambiarVista),
+                "Agenda");
+
+            NavegarTratamientosCommand = CrearComandoNavegacion(
+                PermisoSistema.GestionarTratamientos,
+                () => _viewFactory.CrearTratamientos(CambiarVista),
+                "Tratamientos");
+
+            NavegarPagosCommand = CrearComandoNavegacion(
+                PermisoSistema.GestionarPagos,
+                () => _viewFactory.CrearPagos(CambiarVista),
+                "Pagos y Cuentas");
+
+            NavegarReportesCommand = CrearComandoNavegacion(
+                PermisoSistema.VerReportes,
+                () => _viewFactory.CrearReportes(CambiarVista),
+                "Reportes");
+
+            NavegarConfiguracionCommand = CrearComandoNavegacion(
+                PermisoSistema.AdministrarConfiguracion,
+                _viewFactory.CrearConfiguracion,
+                "Configuración");
+
             CerrarSesionCommand = new RelayCommand(_ => CerrarSesion());
 
-            CargarDashboard();
+            NavegarInicial();
+        }
+
+        private RelayCommand CrearComandoNavegacion(
+            PermisoSistema permiso,
+            Func<object> crearVista,
+            string nombreModulo)
+        {
+            return new RelayCommand(
+                _ => NavegarSeguro(permiso, crearVista, nombreModulo),
+                _ => TienePermiso(permiso));
+        }
+
+        private bool TienePermiso(PermisoSistema permiso)
+        {
+            return _permissionService.TienePermiso(permiso);
+        }
+
+        private void NavegarInicial()
+        {
+            if (PuedeVerDashboard)
+            {
+                NavegarSeguro(
+                    PermisoSistema.VerDashboard,
+                    () => _viewFactory.CrearDashboard(CambiarVista),
+                    "Dashboard");
+                return;
+            }
+
+            VistaActual = null;
+        }
+
+        private void NavegarSeguro(
+            PermisoSistema permiso,
+            Func<object> crearVista,
+            string nombreModulo)
+        {
+            if (!TienePermiso(permiso))
+            {
+                _messageService.MostrarAdvertencia(
+                    $"No tienes permisos para acceder a {nombreModulo}.",
+                    "Acceso denegado");
+                return;
+            }
+
+            if (_moduloActual == permiso)
+            {
+                return;
+            }
+
+            try
+            {
+                object vista = crearVista();
+                _moduloActual = permiso;
+                _navigationService.Navegar(vista);
+            }
+            catch (Exception ex)
+            {
+                _exceptionHandler.Manejar(
+                    ex,
+                    $"No fue posible abrir {nombreModulo}.");
+            }
         }
 
         private void OnVistaActualChanged(object? sender, EventArgs e)
@@ -93,80 +179,23 @@ namespace ClinicaDentalMario.ViewModel.Base
             VistaActual = _navigationService.VistaActual;
         }
 
-        private void CargarDashboard()
+        private void CambiarVista(object nuevaVista)
         {
-            var vista = new DashboardView
+            ArgumentNullException.ThrowIfNull(nuevaVista);
+
+            try
             {
-                DataContext = new DashboardViewModel(CambiarVista)
-            };
-
-            _navigationService.Navegar(vista);
-        }
-
-        private void CargarPacientes()
-        {
-            var vista = new ListaPacientesView
-            {
-                DataContext = new ListaPacientesViewModel(CambiarVista)
-            };
-
-            _navigationService.Navegar(vista);
-        }
-
-        private void CargarAgenda()
-        {
-            var vista = new AgendaView
-            {
-                DataContext = new AgendaViewModel(CambiarVista)
-            };
-
-            _navigationService.Navegar(vista);
-        }
-
-        private void CargarTratamientos()
-        {
-            var vista = new TratamientosView
-            {
-                DataContext = new TratamientosViewModel(CambiarVista)
-            };
-
-            _navigationService.Navegar(vista);
-        }
-
-        private void CargarPagos()
-        {
-            var vista = new EstadoCuentaView
-            {
-                DataContext = new EstadoCuentaViewModel(CambiarVista)
-            };
-
-            _navigationService.Navegar(vista);
-        }
-
-        private void CargarReportes()
-        {
-            var vista = new ReportesView
-            {
-                DataContext = new ReportesViewModel(CambiarVista)
-            };
-
-            _navigationService.Navegar(vista);
-        }
-
-        private void CargarConfiguracion()
-        {
-            if (!PuedeVerConfiguracion)
-            {
-                _messageService.MostrarAdvertencia("No tienes permisos para acceder a Configuración.");
-                return;
+                // Las sub-vistas pertenecen al módulo actual. Al marcarlas como navegación
+                // interna permitimos volver a pulsar el módulo principal para regresar a su raíz.
+                _moduloActual = null;
+                _navigationService.Navegar(nuevaVista);
             }
-
-            var vista = new ConfiguracionView
+            catch (Exception ex)
             {
-                DataContext = new ConfiguracionViewModel()
-            };
-
-            _navigationService.Navegar(vista);
+                _exceptionHandler.Manejar(
+                    ex,
+                    "No fue posible cambiar de pantalla.");
+            }
         }
 
         private void CerrarSesion()
@@ -177,12 +206,8 @@ namespace ClinicaDentalMario.ViewModel.Base
             }
 
             UsuarioActual.CerrarSesion();
+            _navigationService.VistaActualChanged -= OnVistaActualChanged;
             CierreSesionSolicitado?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void CambiarVista(object nuevaVista)
-        {
-            _navigationService.Navegar(nuevaVista);
         }
     }
 }

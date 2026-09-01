@@ -20,6 +20,11 @@ namespace ClinicaDentalMario.Services
                 return true;
             }
 
+            if (!UsuarioActual.EsDoctor && !UsuarioActual.EsRecepcionista)
+            {
+                return false;
+            }
+
             return permiso switch
             {
                 PermisoSistema.AdministrarConfiguracion => false,

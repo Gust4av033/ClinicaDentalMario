@@ -1,7 +1,11 @@
+using ClinicaDentalMario.Common;
 using ClinicaDentalMario.Data;
+using ClinicaDentalMario.Navigation;
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.Services;
+using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.ViewModel.Login;
+using ClinicaDentalMario.Views;
 using ClinicaDentalMario.Views.Login;
 using System.Windows;
 using System.Windows.Threading;
@@ -42,6 +46,17 @@ namespace ClinicaDentalMario
 
         public void MostrarLogin()
         {
+            var loginExistente = Current.Windows
+                .OfType<LoginView>()
+                .FirstOrDefault(x => x.IsVisible);
+
+            if (loginExistente is not null)
+            {
+                Current.MainWindow = loginExistente;
+                loginExistente.Activate();
+                return;
+            }
+
             LoginView loginWindow = new LoginView
             {
                 DataContext = new LoginViewModel(
@@ -51,6 +66,40 @@ namespace ClinicaDentalMario
 
             Current.MainWindow = loginWindow;
             loginWindow.Show();
+        }
+
+        public void MostrarVentanaPrincipal()
+        {
+            if (!UsuarioActual.EstaAutenticado)
+            {
+                _messageService.MostrarAdvertencia(
+                    "Debes iniciar sesión antes de acceder al sistema.",
+                    "Sesión requerida");
+                MostrarLogin();
+                return;
+            }
+
+            var ventanaExistente = Current.Windows
+                .OfType<MainWindow>()
+                .FirstOrDefault(x => x.IsVisible);
+
+            if (ventanaExistente is not null)
+            {
+                Current.MainWindow = ventanaExistente;
+                ventanaExistente.Activate();
+                return;
+            }
+
+            var mainViewModel = new MainViewModel(
+                new NavigationService(),
+                new ShellViewFactory(),
+                new PermissionService(),
+                _messageService,
+                _exceptionHandler);
+
+            MainWindow mainWindow = new MainWindow(mainViewModel);
+            Current.MainWindow = mainWindow;
+            mainWindow.Show();
         }
 
         private void OnDispatcherUnhandledException(

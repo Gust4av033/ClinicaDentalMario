@@ -2,10 +2,14 @@
 {
     public static class AppSettings
     {
-        // Conexión a master (usada por el DatabaseInitializer para crear la BD si no existe)
-        public static string MasterConnectionString = @"Server=(localdb)\MSSQLLocalDB;Database=master;Integrated Security=true;TrustServerCertificate=True;Encrypt=False;";
+        public const string DatabaseName = "ClinicaDentalMario";
 
-        // Conexión principal al sistema de la clínica dental
-        public static string ConnectionString = @"Server=(localdb)\MSSQLLocalDB;Database=ClinicaDentalMario;Integrated Security=true;TrustServerCertificate=True;Encrypt=False;";
+        // Conexión a master, utilizada para crear la base de datos si aún no existe.
+        public const string MasterConnectionString =
+            @"Server=(localdb)\MSSQLLocalDB;Database=master;Integrated Security=true;TrustServerCertificate=True;Encrypt=False;";
+
+        // Conexión principal de la aplicación.
+        public const string ConnectionString =
+            @"Server=(localdb)\MSSQLLocalDB;Database=ClinicaDentalMario;Integrated Security=true;TrustServerCertificate=True;Encrypt=False;";
     }
 }

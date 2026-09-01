@@ -54,7 +54,8 @@ namespace ClinicaDentalMario.Views.Tratamientos {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;component/views/tratamientos/editartratamientowindow.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;V1.0.0.0;component/views/tratamientos/editartratamientowindow" +
+                    ".xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Views\Tratamientos\EditarTratamientoWindow.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

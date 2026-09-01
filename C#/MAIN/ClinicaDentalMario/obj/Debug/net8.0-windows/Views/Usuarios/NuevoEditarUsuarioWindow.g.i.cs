@@ -62,7 +62,8 @@ namespace ClinicaDentalMario.Views.Usuarios {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;component/views/usuarios/nuevoeditarusuariowindow.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;V1.0.0.0;component/views/usuarios/nuevoeditarusuariowindow.xa" +
+                    "ml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Views\Usuarios\NuevoEditarUsuarioWindow.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

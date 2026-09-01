@@ -54,7 +54,7 @@ namespace ClinicaDentalMario.Views.Reportes {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;component/views/reportes/reportesview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;V1.0.0.0;component/views/reportes/reportesview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Views\Reportes\ReportesView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

@@ -54,7 +54,7 @@ namespace ClinicaDentalMario.Views.Pacientes {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;component/views/pacientes/nuevopacienteview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/ClinicaDentalMario;V1.0.0.0;component/views/pacientes/nuevopacienteview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\Views\Pacientes\NuevoPacienteView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

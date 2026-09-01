@@ -1,168 +1,307 @@
-﻿using ClinicaDentalMario.Models;
+using ClinicaDentalMario.Models;
 using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Services;
+using ClinicaDentalMario.Validators;
 using ClinicaDentalMario.ViewModel.Base;
-using ClinicaDentalMario.Views.Agenda; // Para regresar a la Agenda
+using ClinicaDentalMario.Views.Agenda;
 using System.Collections.ObjectModel;
-using System.Windows;
+using System.Globalization;
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Agenda
 {
-    public class NuevaCitaViewModel : ViewModelBase
+    public class NuevaCitaViewModel : ValidatableViewModelBase
     {
         private readonly Action<object> _cambiarVista;
         private readonly PacienteRepository _pacienteRepository;
         private readonly DoctorRepository _doctorRepository;
         private readonly CitaRepository _citaRepository;
+        private readonly IMessageService _messageService;
+        private readonly IExceptionHandler _exceptionHandler;
 
-        // --- LISTAS PARA LOS COMBOBOXES ---
         private ObservableCollection<PacienteModel> _listaPacientes = new();
         public ObservableCollection<PacienteModel> ListaPacientes
         {
             get => _listaPacientes;
-            set => SetProperty(ref _listaPacientes, value);
+            private set => SetProperty(ref _listaPacientes, value);
         }
 
         private ObservableCollection<DoctorModel> _listaDoctores = new();
         public ObservableCollection<DoctorModel> ListaDoctores
         {
             get => _listaDoctores;
-            set => SetProperty(ref _listaDoctores, value);
+            private set => SetProperty(ref _listaDoctores, value);
         }
 
-        // --- SELECCIONES DEL USUARIO ---
-        private PacienteModel _pacienteSeleccionado;
-        public PacienteModel PacienteSeleccionado
+        private PacienteModel? _pacienteSeleccionado;
+        public PacienteModel? PacienteSeleccionado
         {
             get => _pacienteSeleccionado;
-            set => SetProperty(ref _pacienteSeleccionado, value);
+            set
+            {
+                if (SetProperty(ref _pacienteSeleccionado, value))
+                {
+                    ValidarSeleccionPaciente();
+                }
+            }
         }
 
-        private DoctorModel _doctorSeleccionado;
-        public DoctorModel DoctorSeleccionado
+        private DoctorModel? _doctorSeleccionado;
+        public DoctorModel? DoctorSeleccionado
         {
             get => _doctorSeleccionado;
-            set => SetProperty(ref _doctorSeleccionado, value);
+            set
+            {
+                if (SetProperty(ref _doctorSeleccionado, value))
+                {
+                    ValidarSeleccionDoctor();
+                }
+            }
         }
 
-        private DateTime _fechaSeleccionada;
+        private DateTime _fechaSeleccionada = DateTime.Today.AddDays(1);
         public DateTime FechaSeleccionada
         {
             get => _fechaSeleccionada;
-            set => SetProperty(ref _fechaSeleccionada, value);
+            set
+            {
+                if (SetProperty(ref _fechaSeleccionada, value.Date))
+                {
+                    ValidarFecha();
+                }
+            }
         }
 
-        // Usamos string para la cajita de texto (Ej. "14:30")
-        private string _horaSeleccionada;
+        private string _horaSeleccionada = "10:00";
         public string HoraSeleccionada
         {
             get => _horaSeleccionada;
-            set => SetProperty(ref _horaSeleccionada, value);
+            set
+            {
+                if (SetProperty(ref _horaSeleccionada, value ?? string.Empty))
+                {
+                    ValidarHora();
+                }
+            }
         }
 
-        private CitaModel _nuevaCita;
-        public CitaModel NuevaCita
+        private string _observaciones = string.Empty;
+        public string Observaciones
         {
-            get => _nuevaCita;
-            set => SetProperty(ref _nuevaCita, value);
+            get => _observaciones;
+            set
+            {
+                if (SetProperty(ref _observaciones, value ?? string.Empty))
+                {
+                    ValidarCampo(
+                        ValidationRules.LongitudMaxima(_observaciones, 500, "Las observaciones"),
+                        nameof(Observaciones));
+                }
+            }
         }
 
         private string _mensajeError = string.Empty;
         public string MensajeError
         {
             get => _mensajeError;
-            set => SetProperty(ref _mensajeError, value);
+            private set => SetProperty(ref _mensajeError, value);
         }
 
-        public ICommand GuardarCommand { get; }
+        public AsyncRelayCommand GuardarCommand { get; }
         public ICommand CancelarCommand { get; }
 
         public NuevaCitaViewModel(Action<object> cambiarVista)
+            : this(
+                cambiarVista,
+                new PacienteRepository(),
+                new DoctorRepository(),
+                new CitaRepository(),
+                new MessageService(),
+                new ExceptionHandler(new MessageService()))
         {
+        }
+
+        public NuevaCitaViewModel(
+            Action<object> cambiarVista,
+            PacienteRepository pacienteRepository,
+            DoctorRepository doctorRepository,
+            CitaRepository citaRepository,
+            IMessageService messageService,
+            IExceptionHandler exceptionHandler)
+        {
+            _cambiarVista = cambiarVista ?? throw new ArgumentNullException(nameof(cambiarVista));
+            _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
+            _doctorRepository = doctorRepository ?? throw new ArgumentNullException(nameof(doctorRepository));
+            _citaRepository = citaRepository ?? throw new ArgumentNullException(nameof(citaRepository));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+
             Titulo = "Agendar Nueva Cita";
-            _cambiarVista = cambiarVista;
-
-            _pacienteRepository = new PacienteRepository();
-
-            // 🔥 QUITA LAS DOS DIAGONALES DE AQUÍ:
-            _doctorRepository = new DoctorRepository();
-            _citaRepository = new CitaRepository();
-
-            _nuevaCita = new CitaModel();
-            FechaSeleccionada = DateTime.Today.AddDays(1); // Mañana por defecto
-            HoraSeleccionada = "10:00"; // Hora sugerida
-
-            GuardarCommand = new RelayCommand(async (param) => await GuardarAsync());
-            CancelarCommand = new RelayCommand(VolverAAgenda);
+            GuardarCommand = new AsyncRelayCommand(_ => GuardarAsync(), _ => !EstaCargando);
+            CancelarCommand = new RelayCommand(_ => VolverAAgenda());
 
             _ = CargarListasAsync();
         }
 
         private async Task CargarListasAsync()
         {
-            try
-            {
-                var pacientes = await _pacienteRepository.ObtenerTodosAsync();
-                ListaPacientes = new ObservableCollection<PacienteModel>(pacientes);
+            MensajeError = string.Empty;
 
-                var doctores = await _doctorRepository.ObtenerDoctoresActivosAsync();
-
-                ListaDoctores = new ObservableCollection<DoctorModel>(doctores);
-            }
-            catch (Exception ex)
+            await EjecutarConCargaAsync(async () =>
             {
-                MensajeError = "Error al cargar listas: " + ex.Message;
-            }
+                try
+                {
+                    var pacientes = await _pacienteRepository.ObtenerTodosAsync();
+                    var doctores = await _doctorRepository.ObtenerDoctoresActivosAsync();
+
+                    ListaPacientes = new ObservableCollection<PacienteModel>(pacientes);
+                    ListaDoctores = new ObservableCollection<DoctorModel>(doctores);
+                }
+                catch (Exception ex)
+                {
+                    MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                        ex,
+                        "No fue posible cargar pacientes y doctores.");
+                }
+            });
         }
 
         private async Task GuardarAsync()
         {
-            if (PacienteSeleccionado == null || DoctorSeleccionado == null)
+            MensajeError = string.Empty;
+
+            if (!ValidarFormulario(out DateTime fechaHora))
             {
-                MensajeError = "Debe seleccionar un Paciente y un Doctor de la lista.";
+                MensajeError = "Revisa los campos marcados antes de agendar.";
                 return;
             }
 
-            if (!TimeSpan.TryParse(HoraSeleccionada, out TimeSpan hora))
+            await EjecutarConCargaAsync(async () =>
             {
-                MensajeError = "Formato de hora inválido. Use HH:mm (ej. 14:30 o 09:00).";
-                return;
-            }
+                try
+                {
+                    if (await _citaRepository.ExisteConflictoDoctorAsync(
+                            DoctorSeleccionado!.IdDoctor,
+                            fechaHora))
+                    {
+                        MensajeError = "El doctor ya tiene una cita asignada exactamente a esa hora.";
+                        return;
+                    }
 
-            DateTime fechaHoraCitaFinal = FechaSeleccionada.Date.Add(hora);
+                    int? idPendiente = await _citaRepository.ObtenerIdEstadoAsync("Pendiente");
+                    if (!idPendiente.HasValue)
+                    {
+                        MensajeError = "No se encontró el estado 'Pendiente' en el catálogo de citas.";
+                        return;
+                    }
 
-            EstaCargando = true;
-            try
-            {
-                NuevaCita.IdPaciente = PacienteSeleccionado.IdPaciente;
-                NuevaCita.IdDoctor = DoctorSeleccionado.IdDoctor;
-                NuevaCita.FechaHora = fechaHoraCitaFinal;
-                NuevaCita.IdEstado = 1; // 1 = Pendiente (Según tu catálogo de BD)
+                    var cita = new CitaModel
+                    {
+                        IdPaciente = PacienteSeleccionado!.IdPaciente,
+                        IdDoctor = DoctorSeleccionado.IdDoctor,
+                        IdEstado = idPendiente.Value,
+                        FechaHora = fechaHora,
+                        Observaciones = string.IsNullOrWhiteSpace(Observaciones)
+                            ? null
+                            : Observaciones.Trim()
+                    };
 
-                // 🔥 QUITA LAS DOS DIAGONALES DE AQUÍ PARA QUE GUARDE EN LA BASE:
-                await _citaRepository.InsertarAsync(NuevaCita);
+                    await _citaRepository.InsertarAsync(cita);
 
-                MessageBox.Show($"Cita agendada para el {fechaHoraCitaFinal:dd/MM/yyyy} a las {fechaHoraCitaFinal:HH:mm}.", "Cita Guardada", MessageBoxButton.OK, MessageBoxImage.Information);
-                VolverAAgenda(null);
-            }
-            catch (Exception ex)
-            {
-                MensajeError = "Error al agendar: " + ex.Message;
-            }
-            finally
-            {
-                EstaCargando = false;
-            }
+                    _messageService.MostrarExito(
+                        $"Cita agendada para el {fechaHora:dd/MM/yyyy} a las {fechaHora:HH:mm}.",
+                        "Cita registrada");
+
+                    VolverAAgenda();
+                }
+                catch (Exception ex)
+                {
+                    MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                        ex,
+                        "No fue posible agendar la cita.");
+                }
+            });
         }
 
-        private void VolverAAgenda(object? parameter)
+        private bool ValidarFormulario(out DateTime fechaHora)
         {
-            if (_cambiarVista != null)
+            ValidarSeleccionPaciente();
+            ValidarSeleccionDoctor();
+            ValidarFecha();
+            ValidarHora();
+            ValidarCampo(
+                ValidationRules.LongitudMaxima(Observaciones, 500, "Las observaciones"),
+                nameof(Observaciones));
+
+            fechaHora = default;
+            if (HasErrors || !TryObtenerHora(out TimeSpan hora))
             {
-                var vistaAgenda = new AgendaView();
-                vistaAgenda.DataContext = new AgendaViewModel(_cambiarVista);
-                _cambiarVista(vistaAgenda);
+                return false;
             }
+
+            fechaHora = FechaSeleccionada.Date.Add(hora);
+            if (fechaHora <= DateTime.Now)
+            {
+                ValidarCampo(
+                    new[] { "La fecha y hora de la cita deben ser posteriores al momento actual." },
+                    nameof(HoraSeleccionada));
+                return false;
+            }
+
+            return true;
+        }
+
+        private void ValidarSeleccionPaciente()
+        {
+            ValidarCampo(
+                PacienteSeleccionado is null
+                    ? new[] { "Debe seleccionar un paciente." }
+                    : Array.Empty<string>(),
+                nameof(PacienteSeleccionado));
+        }
+
+        private void ValidarSeleccionDoctor()
+        {
+            ValidarCampo(
+                DoctorSeleccionado is null
+                    ? new[] { "Debe seleccionar un doctor." }
+                    : Array.Empty<string>(),
+                nameof(DoctorSeleccionado));
+        }
+
+        private void ValidarFecha()
+        {
+            ValidarCampo(
+                ValidationRules.FechaNoPasada(FechaSeleccionada, "La fecha de la cita"),
+                nameof(FechaSeleccionada));
+        }
+
+        private void ValidarHora()
+        {
+            IEnumerable<string> errores = string.IsNullOrWhiteSpace(HoraSeleccionada)
+                ? ValidationRules.Requerido(HoraSeleccionada, "La hora")
+                : ValidationRules.Hora(HoraSeleccionada);
+
+            ValidarCampo(errores, nameof(HoraSeleccionada));
+        }
+
+        private bool TryObtenerHora(out TimeSpan hora)
+        {
+            return TimeSpan.TryParseExact(
+                HoraSeleccionada.Trim(),
+                new[] { @"hh\:mm", @"h\:mm" },
+                CultureInfo.InvariantCulture,
+                out hora);
+        }
+
+        private void VolverAAgenda()
+        {
+            var vistaAgenda = new AgendaView
+            {
+                DataContext = new AgendaViewModel(_cambiarVista)
+            };
+
+            _cambiarVista(vistaAgenda);
         }
     }
 }

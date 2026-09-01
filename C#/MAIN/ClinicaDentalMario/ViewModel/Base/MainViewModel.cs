@@ -1,4 +1,6 @@
+using ClinicaDentalMario.Common;
 using ClinicaDentalMario.Navigation;
+using ClinicaDentalMario.Services;
 using ClinicaDentalMario.ViewModel.Agenda;
 using ClinicaDentalMario.ViewModel.Configuracion;
 using ClinicaDentalMario.ViewModel.Dashboard;
@@ -20,6 +22,8 @@ namespace ClinicaDentalMario.ViewModel.Base
     public class MainViewModel : ViewModelBase
     {
         private readonly INavigationService _navigationService;
+        private readonly IPermissionService _permissionService;
+        private readonly IMessageService _messageService;
 
         private object? _vistaActual;
         public object? VistaActual
@@ -27,6 +31,16 @@ namespace ClinicaDentalMario.ViewModel.Base
             get => _vistaActual;
             private set => SetProperty(ref _vistaActual, value);
         }
+
+        public string NombreUsuarioActual =>
+            string.IsNullOrWhiteSpace(UsuarioActual.NombreCompleto)
+                ? UsuarioActual.NombreUsuario
+                : UsuarioActual.NombreCompleto;
+
+        public string RolActual => UsuarioActual.NombreRol;
+
+        public bool PuedeVerConfiguracion =>
+            _permissionService.TienePermiso(PermisoSistema.AdministrarConfiguracion);
 
         public ICommand NavegarDashboardCommand { get; }
         public ICommand NavegarPacientesCommand { get; }
@@ -36,15 +50,27 @@ namespace ClinicaDentalMario.ViewModel.Base
         public ICommand NavegarOdontogramaCommand { get; }
         public ICommand NavegarReportesCommand { get; }
         public ICommand NavegarConfiguracionCommand { get; }
+        public ICommand CerrarSesionCommand { get; }
+
+        public event EventHandler? CierreSesionSolicitado;
 
         public MainViewModel()
-            : this(new NavigationService())
+            : this(
+                new NavigationService(),
+                new PermissionService(),
+                new MessageService())
         {
         }
 
-        public MainViewModel(INavigationService navigationService)
+        public MainViewModel(
+            INavigationService navigationService,
+            IPermissionService permissionService,
+            IMessageService messageService)
         {
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+
             _navigationService.VistaActualChanged += OnVistaActualChanged;
 
             NavegarDashboardCommand = new RelayCommand(_ => CargarDashboard());
@@ -54,7 +80,10 @@ namespace ClinicaDentalMario.ViewModel.Base
             NavegarPagosCommand = new RelayCommand(_ => CargarPagos());
             NavegarOdontogramaCommand = new RelayCommand(_ => { /* Próximamente */ });
             NavegarReportesCommand = new RelayCommand(_ => CargarReportes());
-            NavegarConfiguracionCommand = new RelayCommand(_ => CargarConfiguracion());
+            NavegarConfiguracionCommand = new RelayCommand(
+                _ => CargarConfiguracion(),
+                _ => PuedeVerConfiguracion);
+            CerrarSesionCommand = new RelayCommand(_ => CerrarSesion());
 
             CargarDashboard();
         }
@@ -126,12 +155,29 @@ namespace ClinicaDentalMario.ViewModel.Base
 
         private void CargarConfiguracion()
         {
+            if (!PuedeVerConfiguracion)
+            {
+                _messageService.MostrarAdvertencia("No tienes permisos para acceder a Configuración.");
+                return;
+            }
+
             var vista = new ConfiguracionView
             {
                 DataContext = new ConfiguracionViewModel()
             };
 
             _navigationService.Navegar(vista);
+        }
+
+        private void CerrarSesion()
+        {
+            if (!_messageService.Confirmar("¿Deseas cerrar la sesión actual?", "Cerrar sesión"))
+            {
+                return;
+            }
+
+            UsuarioActual.CerrarSesion();
+            CierreSesionSolicitado?.Invoke(this, EventArgs.Empty);
         }
 
         private void CambiarVista(object nuevaVista)

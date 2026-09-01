@@ -21,6 +21,8 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
         private bool _listasCargadas;
 
+        public IReadOnlyList<int> DuracionesDisponibles { get; } = new[] { 15, 30, 45, 60, 90 };
+
         private ObservableCollection<PacienteModel> _listaPacientes = new();
         public ObservableCollection<PacienteModel> ListaPacientes
         {
@@ -83,6 +85,19 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                 if (SetProperty(ref _horaSeleccionada, value ?? string.Empty))
                 {
                     ValidarHora();
+                }
+            }
+        }
+
+        private int _duracionMinutos = 30;
+        public int DuracionMinutos
+        {
+            get => _duracionMinutos;
+            set
+            {
+                if (SetProperty(ref _duracionMinutos, value))
+                {
+                    ValidarDuracion();
                 }
             }
         }
@@ -196,9 +211,10 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                 {
                     if (await _citaRepository.ExisteConflictoDoctorAsync(
                             DoctorSeleccionado!.IdDoctor,
-                            fechaHora))
+                            fechaHora,
+                            DuracionMinutos))
                     {
-                        MensajeError = "El doctor ya tiene una cita asignada exactamente a esa hora.";
+                        MensajeError = $"El doctor ya tiene otra cita que se cruza con el intervalo {fechaHora:HH:mm} - {fechaHora.AddMinutes(DuracionMinutos):HH:mm}.";
                         return;
                     }
 
@@ -215,6 +231,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                         IdDoctor = DoctorSeleccionado.IdDoctor,
                         IdEstado = idPendiente.Value,
                         FechaHora = fechaHora,
+                        DuracionMinutos = DuracionMinutos,
                         Observaciones = string.IsNullOrWhiteSpace(Observaciones)
                             ? null
                             : Observaciones.Trim()
@@ -223,7 +240,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                     await _citaRepository.InsertarAsync(cita);
 
                     _messageService.MostrarExito(
-                        $"Cita agendada para el {fechaHora:dd/MM/yyyy} a las {fechaHora:HH:mm}.",
+                        $"Cita agendada para el {fechaHora:dd/MM/yyyy}, de {fechaHora:HH:mm} a {fechaHora.AddMinutes(DuracionMinutos):HH:mm}.",
                         "Cita registrada");
 
                     VolverAAgenda();
@@ -243,6 +260,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             ValidarSeleccionDoctor();
             ValidarFecha();
             ValidarHora();
+            ValidarDuracion();
             ValidarCampo(
                 ValidationRules.LongitudMaxima(Observaciones, 500, "Las observaciones"),
                 nameof(Observaciones));
@@ -297,6 +315,15 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                 : ValidationRules.Hora(HoraSeleccionada);
 
             ValidarCampo(errores, nameof(HoraSeleccionada));
+        }
+
+        private void ValidarDuracion()
+        {
+            ValidarCampo(
+                DuracionesDisponibles.Contains(DuracionMinutos)
+                    ? Array.Empty<string>()
+                    : new[] { "Selecciona una duración válida para la cita." },
+                nameof(DuracionMinutos));
         }
 
         private bool TryObtenerHora(out TimeSpan hora)

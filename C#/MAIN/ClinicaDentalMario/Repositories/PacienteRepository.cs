@@ -75,18 +75,7 @@ namespace ClinicaDentalMario.Repositories
 
             try
             {
-                var parameters = new
-                {
-                    paciente.NombreCompleto,
-                    paciente.Direccion,
-                    paciente.FechaNacimiento,
-                    paciente.Sexo,
-                    paciente.DUI,
-                    paciente.Telefono,
-                    paciente.NombreEncargado,
-                    paciente.ContactoEmergencia,
-                    paciente.TelefonoEmergencia
-                };
+                DynamicParameters parameters = CrearParametrosPaciente(paciente);
 
                 int idPaciente = await db.ExecuteScalarAsync<int>(
                     "Pacientes.sp_InsertarPaciente",
@@ -116,13 +105,43 @@ namespace ClinicaDentalMario.Repositories
                 FROM Pacientes.AntecedentesPaciente
                 WHERE IdPaciente = @IdPaciente;";
 
-            return await db.QuerySingleOrDefaultAsync<AntecedentesPacienteModel>(sql, new { IdPaciente = idPaciente });
+            return await db.QuerySingleOrDefaultAsync<AntecedentesPacienteModel>(
+                sql,
+                new { IdPaciente = idPaciente });
         }
 
         public async Task GuardarAntecedentesAsync(AntecedentesPacienteModel antecedentes)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
             await GuardarAntecedentesAsync(db, antecedentes, null);
+        }
+
+        public async Task ActualizarConAntecedentesAsync(
+            PacienteModel paciente,
+            AntecedentesPacienteModel antecedentes)
+        {
+            using IDbConnection db = DatabaseConnection.GetConnection();
+            db.Open();
+            using IDbTransaction transaction = db.BeginTransaction();
+
+            try
+            {
+                await db.ExecuteAsync(
+                    "Pacientes.sp_EditarPaciente",
+                    CrearParametrosPaciente(paciente, incluirIdPaciente: true),
+                    transaction,
+                    commandType: CommandType.StoredProcedure);
+
+                antecedentes.IdPaciente = paciente.IdPaciente;
+                await GuardarAntecedentesAsync(db, antecedentes, transaction);
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
         }
 
         private static async Task GuardarAntecedentesAsync(
@@ -155,23 +174,10 @@ namespace ClinicaDentalMario.Repositories
         public async Task ActualizarAsync(PacienteModel paciente)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            var parameters = new
-            {
-                paciente.IdPaciente,
-                paciente.NombreCompleto,
-                paciente.Direccion,
-                paciente.FechaNacimiento,
-                paciente.Sexo,
-                paciente.DUI,
-                paciente.Telefono,
-                paciente.NombreEncargado,
-                paciente.ContactoEmergencia,
-                paciente.TelefonoEmergencia
-            };
 
             await db.ExecuteAsync(
                 "Pacientes.sp_EditarPaciente",
-                parameters,
+                CrearParametrosPaciente(paciente, incluirIdPaciente: true),
                 commandType: CommandType.StoredProcedure);
         }
 
@@ -206,6 +212,30 @@ namespace ClinicaDentalMario.Repositories
                 WHERE IdPaciente = @IdPaciente;";
 
             await db.ExecuteAsync(sql, new { IdPaciente = idPaciente });
+        }
+
+        private static DynamicParameters CrearParametrosPaciente(
+            PacienteModel paciente,
+            bool incluirIdPaciente = false)
+        {
+            var parameters = new DynamicParameters();
+
+            if (incluirIdPaciente)
+            {
+                parameters.Add("IdPaciente", paciente.IdPaciente);
+            }
+
+            parameters.Add("NombreCompleto", paciente.NombreCompleto);
+            parameters.Add("Direccion", paciente.Direccion);
+            parameters.Add("FechaNacimiento", paciente.FechaNacimiento);
+            parameters.Add("Sexo", paciente.Sexo);
+            parameters.Add("DUI", paciente.DUI);
+            parameters.Add("Telefono", paciente.Telefono);
+            parameters.Add("NombreEncargado", paciente.NombreEncargado);
+            parameters.Add("ContactoEmergencia", paciente.ContactoEmergencia);
+            parameters.Add("TelefonoEmergencia", paciente.TelefonoEmergencia);
+
+            return parameters;
         }
     }
 }

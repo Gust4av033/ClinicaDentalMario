@@ -31,6 +31,20 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             private set => SetProperty(ref _mensajeError, value);
         }
 
+        private bool _antecedentesCargados;
+        public bool AntecedentesCargados
+        {
+            get => _antecedentesCargados;
+            private set => SetProperty(ref _antecedentesCargados, value);
+        }
+
+        private bool _mostrarAvisoAntecedentesSinRegistro;
+        public bool MostrarAvisoAntecedentesSinRegistro
+        {
+            get => _mostrarAvisoAntecedentesSinRegistro;
+            private set => SetProperty(ref _mostrarAvisoAntecedentesSinRegistro, value);
+        }
+
         public AsyncRelayCommand GuardarCambiosCommand { get; }
         public AsyncRelayCommand CambiarEstadoCommand { get; }
         public ICommand RegresarCommand { get; }
@@ -58,7 +72,9 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
             if (pacienteSeleccionado.IdPaciente <= 0)
             {
-                throw new ArgumentException("El paciente seleccionado no tiene un identificador válido.", nameof(pacienteSeleccionado));
+                throw new ArgumentException(
+                    "El paciente seleccionado no tiene un identificador válido.",
+                    nameof(pacienteSeleccionado));
             }
 
             _cambiarVista = cambiarVista ?? throw new ArgumentNullException(nameof(cambiarVista));
@@ -73,14 +89,55 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             Titulo = "Editar Paciente";
             CargarPaciente(pacienteSeleccionado);
 
-            GuardarCambiosCommand = new AsyncRelayCommand(_ => GuardarCambiosAsync(), _ => !EstaCargando);
-            CambiarEstadoCommand = new AsyncRelayCommand(_ => CambiarEstadoAsync(), _ => !EstaCargando);
+            GuardarCambiosCommand = new AsyncRelayCommand(
+                _ => GuardarCambiosAsync(),
+                _ => !EstaCargando && AntecedentesCargados);
+            CambiarEstadoCommand = new AsyncRelayCommand(
+                _ => CambiarEstadoAsync(),
+                _ => !EstaCargando);
             RegresarCommand = new RelayCommand(_ => Volver());
+
+            _ = CargarAntecedentesAsync();
+        }
+
+        private async Task CargarAntecedentesAsync()
+        {
+            MensajeError = string.Empty;
+            EstaCargando = true;
+
+            try
+            {
+                AntecedentesPacienteModel? antecedentes =
+                    await _pacienteRepository.ObtenerAntecedentesAsync(_idPaciente);
+
+                MostrarAvisoAntecedentesSinRegistro = antecedentes is null;
+                CargarAntecedentes(antecedentes);
+                AntecedentesCargados = true;
+            }
+            catch (Exception ex)
+            {
+                AntecedentesCargados = false;
+                MostrarAvisoAntecedentesSinRegistro = false;
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible cargar los antecedentes generales del paciente.");
+            }
+            finally
+            {
+                EstaCargando = false;
+                GuardarCambiosCommand.NotificarCanExecuteChanged();
+            }
         }
 
         private async Task GuardarCambiosAsync()
         {
             MensajeError = string.Empty;
+
+            if (!AntecedentesCargados)
+            {
+                MensajeError = "Los antecedentes del paciente todavía no están disponibles.";
+                return;
+            }
 
             if (!ValidarFormulario())
             {
@@ -99,15 +156,20 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                         return;
                     }
 
-                    var paciente = CrearModelo(
+                    PacienteModel paciente = CrearModelo(
                         _idPaciente,
                         Activo,
                         _fechaRegistro);
 
-                    await _pacienteRepository.ActualizarAsync(paciente);
+                    AntecedentesPacienteModel antecedentes =
+                        CrearAntecedentesModelo(_idPaciente);
+
+                    await _pacienteRepository.ActualizarConAntecedentesAsync(
+                        paciente,
+                        antecedentes);
 
                     _messageService.MostrarExito(
-                        "Los datos del paciente fueron actualizados correctamente.",
+                        "Los datos y antecedentes generales del paciente fueron actualizados correctamente.",
                         "Paciente actualizado");
 
                     Volver();
@@ -128,7 +190,9 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 ? $"¿Deseas desactivar el expediente de {NombreCompleto}?"
                 : $"¿Deseas restaurar el expediente de {NombreCompleto}?";
 
-            if (!_messageService.Confirmar(pregunta, char.ToUpperInvariant(accion[0]) + accion[1..]))
+            if (!_messageService.Confirmar(
+                    pregunta,
+                    char.ToUpperInvariant(accion[0]) + accion[1..]))
             {
                 return;
             }

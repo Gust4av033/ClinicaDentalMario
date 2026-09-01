@@ -181,7 +181,10 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             {
                 var vista = new EditarPacienteView
                 {
-                    DataContext = new EditarPacienteViewModel(PacienteActual, _cambiarVista)
+                    DataContext = new EditarPacienteViewModel(
+                        PacienteActual,
+                        _cambiarVista,
+                        RegresarDesdeEdicion)
                 };
 
                 _cambiarVista(vista);
@@ -192,6 +195,18 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                     ex,
                     "No fue posible abrir la edición del paciente.");
             }
+        }
+
+        private void RegresarDesdeEdicion(PacienteModel pacienteActualizado)
+        {
+            var vista = new HistorialPacienteView
+            {
+                DataContext = new HistorialPacienteViewModel(
+                    pacienteActualizado,
+                    _cambiarVista)
+            };
+
+            _cambiarVista(vista);
         }
 
         private void AbrirNuevaConsulta()

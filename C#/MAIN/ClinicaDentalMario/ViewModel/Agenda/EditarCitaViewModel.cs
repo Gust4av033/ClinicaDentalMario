@@ -18,6 +18,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         private readonly IMessageService _messageService;
         private readonly IExceptionHandler _exceptionHandler;
         private readonly int _idCita;
+        private bool _catalogosCargados;
 
         public string NombrePaciente { get; }
 
@@ -146,7 +147,9 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             _horaSeleccionada = cita.FechaHora.ToString("HH:mm");
             _observaciones = cita.Observaciones ?? string.Empty;
 
-            ActualizarCommand = new AsyncRelayCommand(_ => ActualizarAsync(), _ => !EstaCargando);
+            ActualizarCommand = new AsyncRelayCommand(
+                _ => ActualizarAsync(),
+                _ => !EstaCargando && _catalogosCargados);
             VolverCommand = new RelayCommand(_ => Volver());
 
             _ = CargarCatalogosAsync(cita.IdDoctor, cita.IdEstado);
@@ -155,6 +158,8 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         private async Task CargarCatalogosAsync(int idDoctorActual, int idEstadoActual)
         {
             MensajeError = string.Empty;
+            _catalogosCargados = false;
+            ActualizarCommand.NotificarCanExecuteChanged();
 
             await EjecutarConCargaAsync(async () =>
             {
@@ -164,33 +169,47 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                     var estados = await _citaRepository.ObtenerEstadosAsync();
 
                     ListaDoctores = new ObservableCollection<DoctorModel>(doctores);
-                    ListaEstados = new ObservableCollection<EstadoCitaModel>(estados);
+                    ListaEstados = new ObservableCollection<EstadoCitaModel>(
+                        estados.Where(x =>
+                            x.Nombre.Equals("Pendiente", StringComparison.OrdinalIgnoreCase) ||
+                            x.Nombre.Equals("Confirmada", StringComparison.OrdinalIgnoreCase)));
 
                     DoctorSeleccionado = ListaDoctores.FirstOrDefault(x => x.IdDoctor == idDoctorActual);
-                    EstadoSeleccionado = ListaEstados.FirstOrDefault(x => x.IdEstado == idEstadoActual);
+                    EstadoSeleccionado = ListaEstados.FirstOrDefault(x => x.IdEstado == idEstadoActual)
+                        ?? ListaEstados.FirstOrDefault(x => x.Nombre.Equals("Pendiente", StringComparison.OrdinalIgnoreCase));
+
+                    _catalogosCargados = DoctorSeleccionado is not null && EstadoSeleccionado is not null;
+
+                    if (!_catalogosCargados)
+                    {
+                        MensajeError = "No fue posible resolver el doctor o el estado editable de esta cita.";
+                    }
                 }
                 catch (Exception ex)
                 {
+                    _catalogosCargados = false;
                     MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
                         ex,
                         "No fue posible cargar los datos necesarios para editar la cita.");
                 }
             });
+
+            ActualizarCommand.NotificarCanExecuteChanged();
         }
 
         private async Task ActualizarAsync()
         {
             MensajeError = string.Empty;
 
-            if (!ValidarFormulario(out DateTime nuevaFechaHora))
+            if (!_catalogosCargados)
             {
-                MensajeError = "Revisa los campos marcados antes de actualizar.";
+                MensajeError = "Los datos necesarios para editar la cita todavía no están disponibles.";
                 return;
             }
 
-            if (EstadoSeleccionado!.Nombre.Equals("Cancelada", StringComparison.OrdinalIgnoreCase))
+            if (!ValidarFormulario(out DateTime nuevaFechaHora))
             {
-                MensajeError = "Para cancelar una cita usa la acción Cancelar desde la agenda.";
+                MensajeError = "Revisa los campos marcados antes de actualizar.";
                 return;
             }
 
@@ -210,9 +229,9 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                     await _citaRepository.ActualizarCitaAsync(
                         _idCita,
                         DoctorSeleccionado.IdDoctor,
-                        EstadoSeleccionado.IdEstado,
+                        EstadoSeleccionado!.IdEstado,
                         nuevaFechaHora,
-                        Observaciones);
+                        string.IsNullOrWhiteSpace(Observaciones) ? null : Observaciones.Trim());
 
                     _messageService.MostrarExito(
                         "La cita fue actualizada correctamente.",
@@ -268,10 +287,14 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
         private void ValidarEstado()
         {
+            bool estadoValido = EstadoSeleccionado is not null &&
+                (EstadoSeleccionado.Nombre.Equals("Pendiente", StringComparison.OrdinalIgnoreCase) ||
+                 EstadoSeleccionado.Nombre.Equals("Confirmada", StringComparison.OrdinalIgnoreCase));
+
             ValidarCampo(
-                EstadoSeleccionado is null
-                    ? new[] { "Debe seleccionar un estado." }
-                    : Array.Empty<string>(),
+                estadoValido
+                    ? Array.Empty<string>()
+                    : new[] { "Selecciona un estado editable: Pendiente o Confirmada." },
                 nameof(EstadoSeleccionado));
         }
 

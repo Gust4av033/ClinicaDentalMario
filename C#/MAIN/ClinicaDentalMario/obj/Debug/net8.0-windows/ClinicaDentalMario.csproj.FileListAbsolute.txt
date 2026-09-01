@@ -162,3 +162,4 @@ C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\Views\Reportes\ReporteIngresosView.g.cs
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\Views\Reportes\ReporteProductividadView.baml
 C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\Views\Reportes\ReporteProductividadView.g.cs
+C:\Users\Bryan\Documents\Proyectos\ClinicaDentalMario\C#\MAIN\ClinicaDentalMario\obj\Debug\net8.0-windows\Themes\ValidationStyles.baml

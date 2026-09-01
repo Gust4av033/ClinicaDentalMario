@@ -1,4 +1,4 @@
-﻿namespace ClinicaDentalMario.Models
+namespace ClinicaDentalMario.Models
 {
     public class CitaModel
     {
@@ -14,5 +14,6 @@
         public bool Activo { get; set; }
         public string? Observaciones { get; set; }
         public DateTime FechaHora { get; set; }
+        public int DuracionMinutos { get; set; } = 30;
     }
 }

@@ -13,6 +13,8 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         private readonly IMessageService _messageService;
         private readonly IExceptionHandler _exceptionHandler;
         private readonly Action<object> _cambiarVista;
+        private readonly Action<PacienteModel>? _volverPersonalizado;
+        private readonly PacienteModel _pacienteOriginal;
 
         private readonly int _idPaciente;
         private readonly DateTime _fechaRegistro;
@@ -55,6 +57,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             : this(
                 pacienteSeleccionado,
                 cambiarVista,
+                volverPersonalizado: null,
                 new PacienteRepository(),
                 new MessageService(),
                 new ExceptionHandler(new MessageService()))
@@ -64,6 +67,37 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         public EditarPacienteViewModel(
             PacienteModel pacienteSeleccionado,
             Action<object> cambiarVista,
+            Action<PacienteModel> volverPersonalizado)
+            : this(
+                pacienteSeleccionado,
+                cambiarVista,
+                volverPersonalizado,
+                new PacienteRepository(),
+                new MessageService(),
+                new ExceptionHandler(new MessageService()))
+        {
+        }
+
+        public EditarPacienteViewModel(
+            PacienteModel pacienteSeleccionado,
+            Action<object> cambiarVista,
+            PacienteRepository pacienteRepository,
+            IMessageService messageService,
+            IExceptionHandler exceptionHandler)
+            : this(
+                pacienteSeleccionado,
+                cambiarVista,
+                volverPersonalizado: null,
+                pacienteRepository,
+                messageService,
+                exceptionHandler)
+        {
+        }
+
+        public EditarPacienteViewModel(
+            PacienteModel pacienteSeleccionado,
+            Action<object> cambiarVista,
+            Action<PacienteModel>? volverPersonalizado,
             PacienteRepository pacienteRepository,
             IMessageService messageService,
             IExceptionHandler exceptionHandler)
@@ -78,9 +112,11 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             }
 
             _cambiarVista = cambiarVista ?? throw new ArgumentNullException(nameof(cambiarVista));
+            _volverPersonalizado = volverPersonalizado;
             _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+            _pacienteOriginal = pacienteSeleccionado;
 
             _idPaciente = pacienteSeleccionado.IdPaciente;
             _fechaRegistro = pacienteSeleccionado.FechaRegistro;
@@ -172,7 +208,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                         "Los datos y antecedentes generales del paciente fueron actualizados correctamente.",
                         "Paciente actualizado");
 
-                    Volver();
+                    Volver(paciente);
                 }
                 catch (Exception ex)
                 {
@@ -218,7 +254,12 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                             : "El expediente fue desactivado correctamente.",
                         "Estado actualizado");
 
-                    Volver();
+                    PacienteModel pacienteActualizado = CrearModelo(
+                        _idPaciente,
+                        Activo,
+                        _fechaRegistro);
+
+                    Volver(pacienteActualizado);
                 }
                 catch (Exception ex)
                 {
@@ -229,8 +270,14 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             });
         }
 
-        private void Volver()
+        private void Volver(PacienteModel? paciente = null)
         {
+            if (_volverPersonalizado is not null)
+            {
+                _volverPersonalizado(paciente ?? _pacienteOriginal);
+                return;
+            }
+
             var vistaLista = new ListaPacientesView
             {
                 DataContext = new ListaPacientesViewModel(_cambiarVista)

@@ -1,113 +1,227 @@
-﻿using ClinicaDentalMario.Models;
+using ClinicaDentalMario.Models;
 using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Services;
+using ClinicaDentalMario.Validators;
 using ClinicaDentalMario.ViewModel.Base;
-using System;
-using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Pacientes
 {
-    public class NuevaConsultaViewModel : ViewModelBase
+    public class NuevaConsultaViewModel : ValidatableViewModelBase
     {
         private readonly HistorialClinicoRepository _historialRepo;
+        private readonly DoctorRepository _doctorRepository;
+        private readonly PacienteRepository _pacienteRepository;
+        private readonly IMessageService _messageService;
+        private readonly IExceptionHandler _exceptionHandler;
 
-        // --- DATOS DEL PACIENTE ---
         public int IdPaciente { get; }
         public string NombrePaciente { get; }
 
-        // --- CAMPOS DEL FORMULARIO (Enlazados al XAML) ---
+        private ObservableCollection<DoctorModel> _listaDoctores = new();
+        public ObservableCollection<DoctorModel> ListaDoctores
+        {
+            get => _listaDoctores;
+            private set => SetProperty(ref _listaDoctores, value);
+        }
+
+        private DoctorModel? _doctorSeleccionado;
+        public DoctorModel? DoctorSeleccionado
+        {
+            get => _doctorSeleccionado;
+            set
+            {
+                if (SetProperty(ref _doctorSeleccionado, value))
+                {
+                    ValidarDoctor();
+                }
+            }
+        }
+
+        private AntecedentesPacienteModel? _antecedentesGenerales;
+        public AntecedentesPacienteModel? AntecedentesGenerales
+        {
+            get => _antecedentesGenerales;
+            private set
+            {
+                if (SetProperty(ref _antecedentesGenerales, value))
+                {
+                    OnPropertyChanged(nameof(ResumenAntecedentesMedicos));
+                    OnPropertyChanged(nameof(ResumenAntecedentesOdontologicos));
+                    OnPropertyChanged(nameof(TieneAntecedentesGenerales));
+                }
+            }
+        }
+
+        public bool TieneAntecedentesGenerales => AntecedentesGenerales is not null;
+
+        public string ResumenAntecedentesMedicos => AntecedentesGenerales switch
+        {
+            null => "No existe ficha general de antecedentes.",
+            { TieneAntecedentesMedicos: false } => "Sin antecedentes médicos registrados.",
+            _ => string.IsNullOrWhiteSpace(AntecedentesGenerales.DetalleAntecedentesMedicos)
+                ? "Antecedentes médicos indicados sin detalle."
+                : AntecedentesGenerales.DetalleAntecedentesMedicos!
+        };
+
+        public string ResumenAntecedentesOdontologicos => AntecedentesGenerales switch
+        {
+            null => "No existe ficha general de antecedentes.",
+            { TieneAntecedentesOdontologicos: false } => "Sin antecedentes odontológicos registrados.",
+            _ => string.IsNullOrWhiteSpace(AntecedentesGenerales.DetalleAntecedentesOdontologicos)
+                ? "Antecedentes odontológicos indicados sin detalle."
+                : AntecedentesGenerales.DetalleAntecedentesOdontologicos!
+        };
+
         private string _mensajeError = string.Empty;
-        public string MensajeError { get => _mensajeError; set => SetProperty(ref _mensajeError, value); }
+        public string MensajeError
+        {
+            get => _mensajeError;
+            private set => SetProperty(ref _mensajeError, value);
+        }
 
         private string _motivoConsulta = string.Empty;
-        public string MotivoConsulta { get => _motivoConsulta; set => SetProperty(ref _motivoConsulta, value); }
+        public string MotivoConsulta
+        {
+            get => _motivoConsulta;
+            set
+            {
+                if (SetProperty(ref _motivoConsulta, value))
+                {
+                    ValidarMotivo();
+                }
+            }
+        }
 
-        private string _antecedentesMedicos = string.Empty;
-        public string AntecedentesMedicos { get => _antecedentesMedicos; set => SetProperty(ref _antecedentesMedicos, value); }
+        private string? _cambiosAntecedentesMedicos;
+        public string? CambiosAntecedentesMedicos
+        {
+            get => _cambiosAntecedentesMedicos;
+            set => SetProperty(ref _cambiosAntecedentesMedicos, value);
+        }
 
-        private string _antecedentesOdontologicos = string.Empty;
-        public string AntecedentesOdontologicos { get => _antecedentesOdontologicos; set => SetProperty(ref _antecedentesOdontologicos, value); }
+        private string? _cambiosAntecedentesOdontologicos;
+        public string? CambiosAntecedentesOdontologicos
+        {
+            get => _cambiosAntecedentesOdontologicos;
+            set => SetProperty(ref _cambiosAntecedentesOdontologicos, value);
+        }
 
         private string _diagnostico = string.Empty;
-        public string Diagnostico { get => _diagnostico; set => SetProperty(ref _diagnostico, value); }
+        public string Diagnostico
+        {
+            get => _diagnostico;
+            set
+            {
+                if (SetProperty(ref _diagnostico, value))
+                {
+                    ValidarDiagnostico();
+                }
+            }
+        }
 
         private string _planTratamiento = string.Empty;
-        public string PlanTratamiento { get => _planTratamiento; set => SetProperty(ref _planTratamiento, value); }
+        public string PlanTratamiento
+        {
+            get => _planTratamiento;
+            set
+            {
+                if (SetProperty(ref _planTratamiento, value))
+                {
+                    ValidarPlanTratamiento();
+                }
+            }
+        }
 
-        // --- VARIABLES DE RESPUESTA (Para avisarle a la pantalla que la abrió qué pasó) ---
-        public bool ConsultaGuardada { get; private set; } = false;
-        public bool DeseaAsignarTratamiento { get; private set; } = false;
+        private string? _observaciones;
+        public string? Observaciones
+        {
+            get => _observaciones;
+            set => SetProperty(ref _observaciones, value);
+        }
 
-        // --- COMANDOS ---
-        public ICommand GuardarConsultaCommand { get; }
+        public bool ConsultaGuardada { get; private set; }
+        public bool DeseaAsignarTratamiento { get; private set; }
+
+        public AsyncRelayCommand GuardarConsultaCommand { get; }
         public ICommand CerrarVentanaCommand { get; }
 
         public NuevaConsultaViewModel(int idPaciente, string nombrePaciente)
+            : this(
+                idPaciente,
+                nombrePaciente,
+                new HistorialClinicoRepository(),
+                new DoctorRepository(),
+                new PacienteRepository(),
+                new MessageService(),
+                new ExceptionHandler(new MessageService()))
         {
-            Titulo = "Registrar Nueva Consulta Médica";
-            IdPaciente = idPaciente;
-            NombrePaciente = nombrePaciente;
-            _historialRepo = new HistorialClinicoRepository();
-
-            GuardarConsultaCommand = new RelayCommand(async (param) => await GuardarAsync(param));
-            CerrarVentanaCommand = new RelayCommand(CerrarVentana);
         }
 
-        private async Task GuardarAsync(object? parameter)
+        public NuevaConsultaViewModel(
+            int idPaciente,
+            string nombrePaciente,
+            HistorialClinicoRepository historialRepo,
+            DoctorRepository doctorRepository,
+            PacienteRepository pacienteRepository,
+            IMessageService messageService,
+            IExceptionHandler exceptionHandler)
         {
-            // 1. Validaciones
-            if (string.IsNullOrWhiteSpace(MotivoConsulta) || string.IsNullOrWhiteSpace(Diagnostico))
+            if (idPaciente <= 0)
             {
-                MensajeError = "Debe llenar al menos el Motivo y el Diagnóstico.";
-                return;
+                throw new ArgumentOutOfRangeException(nameof(idPaciente));
             }
 
-            if (string.IsNullOrWhiteSpace(PlanTratamiento))
+            if (string.IsNullOrWhiteSpace(nombrePaciente))
             {
-                MensajeError = "Debe ingresar el Plan de Tratamiento o los procedimientos realizados.";
-                return;
+                throw new ArgumentException("El nombre del paciente es obligatorio.", nameof(nombrePaciente));
             }
 
-            EstaCargando = true;
+            IdPaciente = idPaciente;
+            NombrePaciente = nombrePaciente.Trim();
+            _historialRepo = historialRepo ?? throw new ArgumentNullException(nameof(historialRepo));
+            _doctorRepository = doctorRepository ?? throw new ArgumentNullException(nameof(doctorRepository));
+            _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+
+            Titulo = "Registrar Nueva Consulta Clínica";
+
+            GuardarConsultaCommand = new AsyncRelayCommand(_ => GuardarAsync(_));
+            CerrarVentanaCommand = new RelayCommand(CerrarVentana);
+
+            _ = CargarContextoAsync();
+        }
+
+        private async Task CargarContextoAsync()
+        {
             MensajeError = string.Empty;
+            EstaCargando = true;
 
             try
             {
-                // 2. Empaquetar los datos en el Modelo
-                var nuevaConsulta = new HistorialClinicoModel
+                Task<IEnumerable<DoctorModel>> doctoresTask =
+                    _doctorRepository.ObtenerDoctoresActivosAsync();
+                Task<AntecedentesPacienteModel?> antecedentesTask =
+                    _pacienteRepository.ObtenerAntecedentesAsync(IdPaciente);
+
+                await Task.WhenAll(doctoresTask, antecedentesTask);
+
+                ListaDoctores = new ObservableCollection<DoctorModel>(await doctoresTask);
+                AntecedentesGenerales = await antecedentesTask;
+
+                if (ListaDoctores.Count == 1)
                 {
-                    IdPaciente = this.IdPaciente,
-                    IdDoctor = 1, // Por ahora quemamos el ID del doctor activo (luego lo sacarás del Login)
-                    FechaConsulta = DateTime.Now,
-                    MotivoConsulta = this.MotivoConsulta,
-                    AntecedentesMedicos = this.AntecedentesMedicos,
-                    AntecedentesOdontologicos = this.AntecedentesOdontologicos,
-                    Diagnostico = this.Diagnostico,
-                    PlanTratamiento = this.PlanTratamiento,
-                    Observaciones = "" // Espacio para observaciones extra si se necesita luego
-                };
-
-                // 3. Guardar en Base de Datos
-                await _historialRepo.InsertarConsultaAsync(nuevaConsulta);
-
-                ConsultaGuardada = true;
-
-                // 4. Preguntar si se quiere ir a cobrar/asignar presupuesto
-                var res = MessageBox.Show("Nueva consulta agregada al expediente con éxito.\n\n¿Deseas registrar cobros o asignar tratamientos financieros para esta consulta ahora mismo?",
-                                          "Guardado Exitoso", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (res == MessageBoxResult.Yes)
-                {
-                    DeseaAsignarTratamiento = true;
+                    DoctorSeleccionado = ListaDoctores[0];
                 }
-
-                // 5. Cerrar la ventana emergente
-                CerrarVentana(parameter);
             }
             catch (Exception ex)
             {
-                MensajeError = "Error al guardar consulta en SQL: " + ex.Message;
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible cargar la información necesaria para registrar la consulta.");
             }
             finally
             {
@@ -115,9 +229,101 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             }
         }
 
-        private void CerrarVentana(object? parameter)
+        private async Task GuardarAsync(object? parameter)
         {
-            // El parámetro que llega desde el XAML es la ventana misma, así podemos cerrarla.
+            MensajeError = string.Empty;
+
+            if (!ValidarFormulario())
+            {
+                MensajeError = "Revisa los campos marcados antes de guardar la consulta.";
+                return;
+            }
+
+            EstaCargando = true;
+            try
+            {
+                var nuevaConsulta = new HistorialClinicoModel
+                {
+                    IdPaciente = IdPaciente,
+                    IdDoctor = DoctorSeleccionado!.IdDoctor,
+                    FechaConsulta = DateTime.Now,
+                    MotivoConsulta = MotivoConsulta.Trim(),
+                    AntecedentesMedicos = LimpiarOpcional(CambiosAntecedentesMedicos),
+                    AntecedentesOdontologicos = LimpiarOpcional(CambiosAntecedentesOdontologicos),
+                    Diagnostico = Diagnostico.Trim(),
+                    PlanTratamiento = PlanTratamiento.Trim(),
+                    Observaciones = LimpiarOpcional(Observaciones)
+                };
+
+                await _historialRepo.InsertarConsultaAsync(nuevaConsulta);
+
+                ConsultaGuardada = true;
+                DeseaAsignarTratamiento = false;
+                _messageService.MostrarExito(
+                    "La consulta fue agregada correctamente al expediente del paciente.",
+                    "Consulta guardada");
+
+                CerrarVentana(parameter);
+            }
+            catch (Exception ex)
+            {
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible guardar la consulta clínica.");
+            }
+            finally
+            {
+                EstaCargando = false;
+            }
+        }
+
+        private bool ValidarFormulario()
+        {
+            ValidarDoctor();
+            ValidarMotivo();
+            ValidarDiagnostico();
+            ValidarPlanTratamiento();
+            return !HasErrors;
+        }
+
+        private void ValidarDoctor()
+        {
+            if (DoctorSeleccionado is null)
+            {
+                EstablecerErrores(new[] { "Selecciona el doctor que atendió la consulta." }, nameof(DoctorSeleccionado));
+            }
+            else
+            {
+                LimpiarErrores(nameof(DoctorSeleccionado));
+            }
+        }
+
+        private void ValidarMotivo()
+        {
+            ValidarCampo(
+                ValidationRules.Requerido(MotivoConsulta, "El motivo de consulta"),
+                nameof(MotivoConsulta));
+        }
+
+        private void ValidarDiagnostico()
+        {
+            ValidarCampo(
+                ValidationRules.Requerido(Diagnostico, "El diagnóstico"),
+                nameof(Diagnostico));
+        }
+
+        private void ValidarPlanTratamiento()
+        {
+            ValidarCampo(
+                ValidationRules.Requerido(PlanTratamiento, "El plan de tratamiento"),
+                nameof(PlanTratamiento));
+        }
+
+        private static string? LimpiarOpcional(string? valor) =>
+            string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
+
+        private static void CerrarVentana(object? parameter)
+        {
             if (parameter is Window ventana)
             {
                 ventana.Close();

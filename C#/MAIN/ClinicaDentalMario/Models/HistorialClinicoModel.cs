@@ -1,10 +1,11 @@
-﻿namespace ClinicaDentalMario.Models
+namespace ClinicaDentalMario.Models
 {
     public class HistorialClinicoModel
     {
         public int IdHistorial { get; set; }
         public int IdPaciente { get; set; }
         public int IdDoctor { get; set; }
+        public string Doctor { get; set; } = string.Empty;
         public string? MotivoConsulta { get; set; }
         public string? AntecedentesMedicos { get; set; }
         public string? AntecedentesOdontologicos { get; set; }

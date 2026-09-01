@@ -12,27 +12,34 @@ namespace ClinicaDentalMario.Repositories
         public async Task<UsuarioModel?> LoginAsync(string usuario, string passwordHash)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            string sql = @"
-                SELECT 
-                    u.IdUsuario, 
-                    u.IdRol, 
-                    u.NombreCompleto, 
-                    u.Usuario AS NombreUsuario, 
-                    u.Correo, 
-                    u.PasswordHash, 
+
+            const string sql = @"
+                SELECT
+                    u.IdUsuario,
+                    u.IdRol,
+                    u.NombreCompleto,
+                    u.Usuario AS NombreUsuario,
+                    u.Correo,
                     u.Activo,
-                    r.Nombre AS NombreRol -- 🔥 AHORA SÍ TRAEMOS TU ROL REAL DE LA BASE DE DATOS
+                    r.Nombre AS NombreRol
                 FROM Seguridad.Usuarios u
                 INNER JOIN Seguridad.Roles r ON u.IdRol = r.IdRol
-                WHERE u.Usuario = @Usuario 
-                  AND u.PasswordHash = @PasswordHash 
-                  AND u.Activo = 1";
+                WHERE u.Usuario = @Usuario
+                  AND u.PasswordHash = @PasswordHash
+                  AND u.Activo = 1;";
 
-            var parameters = new { Usuario = usuario, PasswordHash = passwordHash };
-            return await db.QueryFirstOrDefaultAsync<UsuarioModel>(sql, parameters);
+            var parameters = new
+            {
+                Usuario = usuario,
+                PasswordHash = passwordHash
+            };
+
+            return await db.QueryFirstOrDefaultAsync<UsuarioModel>(
+                sql,
+                parameters,
+                commandTimeout: 10);
         }
 
-        // 2. Listar todos los usuarios con el Nombre de su Rol
         public async Task<IEnumerable<UsuarioModel>> ListarUsuariosAsync()
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
@@ -45,7 +52,6 @@ namespace ClinicaDentalMario.Repositories
             return await db.QueryAsync<UsuarioModel>(sql);
         }
 
-        // 3. Listar Roles Activos para el ComboBox
         public async Task<IEnumerable<RolModel>> ListarRolesAsync()
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
@@ -53,7 +59,6 @@ namespace ClinicaDentalMario.Repositories
             return await db.QueryAsync<RolModel>(sql);
         }
 
-        // 4. Crear Nuevo Usuario
         public async Task CrearUsuarioAsync(UsuarioModel nuevoUsuario)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
@@ -68,12 +73,11 @@ namespace ClinicaDentalMario.Repositories
             await db.ExecuteAsync("Seguridad.sp_CrearUsuario", parameters, commandType: CommandType.StoredProcedure);
         }
 
-        // 5. Actualizar Datos de Usuario
         public async Task ActualizarUsuarioAsync(UsuarioModel usuario)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
             string sql = @"
-                UPDATE Seguridad.Usuarios 
+                UPDATE Seguridad.Usuarios
                 SET IdRol = @IdRol, NombreCompleto = @NombreCompleto, Correo = @Correo, Activo = @Activo
                 WHERE IdUsuario = @IdUsuario";
 
@@ -87,7 +91,6 @@ namespace ClinicaDentalMario.Repositories
             });
         }
 
-        // 6. Cambiar Contraseña
         public async Task CambiarPasswordAsync(int idUsuario, string nuevoPasswordHash)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();

@@ -10,9 +10,26 @@ namespace ClinicaDentalMario.Repositories
         public async Task<IEnumerable<PacienteModel>> ObtenerTodosAsync()
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            return await db.QueryAsync<PacienteModel>(
-                "Pacientes.sp_ListarPacientes",
-                commandType: CommandType.StoredProcedure);
+
+            const string sql = @"
+                SELECT
+                    IdPaciente,
+                    NombreCompleto,
+                    Direccion,
+                    FechaNacimiento,
+                    Sexo,
+                    DUI,
+                    Telefono,
+                    NombreEncargado,
+                    ContactoEmergencia,
+                    TelefonoEmergencia,
+                    FechaRegistro,
+                    Activo
+                FROM Pacientes.Pacientes
+                WHERE Activo = 1
+                ORDER BY NombreCompleto;";
+
+            return await db.QueryAsync<PacienteModel>(sql);
         }
 
         public async Task<IEnumerable<PacienteModel>> BuscarAsync(string termino, bool soloInactivos = false)

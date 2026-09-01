@@ -1,50 +1,16 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+    <SolidColorBrush x:Key="ValidationErrorBrush" Color="#E74C3C"/>
+
     <ControlTemplate x:Key="ValidationErrorTemplate">
         <DockPanel LastChildFill="True">
-            <Border BorderBrush="#E74C3C"
+            <Border BorderBrush="{StaticResource ValidationErrorBrush}"
                     BorderThickness="1"
                     CornerRadius="4">
                 <AdornedElementPlaceholder/>
             </Border>
         </DockPanel>
     </ControlTemplate>
-
-    <Style x:Key="ValidatedTextBoxStyle"
-           TargetType="TextBox"
-           BasedOn="{StaticResource {x:Type TextBox}}">
-        <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ValidationErrorTemplate}"/>
-        <Style.Triggers>
-            <Trigger Property="Validation.HasError" Value="True">
-                <Setter Property="ToolTip"
-                        Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
-            </Trigger>
-        </Style.Triggers>
-    </Style>
-
-    <Style x:Key="ValidatedComboBoxStyle"
-           TargetType="ComboBox"
-           BasedOn="{StaticResource {x:Type ComboBox}}">
-        <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ValidationErrorTemplate}"/>
-        <Style.Triggers>
-            <Trigger Property="Validation.HasError" Value="True">
-                <Setter Property="ToolTip"
-                        Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
-            </Trigger>
-        </Style.Triggers>
-    </Style>
-
-    <Style x:Key="ValidatedDatePickerStyle"
-           TargetType="DatePicker"
-           BasedOn="{StaticResource {x:Type DatePicker}}">
-        <Setter Property="Validation.ErrorTemplate" Value="{StaticResource ValidationErrorTemplate}"/>
-        <Style.Triggers>
-            <Trigger Property="Validation.HasError" Value="True">
-                <Setter Property="ToolTip"
-                        Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
-            </Trigger>
-        </Style.Triggers>
-    </Style>
 
 </ResourceDictionary>

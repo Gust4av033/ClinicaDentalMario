@@ -1,6 +1,7 @@
 using ClinicaDentalMario.Common;
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.Services;
+using ClinicaDentalMario.Validators;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views;
 using System.Security.Cryptography;
@@ -11,7 +12,7 @@ using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Login
 {
-    public class LoginViewModel : ViewModelBase
+    public class LoginViewModel : ValidatableViewModelBase
     {
         private readonly UsuarioRepository _usuarioRepo;
         private readonly IExceptionHandler _exceptionHandler;
@@ -20,17 +21,24 @@ namespace ClinicaDentalMario.ViewModel.Login
         public string Usuario
         {
             get => _usuario;
-            set => SetProperty(ref _usuario, value);
+            set
+            {
+                if (SetProperty(ref _usuario, value))
+                {
+                    ValidarUsuario();
+                    AccederCommand?.NotificarCanExecuteChanged();
+                }
+            }
         }
 
         private string _mensajeError = string.Empty;
         public string MensajeError
         {
             get => _mensajeError;
-            set => SetProperty(ref _mensajeError, value);
+            private set => SetProperty(ref _mensajeError, value);
         }
 
-        public ICommand AccederCommand { get; }
+        public AsyncRelayCommand AccederCommand { get; }
         public ICommand SalirCommand { get; }
 
         public LoginViewModel()
@@ -45,8 +53,22 @@ namespace ClinicaDentalMario.ViewModel.Login
 
             Titulo = "Iniciar Sesión - CDMario Dental";
 
-            AccederCommand = new AsyncRelayCommand(AccederAsync);
+            AccederCommand = new AsyncRelayCommand(AccederAsync, _ => PuedeAcceder());
             SalirCommand = new RelayCommand(Salir);
+        }
+
+        private bool PuedeAcceder()
+        {
+            return !string.IsNullOrWhiteSpace(Usuario) && !HasErrors;
+        }
+
+        private void ValidarUsuario()
+        {
+            var errores = ValidationRules
+                .Requerido(Usuario, "El usuario")
+                .Concat(ValidationRules.LongitudMaxima(Usuario, 50, "El usuario"));
+
+            ValidarCampo(errores, nameof(Usuario));
         }
 
         private void Salir(object? parameter)
@@ -75,12 +97,24 @@ namespace ClinicaDentalMario.ViewModel.Login
                 return;
             }
 
-            var passwordBox = ventanaLogin.FindName("txtPassword") as PasswordBox;
-            string passwordPlana = passwordBox?.Password ?? string.Empty;
-
-            if (string.IsNullOrWhiteSpace(Usuario) || string.IsNullOrWhiteSpace(passwordPlana))
+            ValidarUsuario();
+            if (HasErrors)
             {
-                MensajeError = "⚠️ Ingresa tu usuario y contraseña.";
+                MensajeError = "Revisa los datos ingresados.";
+                return;
+            }
+
+            if (ventanaLogin.FindName("txtPassword") is not PasswordBox passwordBox)
+            {
+                MensajeError = "No fue posible leer la contraseña.";
+                return;
+            }
+
+            string passwordPlana = passwordBox.Password;
+            if (string.IsNullOrWhiteSpace(passwordPlana))
+            {
+                MensajeError = "Ingresa tu contraseña.";
+                passwordBox.Focus();
                 return;
             }
 
@@ -90,18 +124,29 @@ namespace ClinicaDentalMario.ViewModel.Login
             {
                 try
                 {
+                    string usuarioNormalizado = Usuario.Trim();
                     string hashPassword = EncriptarSHA256(passwordPlana);
-                    var usuarioBD = await _usuarioRepo.LoginAsync(Usuario.Trim(), hashPassword);
+                    var usuarioBD = await _usuarioRepo.LoginAsync(usuarioNormalizado, hashPassword);
 
-                    if (usuarioBD is null || !usuarioBD.Activo)
+                    if (usuarioBD is null)
                     {
-                        MensajeError = "❌ Usuario o contraseña incorrectos.";
+                        MensajeError = "Usuario o contraseña incorrectos.";
+                        passwordBox.Clear();
+                        passwordBox.Focus();
+                        return;
+                    }
+
+                    if (!RolesSistema.EsRolReconocido(usuarioBD.NombreRol))
+                    {
+                        MensajeError = "La cuenta no tiene un rol válido asignado. Contacta al administrador.";
+                        passwordBox.Clear();
                         return;
                     }
 
                     UsuarioActual.IniciarSesion(usuarioBD, usuarioBD.NombreRol);
 
                     MainWindow mainWindow = new MainWindow();
+                    Application.Current.MainWindow = mainWindow;
                     mainWindow.Show();
                     ventanaLogin.Close();
                 }

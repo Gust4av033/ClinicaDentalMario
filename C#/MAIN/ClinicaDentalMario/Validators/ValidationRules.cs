@@ -84,6 +84,37 @@ namespace ClinicaDentalMario.Validators
             }
         }
 
+        public static IEnumerable<string> FechaNacimientoRazonable(
+            DateTime? valor,
+            string nombreCampo = "La fecha de nacimiento",
+            int edadMaxima = 120)
+        {
+            if (!valor.HasValue)
+            {
+                yield break;
+            }
+
+            DateTime fecha = valor.Value.Date;
+            DateTime hoy = DateTime.Today;
+
+            if (fecha > hoy)
+            {
+                yield return $"{nombreCampo} no puede ser una fecha futura.";
+                yield break;
+            }
+
+            int edad = hoy.Year - fecha.Year;
+            if (fecha > hoy.AddYears(-edad))
+            {
+                edad--;
+            }
+
+            if (edad < 0 || edad > edadMaxima)
+            {
+                yield return $"{nombreCampo} debe corresponder a una edad entre 0 y {edadMaxima} años.";
+            }
+        }
+
         public static IEnumerable<string> DecimalPositivo(decimal valor, string nombreCampo, bool permitirCero = false)
         {
             bool invalido = permitirCero ? valor < 0 : valor <= 0;

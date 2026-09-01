@@ -1,18 +1,19 @@
-﻿<UserControl x:Class="ClinicaDentalMario.Views.Pacientes.NuevoPacienteView"
+<UserControl x:Class="ClinicaDentalMario.Views.Pacientes.NuevoPacienteView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              Background="{StaticResource BgWindowBrush}">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
-        <Border Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="35" MaxWidth="850" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" HorizontalAlignment="Center">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="20" ShadowDepth="4" Color="#000000" Opacity="0.5"/>
-            </Border.Effect>
-
+        <Border Background="{StaticResource BgCardBrush}"
+                CornerRadius="15"
+                Padding="35"
+                MaxWidth="850"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1"
+                HorizontalAlignment="Center">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -21,15 +22,30 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Margin="0,0,0,25">
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                        <Button Command="{Binding CancelarCommand}" Background="Transparent" BorderThickness="0" Margin="0,0,15,0" Cursor="Hand" ToolTip="Regresar al listado">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <Button Command="{Binding CancelarCommand}"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Margin="0,0,15,0"
+                                Cursor="Hand"
+                                ToolTip="Regresar al listado">
                             <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="28" Height="28" Foreground="{StaticResource TextSecondaryBrush}"/>
                         </Button>
-                        <iconPacks:PackIconMaterial Kind="FolderAccount" Width="28" Height="28" Foreground="{StaticResource AccentBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Apertura de Expediente Clínico" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                        <iconPacks:PackIconMaterial Kind="AccountPlus" Width="28" Height="28" Foreground="{StaticResource AccentBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Registrar Nuevo Paciente" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <Border Background="#3A1C1C" BorderBrush="{StaticResource DangerBrush}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="45,0,0,0">
+                    <TextBlock Text="Los datos clínicos, odontograma y tratamientos se registran posteriormente desde el expediente del paciente."
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               TextWrapping="Wrap"
+                               Margin="45,0,0,12"/>
+
+                    <Border Background="#3A1C1C"
+                            BorderBrush="{StaticResource DangerBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="10"
+                            Margin="45,0,0,0">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Visibility" Value="Visible"/>
@@ -43,16 +59,16 @@
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="AlertCircle" Foreground="{StaticResource DangerBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock Text="{Binding MensajeError}" Foreground="{StaticResource DangerBrush}" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                        </StackPanel>
+                        <TextBlock Text="{Binding MensajeError}"
+                                   Foreground="{StaticResource DangerBrush}"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap"/>
                     </Border>
                 </StackPanel>
 
-                <TextBlock Grid.Row="1" Text="1. Datos Personales" FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,15"/>
+                <TextBlock Grid.Row="1" Text="Datos personales" FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,15"/>
 
-                <Grid Grid.Row="2" Margin="0,0,0,25">
+                <Grid Grid.Row="2" Margin="0,0,0,20">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="20"/>
@@ -65,52 +81,58 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,15">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                            <TextBlock Text="Nombre Completo" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"/>
-                            <TextBlock Text=" *" Foreground="{StaticResource DangerBrush}" FontWeight="Bold"/>
-                        </StackPanel>
-                        <TextBox Text="{Binding NuevoPaciente.NombreCompleto, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" />
+                    <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Margin="0,0,0,15">
+                        <TextBlock Text="Nombre completo *" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                        <TextBox MaxLength="150"
+                                 Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                 Text="{Binding NombreCompleto, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,15">
-                        <TextBlock Text="Dirección" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding NuevoPaciente.Direccion, UpdateSourceTrigger=PropertyChanged}" MaxLength="250" />
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,15">
+                        <TextBlock Text="DUI (00000000-0)" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                        <TextBox MaxLength="10"
+                                 PreviewTextInput="ValidarNumeros_PreviewTextInput"
+                                 Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                 Text="{Binding DUI, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,15">
+                        <TextBlock Text="Teléfono *" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                        <TextBox MaxLength="9"
+                                 PreviewTextInput="ValidarNumeros_PreviewTextInput"
+                                 Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                 Text="{Binding Telefono, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,15">
-                        <TextBlock Text="Fecha de Nacimiento" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <DatePicker SelectedDate="{Binding NuevoPaciente.FechaNacimiento}" Padding="8,6"/>
+                        <TextBlock Text="Fecha de nacimiento" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                        <DatePicker Padding="8,6"
+                                    Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                    SelectedDate="{Binding FechaNacimiento, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,15">
-                        <TextBlock Text="Sexo" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <ComboBox SelectedValue="{Binding NuevoPaciente.Sexo}" SelectedValuePath="Content">
+                        <TextBlock Text="Sexo" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                        <ComboBox SelectedValuePath="Content"
+                                  Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                  SelectedValue="{Binding Sexo, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}">
                             <ComboBoxItem Content="Masculino"/>
                             <ComboBoxItem Content="Femenino"/>
                             <ComboBoxItem Content="Otro"/>
                         </ComboBox>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,15">
-                        <TextBlock Text="Número de DUI (Sin guiones)" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding NuevoPaciente.DUI, UpdateSourceTrigger=PropertyChanged}" MaxLength="10" PreviewTextInput="ValidarNumeros_PreviewTextInput" />
-                    </StackPanel>
-
-                    <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,0,0,15">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                            <TextBlock Text="Teléfono" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"/>
-                            <TextBlock Text=" *" Foreground="{StaticResource DangerBrush}" FontWeight="Bold"/>
-                        </StackPanel>
-                        <TextBox Text="{Binding NuevoPaciente.Telefono, UpdateSourceTrigger=PropertyChanged}" MaxLength="12" PreviewTextInput="ValidarNumeros_PreviewTextInput" />
+                    <StackPanel Grid.Row="3" Grid.ColumnSpan="3" Margin="0,0,0,15">
+                        <TextBlock Text="Dirección" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                        <TextBox MaxLength="250"
+                                 Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                 Text="{Binding Direccion, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
                     </StackPanel>
                 </Grid>
 
-                <Border Grid.Row="3" Height="1" Background="{StaticResource BorderBrush}" Margin="0,0,0,20"/>
+                <TextBlock Grid.Row="3" Text="Contacto y emergencia" FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,15"/>
 
-                <TextBlock Grid.Row="3" Text="2. Información Clínica y Emergencia" FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Margin="0,20,0,15"/>
-
-                <Grid Grid.Row="4" Margin="0,0,0,25">
+                <Grid Grid.Row="4">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="20"/>
@@ -119,58 +141,49 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,15">
-                        <TextBlock Text="En caso de emergencia llamar a:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding NuevoPaciente.ContactoEmergencia, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" />
+                    <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Margin="0,0,0,15">
+                        <TextBlock Text="Nombre del encargado (si aplica)" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                        <TextBox MaxLength="150"
+                                 Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                 Text="{Binding NombreEncargado, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,15">
-                        <TextBlock Text="Teléfono de Emergencia:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding NuevoPaciente.TelefonoEmergencia, UpdateSourceTrigger=PropertyChanged}" MaxLength="12" PreviewTextInput="ValidarNumeros_PreviewTextInput"/>
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,15">
+                        <TextBlock Text="Contacto de emergencia" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                        <TextBox MaxLength="150"
+                                 Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                 Text="{Binding ContactoEmergencia, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,0,0,15">
-                        <TextBlock Text="Motivo de consulta (Razón de la visita)" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding NuevoHistorial.MotivoConsulta, UpdateSourceTrigger=PropertyChanged}" Height="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" MaxLength="500"/>
+                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,15">
+                        <TextBlock Text="Teléfono de emergencia" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                        <TextBox MaxLength="9"
+                                 PreviewTextInput="ValidarNumeros_PreviewTextInput"
+                                 Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                 Text="{Binding TelefonoEmergencia, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,15">
-                        <TextBlock Text="Antecedentes Médicos" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding NuevoHistorial.AntecedentesMedicos, UpdateSourceTrigger=PropertyChanged}" Height="80" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" MaxLength="1000"/>
-                    </StackPanel>
+                    <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                        <Button Command="{Binding CancelarCommand}" Height="42" Padding="25,0" Margin="0,0,15,0" Cursor="Hand">
+                            <TextBlock Text="Cancelar" FontWeight="SemiBold"/>
+                        </Button>
 
-                    <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,15">
-                        <TextBlock Text="Antecedentes Odontológicos" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding NuevoHistorial.AntecedentesOdontologicos, UpdateSourceTrigger=PropertyChanged}" Height="80" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" MaxLength="1000"/>
+                        <Button Command="{Binding GuardarCommand}"
+                                Background="{StaticResource SuccessBrush}"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Height="42"
+                                Padding="30,0"
+                                Cursor="Hand">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="ContentSave" Margin="0,0,8,0" Foreground="White"/>
+                                <TextBlock Text="Guardar Paciente" FontWeight="Bold" Foreground="White"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </Grid>
-
-                <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                    <Button Command="{Binding CancelarCommand}" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Height="42" Padding="25,0" Margin="0,0,15,0" Cursor="Hand">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6"/>
-                            </Style>
-                        </Button.Resources>
-                        <TextBlock Text="Cancelar" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                    </Button>
-
-                    <Button Command="{Binding GuardarCommand}" Background="{StaticResource SuccessBrush}" Foreground="White" BorderThickness="0" Height="42" Padding="30,0" Cursor="Hand">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6"/>
-                            </Style>
-                        </Button.Resources>
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="ContentSave" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
-                            <TextBlock Text="Guardar Expediente" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="White"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-
             </Grid>
         </Border>
     </ScrollViewer>

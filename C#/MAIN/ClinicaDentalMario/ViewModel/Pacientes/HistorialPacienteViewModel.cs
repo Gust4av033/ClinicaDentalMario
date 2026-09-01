@@ -20,6 +20,9 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         private readonly IExceptionHandler _exceptionHandler;
         private readonly Action<object> _cambiarVista;
 
+        private string? _antecedenteMedicoLegado;
+        private string? _antecedenteOdontologicoLegado;
+
         private PacienteModel _pacienteActual;
         public PacienteModel PacienteActual
         {
@@ -35,32 +38,67 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             {
                 if (SetProperty(ref _antecedentesGenerales, value))
                 {
-                    OnPropertyChanged(nameof(TieneAntecedentesRegistrados));
-                    OnPropertyChanged(nameof(ResumenAntecedentesMedicos));
-                    OnPropertyChanged(nameof(ResumenAntecedentesOdontologicos));
+                    NotificarCambioAntecedentes();
                 }
             }
         }
 
         public bool TieneAntecedentesRegistrados => AntecedentesGenerales is not null;
 
-        public string ResumenAntecedentesMedicos => AntecedentesGenerales switch
-        {
-            null => "Pendiente de registrar",
-            { TieneAntecedentesMedicos: false } => "Sin antecedentes médicos registrados",
-            _ => string.IsNullOrWhiteSpace(AntecedentesGenerales.DetalleAntecedentesMedicos)
-                ? "Antecedentes médicos indicados sin detalle"
-                : AntecedentesGenerales.DetalleAntecedentesMedicos!
-        };
+        public bool UsaAntecedentesLegados =>
+            AntecedentesGenerales is null &&
+            (!string.IsNullOrWhiteSpace(_antecedenteMedicoLegado) ||
+             !string.IsNullOrWhiteSpace(_antecedenteOdontologicoLegado));
 
-        public string ResumenAntecedentesOdontologicos => AntecedentesGenerales switch
+        public string ResumenAntecedentesMedicos
         {
-            null => "Pendiente de registrar",
-            { TieneAntecedentesOdontologicos: false } => "Sin antecedentes odontológicos registrados",
-            _ => string.IsNullOrWhiteSpace(AntecedentesGenerales.DetalleAntecedentesOdontologicos)
-                ? "Antecedentes odontológicos indicados sin detalle"
-                : AntecedentesGenerales.DetalleAntecedentesOdontologicos!
-        };
+            get
+            {
+                if (AntecedentesGenerales is not null)
+                {
+                    if (!AntecedentesGenerales.TieneAntecedentesMedicos)
+                    {
+                        return "Sin antecedentes médicos registrados";
+                    }
+
+                    return string.IsNullOrWhiteSpace(AntecedentesGenerales.DetalleAntecedentesMedicos)
+                        ? "Antecedentes médicos indicados sin detalle"
+                        : AntecedentesGenerales.DetalleAntecedentesMedicos!;
+                }
+
+                return !string.IsNullOrWhiteSpace(_antecedenteMedicoLegado)
+                    ? _antecedenteMedicoLegado!
+                    : "Pendiente de registrar";
+            }
+        }
+
+        public string ResumenAntecedentesOdontologicos
+        {
+            get
+            {
+                if (AntecedentesGenerales is not null)
+                {
+                    if (!AntecedentesGenerales.TieneAntecedentesOdontologicos)
+                    {
+                        return "Sin antecedentes odontológicos registrados";
+                    }
+
+                    return string.IsNullOrWhiteSpace(AntecedentesGenerales.DetalleAntecedentesOdontologicos)
+                        ? "Antecedentes odontológicos indicados sin detalle"
+                        : AntecedentesGenerales.DetalleAntecedentesOdontologicos!;
+                }
+
+                return !string.IsNullOrWhiteSpace(_antecedenteOdontologicoLegado)
+                    ? _antecedenteOdontologicoLegado!
+                    : "Pendiente de registrar";
+            }
+        }
+
+        public string MensajeFuenteAntecedentes => AntecedentesGenerales is not null
+            ? string.Empty
+            : UsaAntecedentesLegados
+                ? "Mostrando antecedentes recuperados de consultas anteriores. Conviene confirmarlos desde Editar Paciente para convertirlos en antecedentes generales vigentes."
+                : "Este paciente todavía no tiene antecedentes generales confirmados ni se encontraron antecedentes previos. Puedes registrarlos desde Editar Paciente.";
 
         private ObservableCollection<HistorialClinicoModel> _historialConsultas = new();
         public ObservableCollection<HistorialClinicoModel> HistorialConsultas
@@ -156,14 +194,20 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
                 await Task.WhenAll(historialTask, antecedentesTask);
 
-                HistorialConsultas = new ObservableCollection<HistorialClinicoModel>(
-                    await historialTask);
+                List<HistorialClinicoModel> historial = (await historialTask).ToList();
+                HistorialConsultas = new ObservableCollection<HistorialClinicoModel>(historial);
                 AntecedentesGenerales = await antecedentesTask;
+
+                CargarFallbackAntecedentesLegados(historial);
             }
             catch (Exception ex)
             {
                 HistorialConsultas = new ObservableCollection<HistorialClinicoModel>();
                 AntecedentesGenerales = null;
+                _antecedenteMedicoLegado = null;
+                _antecedenteOdontologicoLegado = null;
+                NotificarCambioAntecedentes();
+
                 MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
                     ex,
                     "No fue posible cargar el expediente clínico del paciente.");
@@ -173,6 +217,47 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 EstaCargando = false;
                 OnPropertyChanged(nameof(SinConsultas));
             }
+        }
+
+        private void CargarFallbackAntecedentesLegados(IEnumerable<HistorialClinicoModel> historial)
+        {
+            _antecedenteMedicoLegado = null;
+            _antecedenteOdontologicoLegado = null;
+
+            if (AntecedentesGenerales is null)
+            {
+                foreach (HistorialClinicoModel consulta in historial.OrderByDescending(x => x.FechaConsulta))
+                {
+                    if (string.IsNullOrWhiteSpace(_antecedenteMedicoLegado) &&
+                        !string.IsNullOrWhiteSpace(consulta.AntecedentesMedicos))
+                    {
+                        _antecedenteMedicoLegado = consulta.AntecedentesMedicos.Trim();
+                    }
+
+                    if (string.IsNullOrWhiteSpace(_antecedenteOdontologicoLegado) &&
+                        !string.IsNullOrWhiteSpace(consulta.AntecedentesOdontologicos))
+                    {
+                        _antecedenteOdontologicoLegado = consulta.AntecedentesOdontologicos.Trim();
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(_antecedenteMedicoLegado) &&
+                        !string.IsNullOrWhiteSpace(_antecedenteOdontologicoLegado))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            NotificarCambioAntecedentes();
+        }
+
+        private void NotificarCambioAntecedentes()
+        {
+            OnPropertyChanged(nameof(TieneAntecedentesRegistrados));
+            OnPropertyChanged(nameof(UsaAntecedentesLegados));
+            OnPropertyChanged(nameof(ResumenAntecedentesMedicos));
+            OnPropertyChanged(nameof(ResumenAntecedentesOdontologicos));
+            OnPropertyChanged(nameof(MensajeFuenteAntecedentes));
         }
 
         private void EditarPaciente()

@@ -20,6 +20,7 @@ namespace ClinicaDentalMario.Repositories
                     c.DuracionMinutos,
                     c.Observaciones,
                     p.NombreCompleto AS Paciente,
+                    p.Telefono AS TelefonoPaciente,
                     d.NombreCompleto AS Doctor,
                     e.Nombre AS Estado
                 FROM Agenda.Citas c
@@ -51,9 +52,7 @@ namespace ClinicaDentalMario.Repositories
                 FROM Catalogos.EstadosCita
                 WHERE Nombre = @NombreEstado;";
 
-            return await db.QuerySingleOrDefaultAsync<int?>(
-                sql,
-                new { NombreEstado = nombreEstado });
+            return await db.QuerySingleOrDefaultAsync<int?>(sql, new { NombreEstado = nombreEstado });
         }
 
         public Task<bool> ExisteConflictoDoctorAsync(

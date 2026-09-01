@@ -98,6 +98,17 @@ namespace ClinicaDentalMario.Data
                     ALTER TABLE Agenda.Citas
                     ADD DuracionMinutos INT NOT NULL
                         CONSTRAINT DF_Citas_DuracionMinutos DEFAULT 30 WITH VALUES;
+                END;
+
+                IF OBJECT_ID('Agenda.Citas', 'U') IS NOT NULL
+                   AND NOT EXISTS (
+                       SELECT 1
+                       FROM sys.check_constraints
+                       WHERE name = 'CK_Citas_DuracionMinutos')
+                BEGIN
+                    ALTER TABLE Agenda.Citas WITH CHECK
+                    ADD CONSTRAINT CK_Citas_DuracionMinutos
+                    CHECK (DuracionMinutos IN (15, 30, 45, 60, 90));
                 END;";
 
             await conn.ExecuteAsync(sqlAntecedentesPaciente);

@@ -1,19 +1,28 @@
-﻿using ClinicaDentalMario.ViewModel.Base;
+using ClinicaDentalMario.ViewModel.Base;
 using System.Windows;
 
 namespace ClinicaDentalMario.Views
 {
-    /// <summary>
-    /// Lógica de interacción para MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
 
-            // Asignamos el MainViewModel como el DataContext principal de esta ventana
-            DataContext = new MainViewModel();
+            var viewModel = new MainViewModel();
+            viewModel.CierreSesionSolicitado += OnCierreSesionSolicitado;
+            DataContext = viewModel;
+        }
+
+        private void OnCierreSesionSolicitado(object? sender, EventArgs e)
+        {
+            if (Application.Current is not App app)
+            {
+                return;
+            }
+
+            app.MostrarLogin();
+            Close();
         }
     }
 }

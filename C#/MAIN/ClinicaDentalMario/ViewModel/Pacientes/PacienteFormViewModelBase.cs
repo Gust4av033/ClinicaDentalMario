@@ -88,15 +88,24 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             get => _tieneAntecedentesMedicos;
             set
             {
-                if (SetProperty(ref _tieneAntecedentesMedicos, value) && !value)
+                if (!SetProperty(ref _tieneAntecedentesMedicos, value))
+                    return;
+
+                if (!value)
                     DetalleAntecedentesMedicos = null;
+
+                ValidarDetalleAntecedentesMedicos();
             }
         }
 
         public string? DetalleAntecedentesMedicos
         {
             get => _detalleAntecedentesMedicos;
-            set => SetProperty(ref _detalleAntecedentesMedicos, value);
+            set
+            {
+                if (SetProperty(ref _detalleAntecedentesMedicos, value))
+                    ValidarDetalleAntecedentesMedicos();
+            }
         }
 
         public bool TieneAntecedentesOdontologicos
@@ -104,15 +113,24 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             get => _tieneAntecedentesOdontologicos;
             set
             {
-                if (SetProperty(ref _tieneAntecedentesOdontologicos, value) && !value)
+                if (!SetProperty(ref _tieneAntecedentesOdontologicos, value))
+                    return;
+
+                if (!value)
                     DetalleAntecedentesOdontologicos = null;
+
+                ValidarDetalleAntecedentesOdontologicos();
             }
         }
 
         public string? DetalleAntecedentesOdontologicos
         {
             get => _detalleAntecedentesOdontologicos;
-            set => SetProperty(ref _detalleAntecedentesOdontologicos, value);
+            set
+            {
+                if (SetProperty(ref _detalleAntecedentesOdontologicos, value))
+                    ValidarDetalleAntecedentesOdontologicos();
+            }
         }
 
         protected bool ValidarFormulario()
@@ -127,16 +145,8 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             ValidarCampo(ValidationRules.LongitudMaxima(ContactoEmergencia, 150, "El contacto de emergencia"), nameof(ContactoEmergencia));
             ValidarCampo(ValidationRules.TelefonoElSalvador(TelefonoEmergencia, "El teléfono de emergencia")
                 .Concat(ValidationRules.LongitudMaxima(TelefonoEmergencia, 20, "El teléfono de emergencia")), nameof(TelefonoEmergencia));
-
-            if (TieneAntecedentesMedicos && string.IsNullOrWhiteSpace(DetalleAntecedentesMedicos))
-                EstablecerErrores(new[] { "Describe los antecedentes médicos indicados." }, nameof(DetalleAntecedentesMedicos));
-            else
-                LimpiarErrores(nameof(DetalleAntecedentesMedicos));
-
-            if (TieneAntecedentesOdontologicos && string.IsNullOrWhiteSpace(DetalleAntecedentesOdontologicos))
-                EstablecerErrores(new[] { "Describe los antecedentes odontológicos indicados." }, nameof(DetalleAntecedentesOdontologicos));
-            else
-                LimpiarErrores(nameof(DetalleAntecedentesOdontologicos));
+            ValidarDetalleAntecedentesMedicos();
+            ValidarDetalleAntecedentesOdontologicos();
 
             return !HasErrors;
         }
@@ -216,6 +226,32 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             }
 
             EstablecerErrores(new[] { "El sexo seleccionado no es válido." }, nameof(Sexo));
+        }
+
+        private void ValidarDetalleAntecedentesMedicos()
+        {
+            if (TieneAntecedentesMedicos && string.IsNullOrWhiteSpace(DetalleAntecedentesMedicos))
+            {
+                EstablecerErrores(
+                    new[] { "Describe los antecedentes médicos indicados." },
+                    nameof(DetalleAntecedentesMedicos));
+                return;
+            }
+
+            LimpiarErrores(nameof(DetalleAntecedentesMedicos));
+        }
+
+        private void ValidarDetalleAntecedentesOdontologicos()
+        {
+            if (TieneAntecedentesOdontologicos && string.IsNullOrWhiteSpace(DetalleAntecedentesOdontologicos))
+            {
+                EstablecerErrores(
+                    new[] { "Describe los antecedentes odontológicos indicados." },
+                    nameof(DetalleAntecedentesOdontologicos));
+                return;
+            }
+
+            LimpiarErrores(nameof(DetalleAntecedentesOdontologicos));
         }
 
         private static string? LimpiarOpcional(string? valor) =>

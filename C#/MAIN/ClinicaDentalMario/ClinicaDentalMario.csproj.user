@@ -61,7 +61,19 @@
     <Compile Update="Views\Pagos\NuevoPagoWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\Pagos\VistaPreviaEstadoGlobalWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\Pagos\VistaPreviaReciboWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Reportes\ReporteIngresosView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Reportes\ReporteProductividadView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Reportes\ReportesView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\Tratamientos\EditarTratamientoWindow.xaml.cs">

@@ -97,6 +97,14 @@
                             </StackPanel>
                         </Button>
 
+                        <!-- 🔥 NUEVO BOTÓN DE REPORTES 🔥 -->
+                        <Button Command="{Binding NavegarReportesCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="ChartBar" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="#F1C40F"/>
+                                <TextBlock Text="Reportes" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
                         <Separator Margin="15,15" Background="{StaticResource BorderBrush}"/>
 
                         <TextBlock Text="SISTEMA" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" Margin="15,0,0,8" Opacity="0.6"/>

@@ -82,5 +82,24 @@ namespace ClinicaDentalMario.Repositories
 
             await db.ExecuteAsync(sql, new { CostoTotal = costoTotal, Observaciones = observaciones, IdTratamientoPaciente = idTratamientoPaciente });
         }
+
+        public async Task<IEnumerable<dynamic>> ObtenerProductividadAsync(DateTime fechaInicio, DateTime fechaFin)
+        {
+            using IDbConnection db = DatabaseConnection.GetConnection();
+
+            // Agrupamos por tratamiento para contar cantidad y sumar costos
+            string sql = @"
+        SELECT 
+            t.Nombre AS Tratamiento,
+            COUNT(tp.Id) AS Cantidad,
+            SUM(tp.CostoTotal) AS IngresoProyectado
+        FROM Odontologia.TratamientosPaciente tp
+        INNER JOIN Catalogos.CatalogoTratamientos t ON tp.IdTratamiento = t.IdTratamiento
+        WHERE tp.FechaInicio >= @Inicio AND tp.FechaInicio < @Fin
+        GROUP BY t.Nombre
+        ORDER BY Cantidad DESC";
+
+            return await db.QueryAsync<dynamic>(sql, new { Inicio = fechaInicio, Fin = fechaFin.AddDays(1) });
+        }
     }
 }

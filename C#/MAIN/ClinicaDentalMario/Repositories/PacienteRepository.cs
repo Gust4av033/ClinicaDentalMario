@@ -81,5 +81,21 @@ namespace ClinicaDentalMario.Repositories
             var parameters = new { IdPaciente = idPaciente };
             await db.ExecuteAsync("Pacientes.sp_EliminarPaciente", parameters, commandType: CommandType.StoredProcedure);
         }
+
+        public async Task<IEnumerable<PacienteModel>> ObtenerInactivosAsync()
+        {
+            using IDbConnection db = DatabaseConnection.GetConnection();
+            // Si ya creaste el SP, úsalo. Si no, esta consulta asume que haces un borrado lógico (Activo = 0)
+            string sql = "SELECT * FROM Pacientes.Pacientes WHERE Activo = 0 ORDER BY NombreCompleto";
+            return await db.QueryAsync<PacienteModel>(sql);
+        }
+
+        public async Task RestaurarAsync(int idPaciente)
+        {
+            using IDbConnection db = DatabaseConnection.GetConnection();
+            // Ajusta el nombre de tu tabla y columna si es necesario
+            string sql = "UPDATE Pacientes.Pacientes SET Activo = 1 WHERE IdPaciente = @IdPaciente";
+            await db.ExecuteAsync(sql, new { IdPaciente = idPaciente });
+        }
     }
 }

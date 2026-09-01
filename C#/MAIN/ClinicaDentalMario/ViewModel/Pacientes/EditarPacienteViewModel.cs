@@ -67,6 +67,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         public ICommand ExportarPdfCommand { get; }
         public ICommand RegistrarAbonoCommand { get; }
         public ICommand RegresarCommand { get; }
+        public ICommand CambiarEstadoCommand { get; }
 
         public EditarPacienteViewModel(PacienteModel pacienteSeleccionado, Action<object> cambiarVista)
         {
@@ -78,6 +79,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             _historialRepository = new HistorialClinicoRepository();
             _tratamientoRepository = new TratamientoRepository(); // Inicializamos
             RegresarCommand = new RelayCommand(Volver);
+            CambiarEstadoCommand = new RelayCommand(async (p) => await CambiarEstadoAsync());
 
             _ = CargarHistorialAsync(pacienteSeleccionado.IdPaciente);
 
@@ -187,7 +189,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                     var listaPagos = await _pagoRepository.ListarPagosPorPacienteAsync(PacienteActual.IdPaciente);
 
                     var pdfService = new PdfService();
-                    pdfService.GenerarExpedientePdf(PacienteActual, listaConsultas, listaPagos, dialog.FileName);
+                    pdfService.GenerarExpedientePdf(PacienteActual, listaConsultas,  dialog.FileName);
 
                     MensajeExito = "PDF exportado correctamente con historial y abonos.";
                 }
@@ -240,6 +242,28 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                  MessageBox.Show("Error al registrar abono: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
              }
          }*/
+
+        private async Task CambiarEstadoAsync()
+        {
+            if (PacienteActual.Activo)
+            {
+                var result = MessageBox.Show("¿Seguro que deseas desactivar a este paciente?", "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (result == MessageBoxResult.Yes)
+                {
+                    await _pacienteRepository.EliminarAsync(PacienteActual.IdPaciente); // Tu SP actual
+                    _cambiarVista(new ListaPacientesView { DataContext = new ListaPacientesViewModel(_cambiarVista) });
+                }
+            }
+            else
+            {
+                var result = MessageBox.Show("¿Deseas restaurar a este paciente?", "Restaurar", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    await _pacienteRepository.RestaurarAsync(PacienteActual.IdPaciente); // El nuevo método
+                    _cambiarVista(new ListaPacientesView { DataContext = new ListaPacientesViewModel(_cambiarVista) });
+                }
+            }
+        }
 
         private void Cancelar(object? parameter)
         {

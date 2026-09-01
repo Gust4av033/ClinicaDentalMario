@@ -1,0 +1,134 @@
+﻿<UserControl x:Class="ClinicaDentalMario.Views.Reportes.ReporteIngresosView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Background="{StaticResource BgWindowBrush}"
+             Foreground="{StaticResource TextPrimaryBrush}">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Título -->
+            <RowDefinition Height="Auto"/>
+            <!-- Filtros y Resumen -->
+            <RowDefinition Height="*"/>
+            <!-- Tabla -->
+            <RowDefinition Height="Auto"/>
+            <!-- Botón Exportar -->
+        </Grid.RowDefinitions>
+
+        <!-- 1. ENCABEZADO CON BOTÓN ATRÁS -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Command="{Binding VolverCommand}" Background="Transparent" BorderThickness="0" Margin="0,0,15,0" VerticalAlignment="Top" Cursor="Hand" ToolTip="Volver al panel de reportes">
+                <Border Background="{StaticResource BgControlBrush}" CornerRadius="6" Padding="8">
+                    <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="20" Height="20" Foreground="{StaticResource TextPrimaryBrush}"/>
+                </Border>
+            </Button>
+
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="{Binding Titulo}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                <TextBlock Text="Consulta los ingresos generados por los tratamientos en un periodo específico." FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Grid>
+        <!-- 2. FILTROS Y TARJETA DE RESUMEN (DASHBOARD) -->
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Panel de Filtros -->
+            <Border Grid.Column="0" Background="{StaticResource BgCardBrush}" CornerRadius="8" Padding="20" Margin="0,0,20,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="Filtros de Búsqueda" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                    <StackPanel Orientation="Horizontal">
+                        <!-- Fecha Inicio -->
+                        <StackPanel Margin="0,0,20,0">
+                            <TextBlock Text="Fecha Inicio:" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                            <DatePicker SelectedDate="{Binding FechaInicio}" Width="150" Height="35"/>
+                        </StackPanel>
+
+                        <!-- Fecha Fin -->
+                        <StackPanel Margin="0,0,20,0">
+                            <TextBlock Text="Fecha Fin:" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                            <DatePicker SelectedDate="{Binding FechaFin}" Width="150" Height="35"/>
+                        </StackPanel>
+
+                        <!-- Botón Buscar -->
+                        <Button Command="{Binding GenerarReporteCommand}" Background="{StaticResource AccentBrush}" Foreground="White" BorderThickness="0" Padding="15,0" Height="35" VerticalAlignment="Bottom" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="5"/>
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Magnify" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Generar Reporte" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Tarjeta de Total de Ingresos -->
+            <Border Grid.Column="1" Background="{StaticResource BgCardBrush}" CornerRadius="8" Padding="25,20" MinWidth="250" BorderBrush="{StaticResource AccentBrush}" BorderThickness="0,0,0,4">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="TOTAL RECAUDADO" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding TotalIngresosPeriodo, StringFormat=C2}" FontSize="32" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- 3. TABLA DE DETALLE (DATAGRID) -->
+        <Border Grid.Row="2" Background="{StaticResource BgCardBrush}" CornerRadius="8" Padding="15" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DataGrid ItemsSource="{Binding ListaIngresos}" 
+                      AutoGenerateColumns="False" 
+                      IsReadOnly="True" 
+                      SelectionMode="Single"
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Fecha" Binding="{Binding FechaPago, StringFormat=dd/MM/yyyy}" Width="100"/>
+                    <DataGridTextColumn Header="Paciente" Binding="{Binding Paciente}" Width="2*"/>
+                    <DataGridTextColumn Header="Tratamiento" Binding="{Binding Tratamiento}" Width="2*"/>
+                    <DataGridTextColumn Header="Método" Binding="{Binding MetodoPago}" Width="120"/>
+                    <DataGridTextColumn Header="Observación" Binding="{Binding Observacion}" Width="2*"/>
+                    <DataGridTextColumn Header="Monto" Binding="{Binding Monto, StringFormat=C2}" Width="120">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- 4. BOTONES DE EXPORTACIÓN -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button Command="{Binding ExportarPdfCommand}" Background="#E74C3C" Foreground="White" BorderThickness="0" Padding="20,10" Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5"/>
+                    </Style>
+                </Button.Resources>
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="FilePdfBox" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="Exportar a PDF" FontWeight="Bold"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+    </Grid>
+</UserControl>

@@ -15,5 +15,26 @@
         public DateTime FechaRegistro { get; set; } // DATETIME
         public bool Activo { get; set; } // BIT
 
+        // 🔥 PROPIEDAD CALCULADA EN TIEMPO REAL (Para DateTime nulable) 🔥
+        public int Edad
+        {
+            get
+            {
+                // Si la fecha es null o no se ha ingresado, devolvemos 0
+                if (!FechaNacimiento.HasValue) return 0;
+
+                var hoy = DateTime.Today;
+                var edad = hoy.Year - FechaNacimiento.Value.Year;
+
+                // Si aún no ha llegado su mes/día de cumpleaños este año, le restamos 1
+                if (FechaNacimiento.Value.Date > hoy.AddYears(-edad))
+                {
+                    edad--;
+                }
+
+                return edad;
+            }
+        }
+
     }
 }

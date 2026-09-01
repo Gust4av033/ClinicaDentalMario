@@ -54,7 +54,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Grid Grid.Column="0" Margin="0,0,15,0">
-
+                    <!-- TABLA PRINCIPAL DE CITAS -->
                     <DataGrid ItemsSource="{Binding CitasDelDia}" SelectedItem="{Binding CitaSeleccionada}" 
                               AutoGenerateColumns="False" CanUserAddRows="False" Background="Transparent" BorderThickness="0" 
                               RowHeight="55" FontSize="14" SelectionMode="Single">
@@ -72,12 +72,22 @@
                             <DataGridTextColumn Header="Paciente" Binding="{Binding Paciente}" Width="2*"/>
                             <DataGridTextColumn Header="Doctor Asignado" Binding="{Binding Doctor}" Width="*"/>
 
+                            <!-- 🔥 ESTADO CON COLORES DINÁMICOS 🔥 -->
                             <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="130">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="FontWeight" Value="Bold"/>
-                                        <Setter Property="Foreground" Value="#E67E22"/>
                                         <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <!-- Color por defecto (Pendiente) -->
+                                        <Setter Property="Foreground" Value="#E67E22"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Estado}" Value="Atendida">
+                                                <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Estado}" Value="Cancelada">
+                                                <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
@@ -106,6 +116,7 @@
                     </Border>
                 </Grid>
 
+                <!-- ================= PANEL LATERAL DE DETALLES ================= -->
                 <Border Grid.Column="1" Background="{StaticResource BgControlBrush}" CornerRadius="12" Padding="25" Width="340" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" 
                         Visibility="{Binding PanelDetalleVisibility}">
                     <StackPanel>
@@ -126,37 +137,86 @@
                         <TextBlock Text="{Binding CitaSeleccionada.FechaHora, StringFormat={}{0:dd MMM yyyy - hh:mm tt}}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Margin="0,2,0,20"/>
 
                         <TextBlock Text="Motivo / Observaciones:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" FontSize="13"/>
-                        <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,5,0,30" MinHeight="90">
+                        <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,5,0,25" MinHeight="90">
                             <TextBlock Text="{Binding CitaSeleccionada.Observaciones}" TextWrapping="Wrap" Foreground="{StaticResource TextPrimaryBrush}" FontSize="14"/>
                         </Border>
 
-                        <Button Command="{Binding EditarCitaCommand}" Background="#F39C12" Foreground="White" BorderThickness="0" Height="42" Margin="0,0,0,12" Cursor="Hand">
-                            <Button.Resources>
+                        <!-- 🔥 INDICADOR DE CITA CERRADA (Se muestra si está Finalizada/Cancelada) 🔥 -->
+                        <Border Background="#1A252F" BorderBrush="#2C3E50" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                            <Border.Style>
                                 <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="6"/>
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CitaSeleccionada.Estado}" Value="Atendida">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding CitaSeleccionada.Estado}" Value="Cancelada">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
                                 </Style>
-                            </Button.Resources>
-                            <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="CalendarEdit" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
-                                <TextBlock Text="Reprogramar / Editar" VerticalAlignment="Center" FontWeight="Bold" FontSize="14" Foreground="White"/>
+                            </Border.Style>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <iconPacks:PackIconMaterial Kind="Information" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Esta cita ya no puede ser editada" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" VerticalAlignment="Center"/>
                             </StackPanel>
-                        </Button>
+                        </Border>
 
-                        <Button Command="{Binding CancelarCitaCommand}" Background="Transparent" BorderBrush="{StaticResource DangerBrush}" Foreground="{StaticResource DangerBrush}" BorderThickness="1" Height="42" Cursor="Hand">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="6"/>
+                        <!-- 🔥 GRUPO DE BOTONES (Se ocultan si la cita ya finalizó) 🔥 -->
+                        <StackPanel>
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CitaSeleccionada.Estado}" Value="Atendida">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding CitaSeleccionada.Estado}" Value="Cancelada">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
                                 </Style>
-                            </Button.Resources>
-                            <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="CalendarRemove" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="Cancelar Cita" VerticalAlignment="Center" FontWeight="Bold" FontSize="14"/>
-                            </StackPanel>
-                        </Button>
+                            </StackPanel.Style>
+
+                            <Button Command="{Binding FinalizarCitaCommand}" Background="{StaticResource SuccessBrush}" Foreground="White" BorderThickness="0" Height="42" Margin="0,0,0,10" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6"/>
+                                    </Style>
+                                </Button.Resources>
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="CheckCircle" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
+                                    <TextBlock Text="Marcar como Finalizada" VerticalAlignment="Center" FontWeight="Bold" FontSize="14" Foreground="White"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding EditarCitaCommand}" Background="#F39C12" Foreground="White" BorderThickness="0" Height="42" Margin="0,0,0,10" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6"/>
+                                    </Style>
+                                </Button.Resources>
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="CalendarEdit" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
+                                    <TextBlock Text="Reprogramar / Editar" VerticalAlignment="Center" FontWeight="Bold" FontSize="14" Foreground="White"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding CancelarCitaCommand}" Background="Transparent" BorderBrush="{StaticResource DangerBrush}" Foreground="{StaticResource DangerBrush}" BorderThickness="1" Height="42" Cursor="Hand">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6"/>
+                                    </Style>
+                                </Button.Resources>
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="CalendarRemove" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Cancelar Cita" VerticalAlignment="Center" FontWeight="Bold" FontSize="14"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
 
                     </StackPanel>
                 </Border>
-
             </Grid>
         </Grid>
     </Border>

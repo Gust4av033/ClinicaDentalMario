@@ -176,18 +176,41 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0" Command="{Binding DesactivarCommand}" Background="Transparent" Foreground="#E74C3C" BorderBrush="#E74C3C" BorderThickness="1" Height="42" Padding="20,0" Cursor="Hand">
+                    <Button Command="{Binding CambiarEstadoCommand}" BorderThickness="0" Padding="20,10" Cursor="Hand" Margin="0,0,15,0">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <!-- ESTADO POR DEFECTO: PACIENTE ACTIVO (Botón Rojo) -->
+                                <Setter Property="Background" Value="#E74C3C"/>
+                                <Setter Property="Content">
+                                    <Setter.Value>
+                                        <StackPanel Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial Kind="AccountMinus" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
+                                            <TextBlock Text="Desactivar Paciente" FontWeight="Bold" Foreground="White"/>
+                                        </StackPanel>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <!-- SI EL PACIENTE ESTÁ INACTIVO (Botón Azul) -->
+                                    <DataTrigger Binding="{Binding PacienteActual.Activo}" Value="False">
+                                        <Setter Property="Background" Value="#3498DB"/>
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <iconPacks:PackIconMaterial Kind="AccountReactivate" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
+                                                    <TextBlock Text="Restaurar Paciente" FontWeight="Bold" Foreground="White"/>
+                                                </StackPanel>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
                         <Button.Resources>
                             <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6"/>
+                                <Setter Property="CornerRadius" Value="8"/>
                             </Style>
                         </Button.Resources>
-                        <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="AccountOff" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#E74C3C"/>
-                            <TextBlock Text="Desactivar" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="#E74C3C"/>
-                        </StackPanel>
                     </Button>
-
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
                         <Button Command="{Binding RegresarCommand}" Background="Transparent" Foreground="{StaticResource TextSecondaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Height="42" Padding="20,0" Margin="0,0,12,0" Cursor="Hand">
                             <Button.Resources>

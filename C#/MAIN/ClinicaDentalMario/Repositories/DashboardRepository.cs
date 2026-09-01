@@ -50,18 +50,18 @@ namespace ClinicaDentalMario.Repositories
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
             string sql = @"
-                SELECT 
-                    p.NombreCompleto AS Paciente,
-                    (tp.CostoTotal - ISNULL((SELECT SUM(Monto) FROM Odontologia.Pagos pg WHERE pg.IdTratamientoPaciente = tp.Id), 0)) AS Saldo
-                FROM Odontologia.TratamientosPaciente tp
-                INNER JOIN Pacientes.Pacientes p ON tp.IdPaciente = p.IdPaciente
-                WHERE tp.Estado = 'En progreso'
-                AND (tp.CostoTotal - ISNULL((SELECT SUM(Monto) FROM Odontologia.Pagos pg WHERE pg.IdTratamientoPaciente = tp.Id), 0)) > 0
-                ORDER BY Saldo DESC";
+        SELECT 
+            p.NombreCompleto AS Paciente,
+            (tp.CostoTotal - ISNULL((SELECT SUM(Monto) FROM Odontologia.Pagos pg WHERE pg.IdTratamientoPaciente = tp.Id), 0)) AS Saldo
+        FROM Odontologia.TratamientosPaciente tp
+        INNER JOIN Pacientes.Pacientes p ON tp.IdPaciente = p.IdPaciente
+        WHERE tp.Estado = 'En progreso'
+        AND (tp.CostoTotal - ISNULL((SELECT SUM(Monto) FROM Odontologia.Pagos pg WHERE pg.IdTratamientoPaciente = tp.Id), 0)) > 0
+        ORDER BY Saldo DESC";
 
             return await db.QueryAsync<dynamic>(sql);
         }
-
+        
         // 🟡 3. OBTENER CUMPLEAÑEROS DEL MES
         public async Task<IEnumerable<dynamic>> ObtenerCumpleanerosMesAsync()
         {

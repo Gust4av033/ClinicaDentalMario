@@ -17,25 +17,45 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
+            <!-- ================= HEADER Y BOTONES DE IMPRESIÓN ================= -->
             <Grid Grid.Row="0" Margin="0,0,0,20">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <iconPacks:PackIconMaterial Kind="CashRegister" Width="30" Height="30" Foreground="{StaticResource SuccessBrush}" Margin="0,0,12,0"/>
                     <TextBlock Text="Estado de Cuenta y Abonos" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <Button HorizontalAlignment="Right" Command="{Binding ImprimirReciboCommand}" Height="40" Background="{StaticResource BgControlBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="20,0" Cursor="Hand">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="20"/>
-                        </Style>
-                    </Button.Resources>
-                    <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="Printer" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBlock Text="Imprimir Estado de Cuenta" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
-                    </StackPanel>
-                </Button>
+                <!-- 🔥 DOS BOTONES DE IMPRESIÓN 🔥 -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+
+                    <!-- Botón 1: Estado Global -->
+                    <Button Command="{Binding ImprimirReciboGlobalCommand}" Height="40" Background="Transparent" Foreground="{StaticResource AccentBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" Padding="15,0" Margin="0,0,10,0" Cursor="Hand" ToolTip="Imprimir todos los tratamientos del paciente">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="20"/>
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="FileDocumentMultiple" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Estado Global" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Botón 2: Ticket Individual -->
+                    <Button Command="{Binding ImprimirReciboCommand}" Height="40" Background="{StaticResource BgControlBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="20,0" Cursor="Hand" ToolTip="Imprimir abonos del tratamiento seleccionado">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="20"/>
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Receipt" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <TextBlock Text="Imprimir Ticket" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </Grid>
 
+            <!-- ================= FILTROS Y COMBOBOXES ================= -->
             <Grid Grid.Row="1" Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -49,11 +69,12 @@
 
                 <TextBlock Grid.Column="0" Text="Paciente:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="14"/>
                 <ComboBox Grid.Column="1" ItemsSource="{Binding ListaPacientes}" 
-          SelectedItem="{Binding PacienteSeleccionado}" 
-          Text="{Binding BusquedaPaciente, UpdateSourceTrigger=PropertyChanged}"
-          DisplayMemberPath="NombreCompleto" 
-          IsEditable="True" StaysOpenOnEdit="True" IsTextSearchEnabled="False"
-          FontSize="14" Padding="8" VerticalAlignment="Center"/>
+                          SelectedItem="{Binding PacienteSeleccionado}" 
+                          Text="{Binding BusquedaPaciente, UpdateSourceTrigger=PropertyChanged}"
+                          DisplayMemberPath="NombreCompleto" 
+                          IsEditable="True" StaysOpenOnEdit="True" IsTextSearchEnabled="False"
+                          FontSize="14" Padding="8" VerticalAlignment="Center"/>
+
                 <TextBlock Grid.Column="3" Text="Tratamiento:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="14"/>
                 <ComboBox Grid.Column="4" ItemsSource="{Binding ListaTratamientos}" 
                           SelectedItem="{Binding TratamientoSeleccionado}" 
@@ -73,6 +94,7 @@
                 </Button>
             </Grid>
 
+            <!-- ================= TARJETAS DE SALDOS ================= -->
             <Grid Grid.Row="2" Margin="0,0,0,25">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -104,6 +126,7 @@
                 </Border>
             </Grid>
 
+            <!-- ================= TABLA DE ABONOS ================= -->
             <Grid Grid.Row="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -150,6 +173,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
+                <!-- EMPTY STATE -->
                 <Border Grid.Row="0" Background="{StaticResource BgCardBrush}" Margin="0,40,0,0">
                     <Border.Style>
                         <Style TargetType="Border">
@@ -171,6 +195,7 @@
                     </StackPanel>
                 </Border>
 
+                <!-- BOTONES DE ACCIÓN (Ver Detalle / Eliminar) -->
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
                     <Button Command="{Binding VerDetalleCommand}" Height="40" Background="{StaticResource BgControlBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="20,0" Margin="0,0,12,0" Cursor="Hand">
                         <Button.Resources>
@@ -196,7 +221,6 @@
                         </StackPanel>
                     </Button>
                 </StackPanel>
-
             </Grid>
         </Grid>
     </Border>

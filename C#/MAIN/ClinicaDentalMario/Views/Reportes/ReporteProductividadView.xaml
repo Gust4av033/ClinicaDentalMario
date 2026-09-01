@@ -1,0 +1,116 @@
+﻿<UserControl x:Class="ClinicaDentalMario.Views.Reportes.ReporteProductividadView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             Background="{StaticResource BgWindowBrush}"
+             Foreground="{StaticResource TextPrimaryBrush}">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ENCABEZADO CON BOTÓN ATRÁS -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Command="{Binding VolverCommand}" Background="Transparent" BorderThickness="0" Margin="0,0,15,0" VerticalAlignment="Top" Cursor="Hand">
+                <Border Background="{StaticResource BgControlBrush}" CornerRadius="6" Padding="8">
+                    <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="20" Height="20" Foreground="{StaticResource TextPrimaryBrush}"/>
+                </Border>
+            </Button>
+
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="{Binding Titulo}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                <TextBlock Text="Análisis de tratamientos realizados y volumen de trabajo en el periodo." FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- FILTROS Y TARJETA -->
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource BgCardBrush}" CornerRadius="8" Padding="20" Margin="0,0,20,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="Filtros de Búsqueda" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel Margin="0,0,20,0">
+                            <TextBlock Text="Fecha Inicio:" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                            <DatePicker SelectedDate="{Binding FechaInicio}" Width="150" Height="35"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,20,0">
+                            <TextBlock Text="Fecha Fin:" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                            <DatePicker SelectedDate="{Binding FechaFin}" Width="150" Height="35"/>
+                        </StackPanel>
+                        <Button Command="{Binding GenerarReporteCommand}" Background="{StaticResource AccentBrush}" Foreground="White" BorderThickness="0" Padding="15,0" Height="35" VerticalAlignment="Bottom" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="5"/>
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="Magnify" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Analizar" FontWeight="Bold"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1" Background="{StaticResource BgCardBrush}" CornerRadius="8" Padding="25,20" MinWidth="250" BorderBrush="{StaticResource AccentBrush}" BorderThickness="0,0,0,4">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="TOTAL TRATAMIENTOS" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding TotalTratamientosPeriodo}" FontSize="32" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- DATAGRID -->
+        <Border Grid.Row="2" Background="{StaticResource BgCardBrush}" CornerRadius="8" Padding="15" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+            <DataGrid ItemsSource="{Binding ListaProductividad}" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Nombre del Tratamiento" Binding="{Binding Tratamiento}" Width="*"/>
+                    <DataGridTextColumn Header="Cantidad Realizada" Binding="{Binding Cantidad}" Width="150">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Ingreso Proyectado" Binding="{Binding IngresoProyectado, StringFormat=C2}" Width="150">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                                <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button Command="{Binding ExportarPdfCommand}" Background="#E74C3C" Foreground="White" BorderThickness="0" Padding="20,10" Cursor="Hand">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="5"/>
+                    </Style>
+                </Button.Resources>
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="FilePdfBox" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock Text="Exportar a PDF" FontWeight="Bold"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

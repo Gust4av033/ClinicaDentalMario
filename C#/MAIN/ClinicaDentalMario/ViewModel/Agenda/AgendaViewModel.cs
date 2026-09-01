@@ -43,7 +43,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             {
                 if (SetProperty(ref _citaSeleccionada, value))
                 {
-                    // 🔥 Lógica del Panel: Si seleccionan algo, se muestra. Si no, se oculta.
+                    // Lógica del Panel: Si seleccionan algo, se muestra. Si no, se oculta.
                     PanelDetalleVisibility = value != null ? Visibility.Visible : Visibility.Collapsed;
                     AnchoPanelDetalle = value != null ? 300 : 0;
                 }
@@ -69,6 +69,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         public ICommand NuevaCitaCommand { get; }
         public ICommand EditarCitaCommand { get; }
         public ICommand CancelarCitaCommand { get; }
+        public ICommand FinalizarCitaCommand { get; } // 🔥 NUEVO COMANDO 🔥
         public ICommand CerrarDetalleCommand { get; }
 
         public AgendaViewModel(Action<object> cambiarVista)
@@ -80,6 +81,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             NuevaCitaCommand = new RelayCommand(AbrirNuevaCita);
             EditarCitaCommand = new RelayCommand(AbrirEditarCita);
             CancelarCitaCommand = new RelayCommand(async (param) => await CancelarCitaAsync(param));
+            FinalizarCitaCommand = new RelayCommand(async (param) => await FinalizarCitaAsync(param)); // 🔥 INICIALIZADO 🔥
             CerrarDetalleCommand = new RelayCommand(CerrarDetalle);
 
             _ = CargarCitasDelDiaAsync();
@@ -119,6 +121,13 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         {
             if (CitaSeleccionada != null && _cambiarVista != null)
             {
+                // 🔥 CAMBIO: "Atendida" en vez de "Finalizada"
+                if (CitaSeleccionada.Estado == "Atendida" || CitaSeleccionada.Estado == "Cancelada")
+                {
+                    MessageBox.Show("No puedes reprogramar una cita que ya fue atendida o cancelada.", "Acción denegada", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
                 var vistaEditar = new EditarCitaView();
                 var viewModelEditar = new EditarCitaViewModel(CitaSeleccionada, _cambiarVista);
                 vistaEditar.DataContext = viewModelEditar;
@@ -130,15 +139,49 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         {
             if (CitaSeleccionada != null)
             {
+                // 🔥 CAMBIO: "Atendida" en vez de "Finalizada"
+                if (CitaSeleccionada.Estado == "Atendida" || CitaSeleccionada.Estado == "Cancelada")
+                {
+                    MessageBox.Show("Esta cita ya está atendida o cancelada.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
                 var result = MessageBox.Show($"¿Deseas cancelar la cita de {CitaSeleccionada.Paciente}?", "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    await _citaRepository.CancelarCitaAsync(CitaSeleccionada.IdCita);
+                    await _citaRepository.CancelarCitaAsync((int)CitaSeleccionada.IdCita);
                     MessageBox.Show("Cita cancelada correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                    CerrarDetalle(null); // Ocultamos el panel tras cancelar
-                    await CargarCitasDelDiaAsync(); // Recargamos
+                    CerrarDetalle(null);
+                    await CargarCitasDelDiaAsync();
+                }
+            }
+        }
+
+
+        // 🔥 NUEVA FUNCIÓN PARA FINALIZAR CITAS 🔥
+        private async Task FinalizarCitaAsync(object? parameter)
+        {
+            if (CitaSeleccionada != null)
+            {
+                // 🔥 CAMBIO: "Atendida" en vez de "Finalizada"
+                if (CitaSeleccionada.Estado == "Atendida" || CitaSeleccionada.Estado == "Cancelada")
+                {
+                    MessageBox.Show("Esta cita ya está cerrada.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var result = MessageBox.Show($"¿El paciente {CitaSeleccionada.Paciente} ya fue atendido? Se marcará la cita como Atendida.", "Finalizar Cita", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    // 🔥 CAMBIO VITAL: Le mandamos la palabra "Atendida" a SQL
+                    await _citaRepository.CambiarEstadoCitaAsync((int)CitaSeleccionada.IdCita, "Atendida");
+                    MessageBox.Show("Cita marcada como Atendida con éxito.", "Excelente", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    CerrarDetalle(null);
+                    await CargarCitasDelDiaAsync();
                 }
             }
         }

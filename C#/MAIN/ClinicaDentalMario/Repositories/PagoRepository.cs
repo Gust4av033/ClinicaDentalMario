@@ -52,5 +52,28 @@ namespace ClinicaDentalMario.Repositories
             string sql = "DELETE FROM Odontologia.Pagos WHERE IdPago = @IdPago";
             await db.ExecuteAsync(sql, new { IdPago = idPago });
         }
+
+        public async Task<IEnumerable<dynamic>> ObtenerIngresosPorRangoAsync(DateTime fechaInicio, DateTime fechaFin)
+        {
+            using IDbConnection db = DatabaseConnection.GetConnection();
+
+            string sql = @"
+        SELECT 
+            p.IdPago,
+            p.FechaPago,
+            p.Monto,
+            p.MetodoPago,
+            p.Observacion,
+            pac.NombreCompleto AS Paciente,
+            t.Nombre AS Tratamiento
+        FROM Odontologia.Pagos p 
+        INNER JOIN Odontologia.TratamientosPaciente tp ON p.IdTratamientoPaciente = tp.Id
+        INNER JOIN Catalogos.CatalogoTratamientos t ON tp.IdTratamiento = t.IdTratamiento
+        INNER JOIN Pacientes.Pacientes pac ON tp.IdPaciente = pac.IdPaciente
+        WHERE p.FechaPago >= @Inicio AND p.FechaPago < @Fin
+        ORDER BY p.FechaPago ASC";
+
+            return await db.QueryAsync<dynamic>(sql, new { Inicio = fechaInicio, Fin = fechaFin.AddDays(1) });
+        }
     }
 }

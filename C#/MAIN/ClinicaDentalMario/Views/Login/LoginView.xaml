@@ -46,8 +46,11 @@
                         </StackPanel>
                     </Button>
 
-                    <Button Grid.Column="2" Command="{Binding AccederCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" 
-                            Background="#27AE60" Foreground="White" BorderThickness="0" Height="45" Cursor="Hand">
+                    <Button Grid.Column="2" 
+        Command="{Binding AccederCommand}" 
+        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" 
+        Background="#27AE60" Foreground="White" BorderThickness="0" Height="45" Cursor="Hand"
+        IsDefault="True">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="8"/>
@@ -58,6 +61,7 @@
                             <TextBlock Text="Acceder al Sistema" VerticalAlignment="Center" FontSize="15" FontWeight="Bold" Foreground="White"/>
                         </StackPanel>
                     </Button>
+
                 </Grid>
             </StackPanel>
         </Border>

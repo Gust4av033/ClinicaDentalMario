@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Data; // 🔥 NECESARIO PARA EL FILTRO
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Pagos
@@ -40,7 +40,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             }
         }
 
-        // 🔥 NUEVA PROPIEDAD: FILTRO DE BÚSQUEDA EN TIEMPO REAL 🔥
+        // FILTRO DE BÚSQUEDA EN TIEMPO REAL
         private string _busquedaPaciente = string.Empty;
         public string BusquedaPaciente
         {
@@ -49,15 +49,13 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             {
                 if (SetProperty(ref _busquedaPaciente, value))
                 {
-                    // Obtenemos la vista por defecto de la lista de pacientes
                     var vista = CollectionViewSource.GetDefaultView(ListaPacientes);
                     if (string.IsNullOrWhiteSpace(value))
                     {
-                        vista.Filter = null; // Si borró el texto, mostramos todos
+                        vista.Filter = null;
                     }
                     else
                     {
-                        // Filtramos para mostrar solo los que contengan el texto escrito (sin importar mayúsculas)
                         vista.Filter = obj =>
                         {
                             if (obj is PacienteModel p && !string.IsNullOrWhiteSpace(p.NombreCompleto))
@@ -67,7 +65,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                             return false;
                         };
                     }
-                    vista.Refresh(); // Refrescar visualmente el ComboBox
+                    vista.Refresh();
                 }
             }
         }
@@ -130,6 +128,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
         public ICommand EliminarAbonoCommand { get; }
         public ICommand VerDetalleCommand { get; }
         public ICommand ImprimirReciboCommand { get; }
+        public ICommand ImprimirReciboGlobalCommand { get; } // 🔥 NUEVO COMANDO 🔥
 
         public EstadoCuentaViewModel(Action<object> cambiarVista)
         {
@@ -143,7 +142,10 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             NuevoAbonoCommand = new RelayCommand(AbrirNuevoAbono, p => TratamientoSeleccionado != null && SaldoPendiente > 0);
             EliminarAbonoCommand = new RelayCommand(async p => await EliminarAbonoAsync(), p => PagoSeleccionado != null);
             VerDetalleCommand = new RelayCommand(VerDetalleAbono, p => PagoSeleccionado != null);
-            ImprimirReciboCommand = new RelayCommand(ImprimirEstadoCuenta, p => PacienteSeleccionado != null && TratamientoSeleccionado != null);
+
+            // Comandos de Impresión
+            ImprimirReciboCommand = new RelayCommand(ImprimirTicketTratamiento, p => PacienteSeleccionado != null && TratamientoSeleccionado != null);
+            ImprimirReciboGlobalCommand = new RelayCommand(ImprimirEstadoGlobal, p => PacienteSeleccionado != null && ListaTratamientos.Any());
 
             _ = CargarPacientesAsync();
         }
@@ -260,7 +262,8 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             MessageBox.Show(detalle, "Detalle de Abono", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void ImprimirEstadoCuenta(object? parameter)
+        // 🔥 IMPRESIÓN DEL TICKET INDIVIDUAL 🔥
+        private void ImprimirTicketTratamiento(object? parameter)
         {
             if (PacienteSeleccionado == null || TratamientoSeleccionado == null) return;
 
@@ -272,7 +275,6 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                     CostoTotal,
                     HistorialPagos
                 );
-
                 ventanaPrevia.ShowDialog();
             }
             catch (Exception ex)
@@ -280,5 +282,35 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                 MessageBox.Show($"Error al generar vista previa: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        private async void ImprimirEstadoGlobal(object? parameter)
+        {
+            if (PacienteSeleccionado == null || !ListaTratamientos.Any()) return;
+
+            try
+            {
+                // Creamos un diccionario rápido con lo abonado de cada tratamiento
+                var abonosDict = new Dictionary<int, decimal>();
+                foreach (var t in ListaTratamientos)
+                {
+                    var pagos = await _pagoRepo.ListarPagosAsync(t.Id);
+                    abonosDict[t.Id] = pagos.Sum(p => p.Monto);
+                }
+
+                var ventanaGlobal = new VistaPreviaEstadoGlobalWindow(
+                    PacienteSeleccionado.NombreCompleto,
+                    ListaTratamientos,
+                    abonosDict
+                );
+
+                ventanaGlobal.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al generar reporte global: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
     }
 }

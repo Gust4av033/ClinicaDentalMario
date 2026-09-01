@@ -34,6 +34,19 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             }
         }
 
+        private bool _mostrarInactivos;
+        public bool MostrarInactivos
+        {
+            get => _mostrarInactivos;
+            set
+            {
+                if (SetProperty(ref _mostrarInactivos, value))
+                {
+                    _ = CargarPacientesAsync(); // Si tocan el botón, recargamos la lista
+                }
+            }
+        }
+
         private PacienteModel? _pacienteSeleccionado;
         public PacienteModel? PacienteSeleccionado
         {
@@ -70,17 +83,18 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             EstaCargando = true;
             try
             {
-                var lista = await _pacienteRepository.ObtenerTodosAsync();
+                // Alternamos entre la lista de activos y la de eliminados
+                var lista = MostrarInactivos
+                    ? await _pacienteRepository.ObtenerInactivosAsync()
+                    : await _pacienteRepository.ObtenerTodosAsync();
+
                 Pacientes = new ObservableCollection<PacienteModel>(lista);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error al cargar pacientes: " + ex.Message);
             }
-            finally
-            {
-                EstaCargando = false;
-            }
+            finally { EstaCargando = false; }
         }
 
         private async Task BuscarAsync()
@@ -148,5 +162,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 _cambiarVista(vistaHistorial);
             }
         }
+
+
     }
 }

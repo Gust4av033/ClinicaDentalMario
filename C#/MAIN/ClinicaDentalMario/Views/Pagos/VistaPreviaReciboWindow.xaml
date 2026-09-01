@@ -21,7 +21,7 @@
                     </Button.Resources>
                     <StackPanel Orientation="Horizontal">
                         <iconPacks:PackIconMaterial Kind="Printer" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="Imprimir / Guardar como PDF" FontWeight="Bold"/>
+                        <TextBlock Text="Imprimir / Guardar como PDF" FontWeight="Bold" Foreground="White"/>
                     </StackPanel>
                 </Button>
             </StackPanel>
@@ -32,6 +32,14 @@
                 <PageContent>
                     <FixedPage Width="793" Height="1122">
                         <Border Width="700" Margin="46" Padding="30" BorderBrush="#BDC3C7" BorderThickness="1" Background="White">
+
+                            <!-- 🔥 EL TRUCO MAGICO: Forzamos la tinta negra solo para el documento 🔥 -->
+                            <Border.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="Black"/>
+                                </Style>
+                            </Border.Resources>
+
                             <StackPanel>
                                 <TextBlock Text="CLÍNICA DENTAL MARIO" FontSize="26" FontWeight="Bold" Foreground="#2980B9" HorizontalAlignment="Center"/>
                                 <TextBlock Text="ESTADO DE CUENTA DE PACIENTE" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,5,0,20"/>

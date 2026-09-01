@@ -2,7 +2,10 @@
 using ClinicaDentalMario.Models;
 using Dapper;
 using Microsoft.Data.SqlClient;
+using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Threading.Tasks;
 
 namespace ClinicaDentalMario.Repositories
 {
@@ -46,7 +49,7 @@ namespace ClinicaDentalMario.Repositories
             return await db.QueryAsync("Agenda.sp_ListarAgendaSemana", commandType: CommandType.StoredProcedure);
         }
 
-        public async Task InsertarAsync(CitaModel cita) // Renombrado a InsertarAsync para hacer match con el ViewModel
+        public async Task InsertarAsync(CitaModel cita)
         {
             using IDbConnection db = new SqlConnection(_connectionString);
             var parameters = new
@@ -68,11 +71,25 @@ namespace ClinicaDentalMario.Repositories
             await db.ExecuteAsync(sql, new { IdCita = idCita, FechaHora = fechaHora, Observaciones = observaciones });
         }
 
-        public async Task CancelarCitaAsync(int idCita) // Renombrado a CancelarCitaAsync para el ViewModel
+        public async Task CancelarCitaAsync(int idCita)
         {
             using IDbConnection db = new SqlConnection(_connectionString);
             var parameters = new { IdCita = idCita };
             await db.ExecuteAsync("Agenda.sp_CancelarCita", parameters, commandType: CommandType.StoredProcedure);
+        }
+
+        // 🔥 NUEVO MÉTODO PARA FINALIZAR CITAS (O cambiar a cualquier estado) 🔥
+        public async Task CambiarEstadoCitaAsync(int idCita, string nombreEstado)
+        {
+            using IDbConnection db = new SqlConnection(_connectionString);
+
+            // Usamos una subconsulta para encontrar el IdEstado correcto basado en la palabra ("Finalizada")
+            string sql = @"
+                UPDATE Agenda.Citas 
+                SET IdEstado = (SELECT IdEstado FROM Catalogos.EstadosCita WHERE Nombre = @NombreEstado) 
+                WHERE IdCita = @IdCita";
+
+            await db.ExecuteAsync(sql, new { IdCita = idCita, NombreEstado = nombreEstado });
         }
     }
 }

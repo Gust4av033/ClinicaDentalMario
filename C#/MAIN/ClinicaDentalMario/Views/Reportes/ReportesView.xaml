@@ -1,0 +1,167 @@
+﻿<UserControl x:Class="ClinicaDentalMario.Views.Reportes.ReportesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Background="{StaticResource BgWindowBrush}"
+             Foreground="{StaticResource TextPrimaryBrush}">
+
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- TÍTULO DEL MÓDULO -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,40">
+            <TextBlock Text="{Binding Titulo}" FontSize="32" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+            <TextBlock Text="Centro de administración, estadísticas y métricas financieras de la clínica." FontSize="15" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- TARJETAS DE NAVEGACIÓN -->
+        <UniformGrid Grid.Row="1" Columns="3" Rows="2" VerticalAlignment="Top">
+
+            <!-- 1. CORTE DE CAJA -->
+            <Button Command="{Binding AbrirReporteIngresosCommand}" Background="{StaticResource BgCardBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Margin="10" Cursor="Hand" Height="220">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <Border Background="#1A27AE60" Width="60" Height="60" CornerRadius="30" Margin="0,0,0,15">
+                                    <iconPacks:PackIconMaterial Kind="CashRegister" Width="30" Height="30" Foreground="{StaticResource SuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Corte de Caja" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="Ingresos, métodos de pago y totales recaudados." TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource SuccessBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource BgControlHoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <!-- 2. MOROSOS / SALDOS -->
+            <Button Command="{Binding AbrirReportePacientesCommand}" Background="{StaticResource BgCardBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Margin="10" Cursor="Hand" Height="220">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <Border Background="#1AE74C3C" Width="60" Height="60" CornerRadius="30" Margin="0,0,0,15">
+                                    <iconPacks:PackIconMaterial Kind="AccountAlert" Width="30" Height="30" Foreground="{StaticResource DangerBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Pacientes Morosos" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="Listado de pacientes con saldos pendientes activos." TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource DangerBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource BgControlHoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <!-- 3. PRODUCTIVIDAD -->
+            <Button Command="{Binding AbrirReporteTratamientosCommand}" Background="{StaticResource BgCardBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Margin="10" Cursor="Hand" Height="220">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <Border Background="#1A3498DB" Width="60" Height="60" CornerRadius="30" Margin="0,0,0,15">
+                                    <iconPacks:PackIconMaterial Kind="Tooth" Width="30" Height="30" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Productividad Clínica" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="Tratamientos más realizados y volumen de trabajo." TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource BgControlHoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <!-- 4. AUDITORÍA DE AGENDA -->
+            <Button Command="{Binding AbrirReporteAgendaCommand}" Background="{StaticResource BgCardBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Margin="10" Cursor="Hand" Height="220">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <Border Background="#1AE67E22" Width="60" Height="60" CornerRadius="30" Margin="0,0,0,15">
+                                    <iconPacks:PackIconMaterial Kind="CalendarCheck" Width="30" Height="30" Foreground="#E67E22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Auditoría de Agenda" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="Control de citas atendidas, ausencias y cancelaciones." TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#E67E22"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource BgControlHoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <!-- 5. FIDELIZACIÓN Y MARKETING -->
+            <Button Command="{Binding AbrirReporteMarketingCommand}" Background="{StaticResource BgCardBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Margin="10" Cursor="Hand" Height="220">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <Border Background="#1A9B59B6" Width="60" Height="60" CornerRadius="30" Margin="0,0,0,15">
+                                    <iconPacks:PackIconMaterial Kind="CakeVariant" Width="30" Height="30" Foreground="#9B59B6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Fidelización (Marketing)" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="Nuevos ingresos, cumpleaños y contactos de pacientes." TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#9B59B6"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource BgControlHoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <!-- 6. LISTA DE PRECIOS -->
+            <Button Command="{Binding AbrirReporteCatálogoCommand}" Background="{StaticResource BgCardBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Margin="10" Cursor="Hand" Height="220">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <Border Background="#1A1ABC9C" Width="60" Height="60" CornerRadius="30" Margin="0,0,0,15">
+                                    <iconPacks:PackIconMaterial Kind="FormatListBulleted" Width="30" Height="30" Foreground="#1ABC9C" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Catálogo de Precios" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="Lista actualizada de tratamientos y sus costos base." TextWrapping="Wrap" TextAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#1ABC9C"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource BgControlHoverBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+        </UniformGrid>
+    </Grid>
+</UserControl>

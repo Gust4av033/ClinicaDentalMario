@@ -20,6 +20,9 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <!-- Inactivos -->
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- Nuevo Paciente -->
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -27,6 +30,7 @@
                     <TextBlock Text="Pacientes Registrados" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
                 </StackPanel>
 
+                <!-- BUSCADOR -->
                 <Border Grid.Column="1" Background="{StaticResource BgControlBrush}" CornerRadius="20" Height="42" MaxWidth="450" Margin="20,0" Padding="15,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -57,7 +61,29 @@
                     </Grid>
                 </Border>
 
-                <Button Grid.Column="2" Command="{Binding NuevoPacienteCommand}" Height="42" Background="#27AE60" Foreground="White" BorderThickness="0" Padding="20,0" Cursor="Hand">
+                <!-- BOTÓN DE INACTIVOS -->
+                <ToggleButton Grid.Column="2" IsChecked="{Binding MostrarInactivos, UpdateSourceTrigger=PropertyChanged}" 
+                              Margin="0,0,15,0" Height="42" Padding="15,0" Background="Transparent" 
+                              Foreground="{StaticResource TextSecondaryBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Cursor="Hand">
+                    <ToggleButton.Style>
+                        <Style TargetType="ToggleButton">
+                            <Style.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="Background" Value="#1AE74C3C"/>
+                                    <Setter Property="Foreground" Value="#E74C3C"/>
+                                    <Setter Property="BorderBrush" Value="#E74C3C"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ToggleButton.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="ArchiveOffOutline" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="Ver Inactivos" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </ToggleButton>
+
+                <!-- NUEVO PACIENTE -->
+                <Button Grid.Column="3" Command="{Binding NuevoPacienteCommand}" Height="42" Background="#27AE60" Foreground="White" BorderThickness="0" Padding="20,0" Cursor="Hand">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="21"/>
@@ -126,10 +152,9 @@
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <iconPacks:PackIconMaterial Kind="AccountSearchOutline" Width="70" Height="70" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.3" HorizontalAlignment="Center" Margin="0,0,0,15"/>
                     <TextBlock Text="No se encontraron pacientes" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Intenta buscar con otro nombre o registra a un paciente nuevo." FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.8" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                    <TextBlock Text="Intenta buscar con otro nombre o revisa el filtro." FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.8" HorizontalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
             </Border>
-
         </Grid>
     </Border>
-</UserControl>
+</UserControl>  

@@ -5,7 +5,6 @@ using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Agenda;
 using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Agenda
 {
@@ -57,6 +56,9 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                         ? Visibility.Collapsed
                         : Visibility.Visible;
                     AnchoPanelDetalle = value is null ? 0 : 340;
+                    EditarCitaCommand.NotificarCanExecuteChanged();
+                    CancelarCitaCommand.NotificarCanExecuteChanged();
+                    FinalizarCitaCommand.NotificarCanExecuteChanged();
                 }
             }
         }
@@ -82,11 +84,11 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             private set => SetProperty(ref _mensajeError, value);
         }
 
-        public ICommand NuevaCitaCommand { get; }
-        public ICommand EditarCitaCommand { get; }
+        public RelayCommand NuevaCitaCommand { get; }
+        public RelayCommand EditarCitaCommand { get; }
         public AsyncRelayCommand CancelarCitaCommand { get; }
         public AsyncRelayCommand FinalizarCitaCommand { get; }
-        public ICommand CerrarDetalleCommand { get; }
+        public RelayCommand CerrarDetalleCommand { get; }
         public AsyncRelayCommand RecargarCommand { get; }
 
         public AgendaViewModel(Action<object> cambiarVista)
@@ -151,7 +153,6 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             {
                 DataContext = new NuevaCitaViewModel(_cambiarVista)
             };
-
             _cambiarVista(vista);
         }
 
@@ -169,16 +170,12 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             {
                 DataContext = new EditarCitaViewModel(CitaSeleccionada!, _cambiarVista)
             };
-
             _cambiarVista(vista);
         }
 
         private async Task CancelarCitaAsync()
         {
-            if (!PuedeModificarSeleccionada())
-            {
-                return;
-            }
+            if (!PuedeModificarSeleccionada()) return;
 
             AgendaCitaModel cita = CitaSeleccionada!;
             if (!_messageService.Confirmar(
@@ -205,10 +202,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
         private async Task FinalizarCitaAsync()
         {
-            if (!PuedeModificarSeleccionada())
-            {
-                return;
-            }
+            if (!PuedeModificarSeleccionada()) return;
 
             AgendaCitaModel cita = CitaSeleccionada!;
             if (!_messageService.Confirmar(

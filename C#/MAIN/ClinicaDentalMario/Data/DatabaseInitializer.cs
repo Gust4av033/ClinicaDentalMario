@@ -91,7 +91,17 @@ namespace ClinicaDentalMario.Data
                     );
                 END;";
 
+            const string sqlDuracionCita = @"
+                IF OBJECT_ID('Agenda.Citas', 'U') IS NOT NULL
+                   AND COL_LENGTH('Agenda.Citas', 'DuracionMinutos') IS NULL
+                BEGIN
+                    ALTER TABLE Agenda.Citas
+                    ADD DuracionMinutos INT NOT NULL
+                        CONSTRAINT DF_Citas_DuracionMinutos DEFAULT 30 WITH VALUES;
+                END;";
+
             await conn.ExecuteAsync(sqlAntecedentesPaciente);
+            await conn.ExecuteAsync(sqlDuracionCita);
         }
     }
 }

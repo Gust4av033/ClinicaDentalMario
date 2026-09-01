@@ -56,20 +56,49 @@ namespace ClinicaDentalMario.Repositories
                 new { NombreEstado = nombreEstado });
         }
 
-        public async Task<bool> ExisteConflictoDoctorAsync(
+        public Task<bool> ExisteConflictoDoctorAsync(
             int idDoctor,
             DateTime fechaHoraInicio,
             int duracionMinutos,
             int? excluirIdCita = null)
         {
+            return ExisteConflictoAsync(
+                "c.IdDoctor = @IdEntidad",
+                idDoctor,
+                fechaHoraInicio,
+                duracionMinutos,
+                excluirIdCita);
+        }
+
+        public Task<bool> ExisteConflictoPacienteAsync(
+            int idPaciente,
+            DateTime fechaHoraInicio,
+            int duracionMinutos,
+            int? excluirIdCita = null)
+        {
+            return ExisteConflictoAsync(
+                "c.IdPaciente = @IdEntidad",
+                idPaciente,
+                fechaHoraInicio,
+                duracionMinutos,
+                excluirIdCita);
+        }
+
+        private static async Task<bool> ExisteConflictoAsync(
+            string filtroEntidad,
+            int idEntidad,
+            DateTime fechaHoraInicio,
+            int duracionMinutos,
+            int? excluirIdCita)
+        {
             using IDbConnection db = DatabaseConnection.GetConnection();
             DateTime fechaHoraFin = fechaHoraInicio.AddMinutes(duracionMinutos);
 
-            const string sql = @"
+            string sql = $@"
                 SELECT COUNT(1)
                 FROM Agenda.Citas c
                 INNER JOIN Catalogos.EstadosCita e ON c.IdEstado = e.IdEstado
-                WHERE c.IdDoctor = @IdDoctor
+                WHERE {filtroEntidad}
                   AND e.Nombre NOT IN ('Cancelada', 'No Asistió')
                   AND (@ExcluirIdCita IS NULL OR c.IdCita <> @ExcluirIdCita)
                   AND c.FechaHora < @FechaHoraFin
@@ -77,7 +106,7 @@ namespace ClinicaDentalMario.Repositories
 
             int cantidad = await db.ExecuteScalarAsync<int>(sql, new
             {
-                IdDoctor = idDoctor,
+                IdEntidad = idEntidad,
                 FechaHoraInicio = fechaHoraInicio,
                 FechaHoraFin = fechaHoraFin,
                 ExcluirIdCita = excluirIdCita

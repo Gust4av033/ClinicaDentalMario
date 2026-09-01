@@ -1,4 +1,4 @@
-﻿using ClinicaDentalMario.Config;
+using ClinicaDentalMario.Config;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.IO;
@@ -10,62 +10,88 @@ namespace ClinicaDentalMario.Data
     {
         public static async Task InicializarBaseDeDatosAsync()
         {
-            // 1. Crear la base de datos en master si no existe.
             using (var conn = new SqlConnection(AppSettings.MasterConnectionString))
             {
                 string crearBaseDeDatos = $"IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '{AppSettings.DatabaseName}') CREATE DATABASE [{AppSettings.DatabaseName}];";
                 await conn.ExecuteAsync(crearBaseDeDatos);
             }
 
-            // 2. Verificar si ya se inicializó el sistema previamente.
             using (var conn = new SqlConnection(AppSettings.ConnectionString))
             {
                 await conn.OpenAsync();
 
-                // Verificamos si la tabla principal de pacientes ya existe en la BD.
                 int existeEstructura = await conn.ExecuteScalarAsync<int>(
-                    "SELECT COUNT(*) FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id WHERE s.name = 'Pacientes' AND t.name = 'Pacientes'"
-                );
+                    "SELECT COUNT(*) FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id WHERE s.name = 'Pacientes' AND t.name = 'Pacientes'");
 
-                // Si la estructura ya existe, no volvemos a correr el script para evitar duplicados.
-                if (existeEstructura > 0)
+                if (existeEstructura == 0)
                 {
-                    return;
+                    await EjecutarScriptInicialAsync(conn);
                 }
 
-                // 3. En una instalación limpia, leemos y ejecutamos Script00.sql.
-                string rutaScript = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Scripts", "Script00.sql");
+                await AplicarActualizacionesEsquemaAsync(conn);
+            }
+        }
 
-                if (File.Exists(rutaScript))
+        private static async Task EjecutarScriptInicialAsync(SqlConnection conn)
+        {
+            string rutaScript = Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                "Scripts",
+                "Script00.sql");
+
+            if (!File.Exists(rutaScript))
+            {
+                return;
+            }
+
+            string contenidoScript = await File.ReadAllTextAsync(rutaScript);
+            var comandos = Regex.Split(
+                contenidoScript,
+                @"^\s*GO\s*$",
+                RegexOptions.Multiline | RegexOptions.IgnoreCase);
+
+            foreach (var comando in comandos)
+            {
+                if (string.IsNullOrWhiteSpace(comando))
                 {
-                    string contenidoScript = await File.ReadAllTextAsync(rutaScript);
+                    continue;
+                }
 
-                    // Dividimos el script utilizando los bloques GO.
-                    var comandos = Regex.Split(
-                        contenidoScript,
-                        @"^\s*GO\s*$",
-                        RegexOptions.Multiline | RegexOptions.IgnoreCase);
-
-                    foreach (var comando in comandos)
+                try
+                {
+                    await conn.ExecuteAsync(comando);
+                }
+                catch (SqlException ex)
+                {
+                    if (ex.Number != 2714 && ex.Number != 2627)
                     {
-                        if (!string.IsNullOrWhiteSpace(comando))
-                        {
-                            try
-                            {
-                                await conn.ExecuteAsync(comando);
-                            }
-                            catch (SqlException ex)
-                            {
-                                // Ignoramos únicamente objeto existente (2714) o llave duplicada (2627).
-                                if (ex.Number != 2714 && ex.Number != 2627)
-                                {
-                                    throw;
-                                }
-                            }
-                        }
+                        throw;
                     }
                 }
             }
+        }
+
+        private static async Task AplicarActualizacionesEsquemaAsync(SqlConnection conn)
+        {
+            const string sqlAntecedentesPaciente = @"
+                IF OBJECT_ID('Pacientes.AntecedentesPaciente', 'U') IS NULL
+                BEGIN
+                    CREATE TABLE Pacientes.AntecedentesPaciente
+                    (
+                        IdPaciente INT NOT NULL PRIMARY KEY,
+                        TieneAntecedentesMedicos BIT NOT NULL CONSTRAINT DF_AntecedentesPaciente_TieneMedicos DEFAULT 0,
+                        DetalleAntecedentesMedicos NVARCHAR(MAX) NULL,
+                        TieneAntecedentesOdontologicos BIT NOT NULL CONSTRAINT DF_AntecedentesPaciente_TieneOdontologicos DEFAULT 0,
+                        DetalleAntecedentesOdontologicos NVARCHAR(MAX) NULL,
+                        FechaRegistro DATETIME2 NOT NULL CONSTRAINT DF_AntecedentesPaciente_FechaRegistro DEFAULT SYSDATETIME(),
+                        FechaActualizacion DATETIME2 NOT NULL CONSTRAINT DF_AntecedentesPaciente_FechaActualizacion DEFAULT SYSDATETIME(),
+                        CONSTRAINT FK_AntecedentesPaciente_Paciente
+                            FOREIGN KEY (IdPaciente)
+                            REFERENCES Pacientes.Pacientes(IdPaciente)
+                    );
+                END;";
+
+            await conn.ExecuteAsync(sqlAntecedentesPaciente);
         }
     }
 }

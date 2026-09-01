@@ -12,19 +12,8 @@ namespace ClinicaDentalMario.Repositories
             using IDbConnection db = DatabaseConnection.GetConnection();
 
             const string sql = @"
-                SELECT
-                    IdPaciente,
-                    NombreCompleto,
-                    Direccion,
-                    FechaNacimiento,
-                    Sexo,
-                    DUI,
-                    Telefono,
-                    NombreEncargado,
-                    ContactoEmergencia,
-                    TelefonoEmergencia,
-                    FechaRegistro,
-                    Activo
+                SELECT IdPaciente, NombreCompleto, Direccion, FechaNacimiento, Sexo, DUI, Telefono,
+                       NombreEncargado, ContactoEmergencia, TelefonoEmergencia, FechaRegistro, Activo
                 FROM Pacientes.Pacientes
                 WHERE Activo = 1
                 ORDER BY NombreCompleto;";
@@ -37,35 +26,20 @@ namespace ClinicaDentalMario.Repositories
             using IDbConnection db = DatabaseConnection.GetConnection();
 
             const string sql = @"
-                SELECT
-                    IdPaciente,
-                    NombreCompleto,
-                    Direccion,
-                    FechaNacimiento,
-                    Sexo,
-                    DUI,
-                    Telefono,
-                    NombreEncargado,
-                    ContactoEmergencia,
-                    TelefonoEmergencia,
-                    FechaRegistro,
-                    Activo
+                SELECT IdPaciente, NombreCompleto, Direccion, FechaNacimiento, Sexo, DUI, Telefono,
+                       NombreEncargado, ContactoEmergencia, TelefonoEmergencia, FechaRegistro, Activo
                 FROM Pacientes.Pacientes
                 WHERE Activo = @Activo
-                  AND (
-                      NombreCompleto LIKE '%' + @Termino + '%'
-                      OR DUI LIKE '%' + @Termino + '%'
-                      OR Telefono LIKE '%' + @Termino + '%'
-                  )
+                  AND (NombreCompleto LIKE '%' + @Termino + '%'
+                       OR DUI LIKE '%' + @Termino + '%'
+                       OR Telefono LIKE '%' + @Termino + '%')
                 ORDER BY NombreCompleto;";
 
-            return await db.QueryAsync<PacienteModel>(
-                sql,
-                new
-                {
-                    Termino = termino?.Trim() ?? string.Empty,
-                    Activo = soloInactivos ? 0 : 1
-                });
+            return await db.QueryAsync<PacienteModel>(sql, new
+            {
+                Termino = termino?.Trim() ?? string.Empty,
+                Activo = soloInactivos ? 0 : 1
+            });
         }
 
         public async Task<bool> ExisteDuiEnOtroPacienteAsync(string dui, int? excluirIdPaciente = null)
@@ -76,44 +50,106 @@ namespace ClinicaDentalMario.Repositories
             }
 
             using IDbConnection db = DatabaseConnection.GetConnection();
-
             const string sql = @"
                 SELECT COUNT(1)
                 FROM Pacientes.Pacientes
                 WHERE DUI = @DUI
                   AND (@ExcluirIdPaciente IS NULL OR IdPaciente <> @ExcluirIdPaciente);";
 
-            int cantidad = await db.ExecuteScalarAsync<int>(
-                sql,
-                new
-                {
-                    DUI = dui.Trim(),
-                    ExcluirIdPaciente = excluirIdPaciente
-                });
+            int cantidad = await db.ExecuteScalarAsync<int>(sql, new
+            {
+                DUI = dui.Trim(),
+                ExcluirIdPaciente = excluirIdPaciente
+            });
 
             return cantidad > 0;
         }
 
-        public async Task<int> InsertarAsync(PacienteModel paciente)
+        public async Task<int> InsertarConAntecedentesAsync(
+            PacienteModel paciente,
+            AntecedentesPacienteModel antecedentes)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            var parameters = new
-            {
-                paciente.NombreCompleto,
-                paciente.Direccion,
-                paciente.FechaNacimiento,
-                paciente.Sexo,
-                paciente.DUI,
-                paciente.Telefono,
-                paciente.NombreEncargado,
-                paciente.ContactoEmergencia,
-                paciente.TelefonoEmergencia
-            };
+            db.Open();
+            using IDbTransaction transaction = db.BeginTransaction();
 
-            return await db.ExecuteScalarAsync<int>(
-                "Pacientes.sp_InsertarPaciente",
-                parameters,
-                commandType: CommandType.StoredProcedure);
+            try
+            {
+                var parameters = new
+                {
+                    paciente.NombreCompleto,
+                    paciente.Direccion,
+                    paciente.FechaNacimiento,
+                    paciente.Sexo,
+                    paciente.DUI,
+                    paciente.Telefono,
+                    paciente.NombreEncargado,
+                    paciente.ContactoEmergencia,
+                    paciente.TelefonoEmergencia
+                };
+
+                int idPaciente = await db.ExecuteScalarAsync<int>(
+                    "Pacientes.sp_InsertarPaciente",
+                    parameters,
+                    transaction,
+                    commandType: CommandType.StoredProcedure);
+
+                antecedentes.IdPaciente = idPaciente;
+                await GuardarAntecedentesAsync(db, antecedentes, transaction);
+                transaction.Commit();
+                return idPaciente;
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
+        public async Task<AntecedentesPacienteModel?> ObtenerAntecedentesAsync(int idPaciente)
+        {
+            using IDbConnection db = DatabaseConnection.GetConnection();
+            const string sql = @"
+                SELECT IdPaciente, TieneAntecedentesMedicos, DetalleAntecedentesMedicos,
+                       TieneAntecedentesOdontologicos, DetalleAntecedentesOdontologicos,
+                       FechaRegistro, FechaActualizacion
+                FROM Pacientes.AntecedentesPaciente
+                WHERE IdPaciente = @IdPaciente;";
+
+            return await db.QuerySingleOrDefaultAsync<AntecedentesPacienteModel>(sql, new { IdPaciente = idPaciente });
+        }
+
+        public async Task GuardarAntecedentesAsync(AntecedentesPacienteModel antecedentes)
+        {
+            using IDbConnection db = DatabaseConnection.GetConnection();
+            await GuardarAntecedentesAsync(db, antecedentes, null);
+        }
+
+        private static async Task GuardarAntecedentesAsync(
+            IDbConnection db,
+            AntecedentesPacienteModel antecedentes,
+            IDbTransaction? transaction)
+        {
+            const string sql = @"
+                UPDATE Pacientes.AntecedentesPaciente
+                SET TieneAntecedentesMedicos = @TieneAntecedentesMedicos,
+                    DetalleAntecedentesMedicos = @DetalleAntecedentesMedicos,
+                    TieneAntecedentesOdontologicos = @TieneAntecedentesOdontologicos,
+                    DetalleAntecedentesOdontologicos = @DetalleAntecedentesOdontologicos,
+                    FechaActualizacion = SYSDATETIME()
+                WHERE IdPaciente = @IdPaciente;
+
+                IF @@ROWCOUNT = 0
+                BEGIN
+                    INSERT INTO Pacientes.AntecedentesPaciente
+                    (IdPaciente, TieneAntecedentesMedicos, DetalleAntecedentesMedicos,
+                     TieneAntecedentesOdontologicos, DetalleAntecedentesOdontologicos)
+                    VALUES
+                    (@IdPaciente, @TieneAntecedentesMedicos, @DetalleAntecedentesMedicos,
+                     @TieneAntecedentesOdontologicos, @DetalleAntecedentesOdontologicos);
+                END;";
+
+            await db.ExecuteAsync(sql, antecedentes, transaction);
         }
 
         public async Task ActualizarAsync(PacienteModel paciente)
@@ -152,19 +188,8 @@ namespace ClinicaDentalMario.Repositories
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
             const string sql = @"
-                SELECT
-                    IdPaciente,
-                    NombreCompleto,
-                    Direccion,
-                    FechaNacimiento,
-                    Sexo,
-                    DUI,
-                    Telefono,
-                    NombreEncargado,
-                    ContactoEmergencia,
-                    TelefonoEmergencia,
-                    FechaRegistro,
-                    Activo
+                SELECT IdPaciente, NombreCompleto, Direccion, FechaNacimiento, Sexo, DUI, Telefono,
+                       NombreEncargado, ContactoEmergencia, TelefonoEmergencia, FechaRegistro, Activo
                 FROM Pacientes.Pacientes
                 WHERE Activo = 0
                 ORDER BY NombreCompleto;";

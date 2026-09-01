@@ -258,8 +258,9 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 await _historialRepo.InsertarConsultaAsync(nuevaConsulta);
 
                 ConsultaGuardada = true;
-                DeseaAsignarTratamiento = _messageService.Confirmar(
-                    "La consulta fue agregada al expediente. ¿Deseas registrar un tratamiento para este paciente ahora?",
+                DeseaAsignarTratamiento = false;
+                _messageService.MostrarExito(
+                    "La consulta fue agregada correctamente al expediente del paciente.",
                     "Consulta guardada");
 
                 CerrarVentana(parameter);

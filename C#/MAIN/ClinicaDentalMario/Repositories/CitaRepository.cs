@@ -27,7 +27,6 @@ namespace ClinicaDentalMario.Repositories
                 INNER JOIN Personal.Doctores d ON c.IdDoctor = d.IdDoctor
                 INNER JOIN Catalogos.EstadosCita e ON c.IdEstado = e.IdEstado
                 WHERE CAST(c.FechaHora AS DATE) = CAST(@Fecha AS DATE)
-                  AND e.Nombre <> 'Cancelada'
                 ORDER BY c.FechaHora ASC;";
 
             return await db.QueryAsync<AgendaCitaModel>(sql, new { Fecha = fecha.Date });
@@ -76,15 +75,13 @@ namespace ClinicaDentalMario.Repositories
                   AND c.FechaHora < @FechaHoraFin
                   AND DATEADD(MINUTE, c.DuracionMinutos, c.FechaHora) > @FechaHoraInicio;";
 
-            int cantidad = await db.ExecuteScalarAsync<int>(
-                sql,
-                new
-                {
-                    IdDoctor = idDoctor,
-                    FechaHoraInicio = fechaHoraInicio,
-                    FechaHoraFin = fechaHoraFin,
-                    ExcluirIdCita = excluirIdCita
-                });
+            int cantidad = await db.ExecuteScalarAsync<int>(sql, new
+            {
+                IdDoctor = idDoctor,
+                FechaHoraInicio = fechaHoraInicio,
+                FechaHoraFin = fechaHoraFin,
+                ExcluirIdCita = excluirIdCita
+            });
 
             return cantidad > 0;
         }

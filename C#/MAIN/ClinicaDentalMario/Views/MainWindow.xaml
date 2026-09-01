@@ -66,42 +66,48 @@
 
                         <TextBlock Text="MENÚ PRINCIPAL" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" Margin="15,10,0,8" Opacity="0.6"/>
 
-                        <Button Command="{Binding NavegarDashboardCommand}">
+                        <Button Command="{Binding NavegarDashboardCommand}"
+                                Visibility="{Binding PuedeVerDashboard, Converter={StaticResource BoolToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Kind="ViewDashboard" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="{StaticResource AccentBrush}"/>
                                 <TextBlock Text="Dashboard" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
-                        <Button Command="{Binding NavegarPacientesCommand}">
+                        <Button Command="{Binding NavegarPacientesCommand}"
+                                Visibility="{Binding PuedeVerPacientes, Converter={StaticResource BoolToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Kind="AccountGroup" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="#27AE60"/>
                                 <TextBlock Text="Pacientes" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
-                        <Button Command="{Binding NavegarAgendaCommand}">
+                        <Button Command="{Binding NavegarAgendaCommand}"
+                                Visibility="{Binding PuedeVerAgenda, Converter={StaticResource BoolToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Kind="CalendarClock" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="#E67E22"/>
                                 <TextBlock Text="Agenda" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
-                        <Button Command="{Binding NavegarTratamientosCommand}">
+                        <Button Command="{Binding NavegarTratamientosCommand}"
+                                Visibility="{Binding PuedeVerTratamientos, Converter={StaticResource BoolToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Kind="Tooth" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="#9B59B6"/>
                                 <TextBlock Text="Tratamientos" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
-                        <Button Command="{Binding NavegarPagosCommand}">
+                        <Button Command="{Binding NavegarPagosCommand}"
+                                Visibility="{Binding PuedeVerPagos, Converter={StaticResource BoolToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Kind="CashMultiple" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="#2ECC71"/>
                                 <TextBlock Text="Pagos y Cuentas" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
-                        <Button Command="{Binding NavegarReportesCommand}">
+                        <Button Command="{Binding NavegarReportesCommand}"
+                                Visibility="{Binding PuedeVerReportes, Converter={StaticResource BoolToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <iconPacks:PackIconMaterial Kind="ChartBar" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="#F1C40F"/>
                                 <TextBlock Text="Reportes" VerticalAlignment="Center"/>
@@ -149,7 +155,7 @@
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
                             <Ellipse Width="7" Height="7" Fill="#27AE60" VerticalAlignment="Center" Margin="0,0,7,0"/>
-                            <TextBlock Text="SQL Server conectado" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Sesión activa" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>

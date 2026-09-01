@@ -3,7 +3,6 @@ using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.Services;
 using ClinicaDentalMario.Validators;
 using ClinicaDentalMario.ViewModel.Base;
-using ClinicaDentalMario.Views;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
@@ -145,13 +144,17 @@ namespace ClinicaDentalMario.ViewModel.Login
 
                     UsuarioActual.IniciarSesion(usuarioBD, usuarioBD.NombreRol);
 
-                    MainWindow mainWindow = new MainWindow();
-                    Application.Current.MainWindow = mainWindow;
-                    mainWindow.Show();
+                    if (Application.Current is not App app)
+                    {
+                        throw new InvalidOperationException("No fue posible acceder al contexto principal de la aplicación.");
+                    }
+
+                    app.MostrarVentanaPrincipal();
                     ventanaLogin.Close();
                 }
                 catch (Exception ex)
                 {
+                    UsuarioActual.CerrarSesion();
                     MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
                         ex,
                         "No fue posible iniciar sesión.");

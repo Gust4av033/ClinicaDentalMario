@@ -5,22 +5,12 @@
              Background="{StaticResource BgWindowBrush}">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
-        <Border Background="{StaticResource BgCardBrush}"
-                CornerRadius="15"
-                Padding="35"
-                MaxWidth="850"
-                BorderBrush="{StaticResource BorderBrush}"
-                BorderThickness="1"
-                HorizontalAlignment="Center">
+        <Border Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="35" MaxWidth="850"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" HorizontalAlignment="Center">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Margin="0,0,0,25">
@@ -34,15 +24,7 @@
                     <TextBlock Text="Registra los datos generales y antecedentes base. Las consultas, diagnósticos, odontograma y tratamientos se documentan después desde el expediente clínico."
                                Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="45,0,0,12"/>
                     <Border Background="#3A1C1C" BorderBrush="{StaticResource DangerBrush}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="45,0,0,0">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Visibility" Value="Visible"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding MensajeError}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
-                                    <DataTrigger Binding="{Binding MensajeError}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
+                        <Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Visible"/><Style.Triggers><DataTrigger Binding="{Binding MensajeError}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger><DataTrigger Binding="{Binding MensajeError}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></Border.Style>
                         <TextBlock Text="{Binding MensajeError}" Foreground="{StaticResource DangerBrush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     </Border>
                 </StackPanel>
@@ -51,14 +33,13 @@
 
                 <Grid Grid.Row="2" Margin="0,0,0,22">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Margin="0,0,0,15">
                         <TextBlock Text="Nombre completo *" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                         <TextBox MaxLength="150" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" Text="{Binding NombreCompleto, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
                     </StackPanel>
                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,15">
-                        <TextBlock Text="DUI (00000000-0)" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                        <TextBlock Text="{Binding EtiquetaDui}" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                         <TextBox MaxLength="10" PreviewTextInput="ValidarNumeros_PreviewTextInput" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" Text="{Binding DUI, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
                     </StackPanel>
                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,15">
@@ -71,71 +52,34 @@
                     </StackPanel>
                     <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,15">
                         <TextBlock Text="Sexo" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
-                        <ComboBox SelectedValuePath="Content" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" SelectedValue="{Binding Sexo, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}">
-                            <ComboBoxItem Content="Masculino"/><ComboBoxItem Content="Femenino"/><ComboBoxItem Content="Otro"/>
-                        </ComboBox>
+                        <ComboBox SelectedValuePath="Content" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" SelectedValue="{Binding Sexo, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"><ComboBoxItem Content="Masculino"/><ComboBoxItem Content="Femenino"/><ComboBoxItem Content="Otro"/></ComboBox>
                     </StackPanel>
-                    <StackPanel Grid.Row="3" Grid.ColumnSpan="3">
+                    <Border Grid.Row="3" Grid.ColumnSpan="3" Background="#183A32" BorderBrush="{StaticResource SuccessBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,15"
+                            Visibility="{Binding EsMenorEdad, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="InformationOutline" Foreground="{StaticResource SuccessBrush}" Width="20" Height="20" Margin="0,0,8,0"/><TextBlock Text="{Binding MensajeMenorEdad}" TextWrapping="Wrap" Foreground="{StaticResource TextPrimaryBrush}"/></StackPanel>
+                    </Border>
+                    <StackPanel Grid.Row="4" Grid.ColumnSpan="3">
                         <TextBlock Text="Dirección" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                         <TextBox MaxLength="250" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" Text="{Binding Direccion, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
                     </StackPanel>
                 </Grid>
 
-                <StackPanel Grid.Row="3" Margin="0,0,0,15">
-                    <TextBlock Text="Antecedentes generales" FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
-                    <TextBlock Text="Estos datos forman parte del expediente base. Si una casilla queda sin marcar, se registra explícitamente como No."
-                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/>
-                </StackPanel>
+                <StackPanel Grid.Row="3" Margin="0,0,0,15"><TextBlock Text="Antecedentes generales" FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/><TextBlock Text="Estos datos forman parte del expediente base. Si una casilla queda sin marcar, se registra explícitamente como No." Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,4,0,0" TextWrapping="Wrap"/></StackPanel>
 
                 <Grid Grid.Row="4" Margin="0,0,0,22">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0" Background="{StaticResource BgControlBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16">
-                        <StackPanel>
-                            <CheckBox IsChecked="{Binding TieneAntecedentesMedicos, UpdateSourceTrigger=PropertyChanged}" Content="Presenta antecedentes médicos" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                            <TextBlock Text="Detalle" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
-                            <TextBox Height="82" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
-                                     IsEnabled="{Binding TieneAntecedentesMedicos}"
-                                     Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
-                                     Text="{Binding DetalleAntecedentesMedicos, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="2" Background="{StaticResource BgControlBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16">
-                        <StackPanel>
-                            <CheckBox IsChecked="{Binding TieneAntecedentesOdontologicos, UpdateSourceTrigger=PropertyChanged}" Content="Presenta antecedentes odontológicos" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                            <TextBlock Text="Detalle" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
-                            <TextBox Height="82" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
-                                     IsEnabled="{Binding TieneAntecedentesOdontologicos}"
-                                     Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
-                                     Text="{Binding DetalleAntecedentesOdontologicos, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
-                        </StackPanel>
-                    </Border>
+                    <Border Grid.Column="0" Background="{StaticResource BgControlBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16"><StackPanel><CheckBox IsChecked="{Binding TieneAntecedentesMedicos, UpdateSourceTrigger=PropertyChanged}" Content="Presenta antecedentes médicos" FontWeight="SemiBold" Margin="0,0,0,10"/><TextBlock Text="Detalle" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/><TextBox Height="82" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding TieneAntecedentesMedicos}" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" Text="{Binding DetalleAntecedentesMedicos, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/></StackPanel></Border>
+                    <Border Grid.Column="2" Background="{StaticResource BgControlBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16"><StackPanel><CheckBox IsChecked="{Binding TieneAntecedentesOdontologicos, UpdateSourceTrigger=PropertyChanged}" Content="Presenta antecedentes odontológicos" FontWeight="SemiBold" Margin="0,0,0,10"/><TextBlock Text="Detalle" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/><TextBox Height="82" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsEnabled="{Binding TieneAntecedentesOdontologicos}" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" Text="{Binding DetalleAntecedentesOdontologicos, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/></StackPanel></Border>
                 </Grid>
 
                 <TextBlock Grid.Row="5" Text="Contacto y emergencia" FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,15"/>
-
                 <Grid Grid.Row="6">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                    <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Margin="0,0,0,15">
-                        <TextBlock Text="Nombre del encargado (si aplica)" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
-                        <TextBox MaxLength="150" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" Text="{Binding NombreEncargado, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
-                    </StackPanel>
-                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,15">
-                        <TextBlock Text="Contacto de emergencia" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
-                        <TextBox MaxLength="150" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" Text="{Binding ContactoEmergencia, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
-                    </StackPanel>
-                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,15">
-                        <TextBlock Text="Teléfono de emergencia" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
-                        <TextBox MaxLength="9" PreviewTextInput="ValidarNumeros_PreviewTextInput" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" Text="{Binding TelefonoEmergencia, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/>
-                    </StackPanel>
-                    <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-                        <Button Command="{Binding CancelarCommand}" Height="42" Padding="25,0" Margin="0,0,15,0"><TextBlock Text="Cancelar" FontWeight="SemiBold"/></Button>
-                        <Button Command="{Binding GuardarCommand}" Background="{StaticResource SuccessBrush}" Foreground="White" BorderThickness="0" Height="42" Padding="30,0">
-                            <StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="ContentSave" Margin="0,0,8,0" Foreground="White"/><TextBlock Text="Guardar Paciente" FontWeight="Bold" Foreground="White"/></StackPanel>
-                        </Button>
-                    </StackPanel>
+                    <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Margin="0,0,0,15"><TextBlock Text="{Binding EtiquetaEncargado}" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/><TextBox MaxLength="150" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" Text="{Binding NombreEncargado, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/></StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,15"><TextBlock Text="Contacto de emergencia" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/><TextBox MaxLength="150" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" Text="{Binding ContactoEmergencia, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/></StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,15"><TextBlock Text="Teléfono de emergencia" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/><TextBox MaxLength="9" PreviewTextInput="ValidarNumeros_PreviewTextInput" Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}" Text="{Binding TelefonoEmergencia, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"/></StackPanel>
+                    <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0"><Button Command="{Binding CancelarCommand}" Height="42" Padding="25,0" Margin="0,0,15,0"><TextBlock Text="Cancelar" FontWeight="SemiBold"/></Button><Button Command="{Binding GuardarCommand}" Background="{StaticResource SuccessBrush}" Foreground="White" BorderThickness="0" Height="42" Padding="30,0"><StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="ContentSave" Margin="0,0,8,0" Foreground="White"/><TextBlock Text="Guardar Paciente" FontWeight="Bold" Foreground="White"/></StackPanel></Button></StackPanel>
                 </Grid>
             </Grid>
         </Border>

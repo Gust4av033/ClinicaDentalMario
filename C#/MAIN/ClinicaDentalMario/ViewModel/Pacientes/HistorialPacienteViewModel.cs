@@ -368,27 +368,32 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 return;
             }
 
-            string antecedentesMedicos = string.IsNullOrWhiteSpace(consulta.AntecedentesMedicos)
-                ? "Sin cambios médicos registrados en esta consulta"
-                : consulta.AntecedentesMedicos;
-            string antecedentesOdontologicos = string.IsNullOrWhiteSpace(consulta.AntecedentesOdontologicos)
-                ? "Sin cambios odontológicos registrados en esta consulta"
-                : consulta.AntecedentesOdontologicos;
-            string observaciones = string.IsNullOrWhiteSpace(consulta.Observaciones)
-                ? "Sin observaciones adicionales"
-                : consulta.Observaciones;
+            try
+            {
+                var vm = new DetalleConsultaViewModel(
+                    consulta,
+                    _historialRepo,
+                    _messageService,
+                    _exceptionHandler);
 
-            string mensaje =
-                $"Fecha: {consulta.FechaConsulta:dd/MM/yyyy hh:mm tt}\n" +
-                $"Doctor: {(string.IsNullOrWhiteSpace(consulta.Doctor) ? "No especificado" : consulta.Doctor)}\n\n" +
-                $"Motivo de consulta:\n{consulta.MotivoConsulta ?? "Sin especificar"}\n\n" +
-                $"Cambios médicos de esta consulta:\n{antecedentesMedicos}\n\n" +
-                $"Cambios odontológicos de esta consulta:\n{antecedentesOdontologicos}\n\n" +
-                $"Diagnóstico:\n{consulta.Diagnostico ?? "Sin especificar"}\n\n" +
-                $"Plan de tratamiento:\n{consulta.PlanTratamiento ?? "Sin especificar"}\n\n" +
-                $"Observaciones:\n{observaciones}";
+                var ventana = new DetalleConsultaWindow
+                {
+                    DataContext = vm
+                };
 
-            _messageService.MostrarInformacion(mensaje, "Detalle clínico");
+                ventana.ShowDialog();
+
+                if (vm.CambiosGuardados)
+                {
+                    _ = CargarExpedienteAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible abrir el detalle de la consulta clínica.");
+            }
         }
     }
 }

@@ -10,10 +10,22 @@ namespace ClinicaDentalMario.Data
     {
         public static async Task InicializarBaseDeDatosAsync()
         {
+            bool baseCreadaAhora;
+
             using (var conn = new SqlConnection(AppSettings.MasterConnectionString))
             {
-                string crearBaseDeDatos = $"IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = '{AppSettings.DatabaseName}') CREATE DATABASE [{AppSettings.DatabaseName}];";
-                await conn.ExecuteAsync(crearBaseDeDatos);
+                await conn.OpenAsync();
+
+                int existeBase = await conn.ExecuteScalarAsync<int>(
+                    "SELECT COUNT(*) FROM sys.databases WHERE name = @NombreBase",
+                    new { NombreBase = AppSettings.DatabaseName });
+
+                baseCreadaAhora = existeBase == 0;
+
+                if (baseCreadaAhora)
+                {
+                    await conn.ExecuteAsync($"CREATE DATABASE [{AppSettings.DatabaseName}];");
+                }
             }
 
             using (var conn = new SqlConnection(AppSettings.ConnectionString))
@@ -25,6 +37,12 @@ namespace ClinicaDentalMario.Data
 
                 if (existeEstructura == 0)
                 {
+                    if (!baseCreadaAhora)
+                    {
+                        throw new InvalidOperationException(
+                            "La base de datos existe, pero no contiene la estructura esperada. No se ejecutará el script inicial automáticamente para evitar pérdida de datos.");
+                    }
+
                     await EjecutarScriptInicialAsync(conn);
                 }
 
@@ -41,7 +59,9 @@ namespace ClinicaDentalMario.Data
 
             if (!File.Exists(rutaScript))
             {
-                return;
+                throw new FileNotFoundException(
+                    "No se encontró el script inicial de la base de datos.",
+                    rutaScript);
             }
 
             string contenidoScript = await File.ReadAllTextAsync(rutaScript);
@@ -91,20 +111,37 @@ namespace ClinicaDentalMario.Data
                     );
                 END;";
 
-            const string sqlDuracionCita = @"
+            // IMPORTANTE: agregar la columna y crear el CHECK deben ejecutarse en batches
+            // separados. SQL Server compila el batch completo antes de ejecutar el ALTER,
+            // por lo que referenciar una columna recién agregada en el mismo batch puede
+            // producir "Invalid column name 'DuracionMinutos'".
+            const string sqlAgregarDuracionCita = @"
                 IF OBJECT_ID('Agenda.Citas', 'U') IS NOT NULL
                    AND COL_LENGTH('Agenda.Citas', 'DuracionMinutos') IS NULL
                 BEGIN
                     ALTER TABLE Agenda.Citas
                     ADD DuracionMinutos INT NOT NULL
                         CONSTRAINT DF_Citas_DuracionMinutos DEFAULT 30 WITH VALUES;
-                END;
+                END;";
 
+            const string sqlNormalizarDuracionCita = @"
                 IF OBJECT_ID('Agenda.Citas', 'U') IS NOT NULL
+                   AND COL_LENGTH('Agenda.Citas', 'DuracionMinutos') IS NOT NULL
+                BEGIN
+                    UPDATE Agenda.Citas
+                    SET DuracionMinutos = 30
+                    WHERE DuracionMinutos IS NULL
+                       OR DuracionMinutos NOT IN (15, 30, 45, 60, 90);
+                END;";
+
+            const string sqlConstraintDuracionCita = @"
+                IF OBJECT_ID('Agenda.Citas', 'U') IS NOT NULL
+                   AND COL_LENGTH('Agenda.Citas', 'DuracionMinutos') IS NOT NULL
                    AND NOT EXISTS (
                        SELECT 1
                        FROM sys.check_constraints
-                       WHERE name = 'CK_Citas_DuracionMinutos')
+                       WHERE name = 'CK_Citas_DuracionMinutos'
+                         AND parent_object_id = OBJECT_ID('Agenda.Citas'))
                 BEGIN
                     ALTER TABLE Agenda.Citas WITH CHECK
                     ADD CONSTRAINT CK_Citas_DuracionMinutos
@@ -132,7 +169,9 @@ namespace ClinicaDentalMario.Data
                 END;";
 
             await conn.ExecuteAsync(sqlAntecedentesPaciente);
-            await conn.ExecuteAsync(sqlDuracionCita);
+            await conn.ExecuteAsync(sqlAgregarDuracionCita);
+            await conn.ExecuteAsync(sqlNormalizarDuracionCita);
+            await conn.ExecuteAsync(sqlConstraintDuracionCita);
             await conn.ExecuteAsync(sqlFuncionProximaCita);
         }
     }

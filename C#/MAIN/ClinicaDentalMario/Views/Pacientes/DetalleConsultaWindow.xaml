@@ -1,0 +1,211 @@
+<Window x:Class="ClinicaDentalMario.Views.Pacientes.DetalleConsultaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        Title="Detalle de Consulta Clínica"
+        Height="760"
+        Width="760"
+        MinHeight="650"
+        MinWidth="680"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResize"
+        Background="{StaticResource BgWindowBrush}">
+
+    <Border Margin="15"
+            Padding="24"
+            Background="{StaticResource BgCardBrush}"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="12">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                <StackPanel Orientation="Horizontal">
+                    <Border Background="{StaticResource BgControlBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10"
+                            Margin="0,0,12,0">
+                        <iconPacks:PackIconMaterial Kind="ClipboardTextClockOutline"
+                                                    Width="26"
+                                                    Height="26"
+                                                    Foreground="{StaticResource AccentBrush}"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Detalle de Consulta Clínica"
+                                   FontSize="21"
+                                   FontWeight="Bold"/>
+                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="12">
+                            <Run Text="{Binding FechaConsulta, StringFormat={}{0:dd/MM/yyyy HH:mm}}"/>
+                            <Run Text=" · "/>
+                            <Run Text="{Binding Doctor}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+
+                <Border Background="#3A1C1C"
+                        BorderBrush="{StaticResource DangerBrush}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="10"
+                        Margin="0,12,0,0">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MensajeError}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding MensajeError}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding MensajeError}"
+                               Foreground="{StaticResource DangerBrush}"
+                               TextWrapping="Wrap"
+                               FontWeight="SemiBold"/>
+                </Border>
+            </StackPanel>
+
+            <Border Grid.Row="1"
+                    Background="{StaticResource BgControlBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="12"
+                    Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Información histórica de esta visita"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource AccentBrush}"
+                               Margin="0,0,0,8"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Cambios médicos"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock Text="{Binding CambiosAntecedentesMedicos}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Cambios odontológicos"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock Text="{Binding CambiosAntecedentesOdontologicos}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="Doctor, fecha y cambios de antecedentes se conservan como parte del registro histórico de la consulta."
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <ScrollViewer Grid.Row="2"
+                          VerticalScrollBarVisibility="Auto"
+                          Padding="0,0,8,0">
+                <StackPanel>
+                    <TextBlock Text="Motivo de consulta *"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding MotivoConsulta, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                             Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                             Height="65"
+                             MaxLength="1000"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"/>
+
+                    <TextBlock Text="Diagnóstico *"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontWeight="SemiBold"
+                               Margin="0,16,0,5"/>
+                    <TextBox Text="{Binding Diagnostico, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                             Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                             Height="80"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"/>
+
+                    <TextBlock Text="Plan de tratamiento / procedimiento realizado *"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontWeight="SemiBold"
+                               Margin="0,16,0,5"/>
+                    <TextBox Text="{Binding PlanTratamiento, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                             Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                             Height="95"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"/>
+
+                    <TextBlock Text="Observaciones"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontWeight="SemiBold"
+                               Margin="0,16,0,5"/>
+                    <TextBox Text="{Binding Observaciones, UpdateSourceTrigger=PropertyChanged}"
+                             Height="75"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             VerticalScrollBarVisibility="Auto"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Grid Grid.Row="3" Margin="0,18,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        Command="{Binding CerrarCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                        Height="42"
+                        Background="Transparent"
+                        Foreground="{StaticResource TextSecondaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        FontWeight="SemiBold">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="Close" Margin="0,0,8,0"/>
+                        <TextBlock Text="Cerrar"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="2"
+                        Command="{Binding GuardarCambiosCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                        Height="42"
+                        Background="{StaticResource SuccessBrush}"
+                        Foreground="White"
+                        BorderThickness="0"
+                        FontWeight="Bold">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="ContentSaveEdit" Margin="0,0,8,0" Foreground="White"/>
+                        <TextBlock Text="Guardar cambios" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

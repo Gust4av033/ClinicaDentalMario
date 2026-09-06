@@ -196,9 +196,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
                 if (!resultado.Registrado)
                 {
-                    MensajeError = resultado.SaldoAntes <= 0m
-                        ? "Este tratamiento ya no tiene saldo pendiente."
-                        : $"El saldo cambió mientras registrabas el abono. El saldo actual es {resultado.SaldoAntes:C}. Revisa el monto e inténtalo nuevamente.";
+                    MensajeError = ObtenerMensajeRechazo(resultado.EstadoTratamiento, resultado.SaldoAntes);
                     return;
                 }
 
@@ -226,6 +224,20 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                 EstaCargando = false;
                 NotificarComandos();
             }
+        }
+
+        private string ObtenerMensajeRechazo(string? estado, decimal saldo)
+        {
+            if (string.Equals(estado, "Finalizado", StringComparison.OrdinalIgnoreCase))
+                return "El tratamiento ya está finalizado y no admite nuevos abonos.";
+
+            if (string.Equals(estado, "Cancelado", StringComparison.OrdinalIgnoreCase))
+                return "El tratamiento está cancelado y no admite nuevos abonos.";
+
+            if (saldo <= 0m)
+                return "Este tratamiento ya no tiene saldo pendiente.";
+
+            return $"El saldo cambió mientras registrabas el abono. El saldo actual es {saldo:C}. Revisa el monto e inténtalo nuevamente.";
         }
 
         private bool TryObtenerMonto(out decimal monto)

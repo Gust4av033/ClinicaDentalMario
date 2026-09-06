@@ -15,17 +15,14 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         private readonly IExceptionHandler _exceptionHandler;
         private readonly HistorialClinicoModel _consultaOriginal;
 
-        public int IdHistorial => _consultaOriginal.IdHistorial;
-        public DateTime FechaConsulta => _consultaOriginal.FechaConsulta;
-        public string Doctor => string.IsNullOrWhiteSpace(_consultaOriginal.Doctor)
-            ? "No especificado"
-            : _consultaOriginal.Doctor!;
-        public string CambiosAntecedentesMedicos => string.IsNullOrWhiteSpace(_consultaOriginal.AntecedentesMedicos)
-            ? "Sin cambios médicos registrados en esta consulta."
-            : _consultaOriginal.AntecedentesMedicos!;
-        public string CambiosAntecedentesOdontologicos => string.IsNullOrWhiteSpace(_consultaOriginal.AntecedentesOdontologicos)
-            ? "Sin cambios odontológicos registrados en esta consulta."
-            : _consultaOriginal.AntecedentesOdontologicos!;
+        // Copiamos los datos históricos al construir el VM para que los bindings de WPF
+        // no dependan de desreferenciar continuamente el objeto original durante el render.
+        public int IdHistorial { get; }
+        public DateTime FechaConsulta { get; }
+        public string Doctor { get; }
+        public string EncabezadoConsulta => $"{FechaConsulta:dd/MM/yyyy HH:mm} · {Doctor}";
+        public string CambiosAntecedentesMedicos { get; }
+        public string CambiosAntecedentesOdontologicos { get; }
 
         private string _motivoConsulta;
         public string MotivoConsulta
@@ -33,7 +30,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             get => _motivoConsulta;
             set
             {
-                if (SetProperty(ref _motivoConsulta, value))
+                if (SetProperty(ref _motivoConsulta, value ?? string.Empty))
                 {
                     ValidarMotivo();
                 }
@@ -46,7 +43,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             get => _diagnostico;
             set
             {
-                if (SetProperty(ref _diagnostico, value))
+                if (SetProperty(ref _diagnostico, value ?? string.Empty))
                 {
                     ValidarDiagnostico();
                 }
@@ -59,7 +56,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             get => _planTratamiento;
             set
             {
-                if (SetProperty(ref _planTratamiento, value))
+                if (SetProperty(ref _planTratamiento, value ?? string.Empty))
                 {
                     ValidarPlanTratamiento();
                 }
@@ -112,6 +109,18 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
 
+            IdHistorial = consulta.IdHistorial;
+            FechaConsulta = consulta.FechaConsulta;
+            Doctor = string.IsNullOrWhiteSpace(consulta.Doctor)
+                ? "No especificado"
+                : consulta.Doctor.Trim();
+            CambiosAntecedentesMedicos = string.IsNullOrWhiteSpace(consulta.AntecedentesMedicos)
+                ? "Sin cambios médicos registrados en esta consulta."
+                : consulta.AntecedentesMedicos.Trim();
+            CambiosAntecedentesOdontologicos = string.IsNullOrWhiteSpace(consulta.AntecedentesOdontologicos)
+                ? "Sin cambios odontológicos registrados en esta consulta."
+                : consulta.AntecedentesOdontologicos.Trim();
+
             Titulo = "Detalle de Consulta Clínica";
             _motivoConsulta = consulta.MotivoConsulta ?? string.Empty;
             _diagnostico = consulta.Diagnostico ?? string.Empty;
@@ -141,11 +150,11 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             {
                 var consultaActualizada = new HistorialClinicoModel
                 {
-                    IdHistorial = _consultaOriginal.IdHistorial,
+                    IdHistorial = IdHistorial,
                     IdPaciente = _consultaOriginal.IdPaciente,
                     IdDoctor = _consultaOriginal.IdDoctor,
-                    Doctor = _consultaOriginal.Doctor,
-                    FechaConsulta = _consultaOriginal.FechaConsulta,
+                    Doctor = Doctor,
+                    FechaConsulta = FechaConsulta,
                     AntecedentesMedicos = _consultaOriginal.AntecedentesMedicos,
                     AntecedentesOdontologicos = _consultaOriginal.AntecedentesOdontologicos,
                     MotivoConsulta = MotivoConsulta.Trim(),

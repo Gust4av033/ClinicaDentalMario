@@ -1,85 +1,214 @@
-﻿using ClinicaDentalMario.Models;
+using ClinicaDentalMario.Models;
 using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Services;
 using ClinicaDentalMario.ViewModel.Base;
-using System;
-using System.Threading.Tasks;
+using System.Globalization;
 using System.Windows;
-using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Pagos
 {
     public class NuevoPagoViewModel : ViewModelBase
     {
-        private readonly PagoRepository _pagoRepo;
-        public bool PagoRealizado { get; private set; } = false;
+        private readonly PagoRepository _pagoRepository;
+        private readonly IMessageService _messageService;
+        private readonly IExceptionHandler _exceptionHandler;
+        private readonly int _idTratamientoPaciente;
 
+        public bool PagoRealizado { get; private set; }
         public string NombreTratamientoTexto { get; }
-        public string SaldoPendienteTexto { get; }
-        private readonly decimal _saldoMaximo;
 
-        private PagoModel _nuevoPago;
-        public PagoModel NuevoPago
+        public IReadOnlyList<string> MetodosPago { get; } = new[]
         {
-            get => _nuevoPago;
-            set => SetProperty(ref _nuevoPago, value);
+            "Efectivo",
+            "Tarjeta de Débito/Crédito",
+            "Transferencia Bancaria",
+            "Tigo Money / Otro"
+        };
+
+        private decimal _saldoPendiente;
+        public decimal SaldoPendiente
+        {
+            get => _saldoPendiente;
+            private set
+            {
+                if (SetProperty(ref _saldoPendiente, Math.Max(0m, value)))
+                    OnPropertyChanged(nameof(SaldoPendienteTexto));
+            }
+        }
+
+        public string SaldoPendienteTexto => $"Saldo pendiente: {SaldoPendiente:C}";
+
+        private string _montoTexto = string.Empty;
+        public string MontoTexto
+        {
+            get => _montoTexto;
+            set
+            {
+                if (SetProperty(ref _montoTexto, value ?? string.Empty))
+                {
+                    MensajeError = string.Empty;
+                    GuardarCommand.NotificarCanExecuteChanged();
+                }
+            }
+        }
+
+        private string _metodoPagoSeleccionado = "Efectivo";
+        public string MetodoPagoSeleccionado
+        {
+            get => _metodoPagoSeleccionado;
+            set
+            {
+                if (SetProperty(ref _metodoPagoSeleccionado, value ?? string.Empty))
+                {
+                    MensajeError = string.Empty;
+                    GuardarCommand.NotificarCanExecuteChanged();
+                }
+            }
+        }
+
+        private string _observacion = string.Empty;
+        public string Observacion
+        {
+            get => _observacion;
+            set => SetProperty(ref _observacion, value ?? string.Empty);
         }
 
         private string _mensajeError = string.Empty;
         public string MensajeError
         {
             get => _mensajeError;
-            set => SetProperty(ref _mensajeError, value);
+            private set => SetProperty(ref _mensajeError, value);
         }
 
-        public ICommand GuardarCommand { get; }
-        public ICommand CancelarCommand { get; }
+        public AsyncRelayCommand GuardarCommand { get; }
+        public RelayCommand UsarSaldoTotalCommand { get; }
+        public RelayCommand CancelarCommand { get; }
 
-        public NuevoPagoViewModel(int idTratamiento, string nombreTratamiento, decimal saldoPendiente)
+        public NuevoPagoViewModel(int idTratamientoPaciente, string nombreTratamiento, decimal saldoPendiente)
+            : this(
+                idTratamientoPaciente,
+                nombreTratamiento,
+                saldoPendiente,
+                new PagoRepository(),
+                new MessageService(),
+                new ExceptionHandler(new MessageService()))
         {
+        }
+
+        public NuevoPagoViewModel(
+            int idTratamientoPaciente,
+            string nombreTratamiento,
+            decimal saldoPendiente,
+            PagoRepository pagoRepository,
+            IMessageService messageService,
+            IExceptionHandler exceptionHandler)
+        {
+            if (idTratamientoPaciente <= 0)
+                throw new ArgumentOutOfRangeException(nameof(idTratamientoPaciente));
+
+            _idTratamientoPaciente = idTratamientoPaciente;
+            _pagoRepository = pagoRepository ?? throw new ArgumentNullException(nameof(pagoRepository));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+
             Titulo = "Registrar Abono";
-            _pagoRepo = new PagoRepository();
+            NombreTratamientoTexto = string.IsNullOrWhiteSpace(nombreTratamiento)
+                ? "Tratamiento dental"
+                : nombreTratamiento.Trim();
+            SaldoPendiente = saldoPendiente;
 
-            _saldoMaximo = saldoPendiente;
-            NombreTratamientoTexto = $"Tratamiento: {nombreTratamiento}";
-            SaldoPendienteTexto = $"Saldo Pendiente: {saldoPendiente:C}";
+            GuardarCommand = new AsyncRelayCommand(
+                GuardarAsync,
+                _ => !EstaCargando && SaldoPendiente > 0m && !string.IsNullOrWhiteSpace(MontoTexto));
 
-            _nuevoPago = new PagoModel
-            {
-                IdTratamientoPaciente = idTratamiento,
-                FechaPago = DateTime.Now,
-                MetodoPago = "Efectivo",
-                Monto = 0
-            };
+            UsarSaldoTotalCommand = new RelayCommand(
+                _ => UsarSaldoTotal(),
+                _ => !EstaCargando && SaldoPendiente > 0m);
 
-            GuardarCommand = new RelayCommand(async (param) => await GuardarAsync(param));
-            CancelarCommand = new RelayCommand(Cancelar);
+            CancelarCommand = new RelayCommand(
+                Cancelar,
+                _ => !EstaCargando);
+        }
+
+        private void UsarSaldoTotal()
+        {
+            MontoTexto = SaldoPendiente.ToString("0.00", CultureInfo.CurrentCulture);
         }
 
         private async Task GuardarAsync(object? parameter)
         {
             MensajeError = string.Empty;
 
-            if (NuevoPago.Monto <= 0)
+            if (!TryObtenerMonto(out decimal monto))
+            {
+                MensajeError = "Ingresa un monto válido.";
+                return;
+            }
+
+            if (monto <= 0m)
             {
                 MensajeError = "El monto debe ser mayor a cero.";
                 return;
             }
 
-            if (NuevoPago.Monto > _saldoMaximo)
+            if (monto > SaldoPendiente)
             {
-                MensajeError = $"No puedes abonar más del saldo pendiente ({_saldoMaximo:C}).";
+                MensajeError = $"El monto no puede superar el saldo pendiente ({SaldoPendiente:C}).";
                 return;
             }
 
+            string metodo = MetodoPagoSeleccionado.Trim();
+            if (string.IsNullOrWhiteSpace(metodo))
+            {
+                MensajeError = "Selecciona un método de pago.";
+                return;
+            }
+
+            if (metodo.Length > 50)
+            {
+                MensajeError = "El método de pago es demasiado largo.";
+                return;
+            }
+
+            string observacion = Observacion.Trim();
+            if (observacion.Length > 255)
+            {
+                MensajeError = "La observación no puede superar 255 caracteres.";
+                return;
+            }
+
+            EstaCargando = true;
+            NotificarComandos();
+
             try
             {
-                // Guarda en la base de datos
-                await _pagoRepo.RegistrarPagoAsync(NuevoPago);
+                var pago = new PagoModel
+                {
+                    IdTratamientoPaciente = _idTratamientoPaciente,
+                    FechaPago = DateTime.Now,
+                    Monto = decimal.Round(monto, 2, MidpointRounding.AwayFromZero),
+                    MetodoPago = metodo,
+                    Observacion = string.IsNullOrWhiteSpace(observacion) ? null : observacion
+                };
 
+                var resultado = await _pagoRepository.RegistrarPagoValidadoAsync(pago);
+                SaldoPendiente = resultado.SaldoAntes;
+
+                if (!resultado.Registrado)
+                {
+                    MensajeError = resultado.SaldoAntes <= 0m
+                        ? "Este tratamiento ya no tiene saldo pendiente."
+                        : $"El saldo cambió mientras registrabas el abono. El saldo actual es {resultado.SaldoAntes:C}. Revisa el monto e inténtalo nuevamente.";
+                    return;
+                }
+
+                SaldoPendiente = Math.Max(0m, resultado.SaldoAntes - pago.Monto);
                 PagoRealizado = true;
-                MessageBox.Show($"Abono de {NuevoPago.Monto:C} registrado correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Cierra la ventana
+                _messageService.MostrarExito(
+                    $"Abono de {pago.Monto:C} registrado correctamente.",
+                    "Abono registrado");
+
                 if (parameter is Window ventana)
                 {
                     ventana.DialogResult = true;
@@ -88,8 +217,35 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             }
             catch (Exception ex)
             {
-                MensajeError = "Error al guardar el abono: " + ex.Message;
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible registrar el abono.");
             }
+            finally
+            {
+                EstaCargando = false;
+                NotificarComandos();
+            }
+        }
+
+        private bool TryObtenerMonto(out decimal monto)
+        {
+            string texto = MontoTexto.Trim();
+
+            if (decimal.TryParse(
+                    texto,
+                    NumberStyles.Number | NumberStyles.AllowCurrencySymbol,
+                    CultureInfo.CurrentCulture,
+                    out monto))
+            {
+                return true;
+            }
+
+            return decimal.TryParse(
+                texto,
+                NumberStyles.Number | NumberStyles.AllowCurrencySymbol,
+                CultureInfo.InvariantCulture,
+                out monto);
         }
 
         private void Cancelar(object? parameter)
@@ -99,6 +255,13 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                 ventana.DialogResult = false;
                 ventana.Close();
             }
+        }
+
+        private void NotificarComandos()
+        {
+            GuardarCommand.NotificarCanExecuteChanged();
+            UsarSaldoTotalCommand.NotificarCanExecuteChanged();
+            CancelarCommand.NotificarCanExecuteChanged();
         }
     }
 }

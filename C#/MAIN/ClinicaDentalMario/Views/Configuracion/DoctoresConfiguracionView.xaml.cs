@@ -3,12 +3,12 @@ using System.Windows.Controls;
 
 namespace ClinicaDentalMario.Views.Configuracion
 {
-    public partial class BitacoraView : UserControl
+    public partial class DoctoresConfiguracionView : UserControl
     {
-        public BitacoraView()
+        public DoctoresConfiguracionView()
         {
             InitializeComponent();
-            DataContext = new BitacoraViewModel();
+            DataContext = new DoctoresConfiguracionViewModel();
         }
     }
 }

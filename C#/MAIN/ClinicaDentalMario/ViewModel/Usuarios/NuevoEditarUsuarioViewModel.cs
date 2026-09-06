@@ -1,26 +1,42 @@
-﻿using ClinicaDentalMario.Models;
+using ClinicaDentalMario.Common;
+using ClinicaDentalMario.Models;
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
-using System;
 using System.Collections.ObjectModel;
+using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
+using System.Windows.Controls;
 
 namespace ClinicaDentalMario.ViewModel.Usuarios
 {
     public class NuevoEditarUsuarioViewModel : ViewModelBase
     {
         private readonly UsuarioRepository _usuarioRepo;
+        private readonly BitacoraRepository _bitacoraRepo;
+        private readonly bool _eraAdministrador;
+
         public bool EsEdicion { get; }
+        public bool EsUsuarioActual => EsEdicion && UsuarioActual.Detalles?.IdUsuario == Usuario.IdUsuario;
+        public bool PuedeCambiarEstado => EsEdicion && !EsUsuarioActual;
+        public string TextoAyudaPassword => EsEdicion
+            ? "Déjala en blanco para conservar la contraseña actual."
+            : "Mínimo 6 caracteres.";
 
         private UsuarioModel _usuario;
-        public UsuarioModel Usuario { get => _usuario; set => SetProperty(ref _usuario, value); }
+        public UsuarioModel Usuario
+        {
+            get => _usuario;
+            set => SetProperty(ref _usuario, value);
+        }
 
         private ObservableCollection<RolModel> _roles = new();
-        public ObservableCollection<RolModel> Roles { get => _roles; set => SetProperty(ref _roles, value); }
+        public ObservableCollection<RolModel> Roles
+        {
+            get => _roles;
+            private set => SetProperty(ref _roles, value);
+        }
 
         private RolModel? _rolSeleccionado;
         public RolModel? RolSeleccionado
@@ -29,28 +45,34 @@ namespace ClinicaDentalMario.ViewModel.Usuarios
             set
             {
                 if (SetProperty(ref _rolSeleccionado, value) && value != null)
-                {
                     Usuario.IdRol = value.IdRol;
-                }
             }
         }
 
-        private string _mensajeError = "";
-        public string MensajeError { get => _mensajeError; set => SetProperty(ref _mensajeError, value); }
+        private string _mensajeError = string.Empty;
+        public string MensajeError
+        {
+            get => _mensajeError;
+            private set => SetProperty(ref _mensajeError, value);
+        }
 
         public bool UsuarioGuardado { get; private set; }
 
-        public ICommand GuardarCommand { get; }
-        public ICommand CancelarCommand { get; }
+        public AsyncRelayCommand GuardarCommand { get; }
+        public RelayCommand CancelarCommand { get; }
 
         public NuevoEditarUsuarioViewModel(UsuarioModel? usuarioExistente = null)
         {
             _usuarioRepo = new UsuarioRepository();
+            _bitacoraRepo = new BitacoraRepository();
             EsEdicion = usuarioExistente != null;
+            _eraAdministrador = usuarioExistente?.NombreRol.Equals(
+                RolesSistema.Administrador,
+                StringComparison.OrdinalIgnoreCase) == true;
 
             if (EsEdicion)
             {
-                Titulo = $"Editar Usuario - {usuarioExistente!.NombreUsuario}";
+                Titulo = $"Editar usuario - {usuarioExistente!.NombreUsuario}";
                 Usuario = new UsuarioModel
                 {
                     IdUsuario = usuarioExistente.IdUsuario,
@@ -58,16 +80,18 @@ namespace ClinicaDentalMario.ViewModel.Usuarios
                     NombreCompleto = usuarioExistente.NombreCompleto,
                     NombreUsuario = usuarioExistente.NombreUsuario,
                     Correo = usuarioExistente.Correo,
-                    Activo = usuarioExistente.Activo
+                    Activo = usuarioExistente.Activo,
+                    NombreRol = usuarioExistente.NombreRol,
+                    FechaCreacion = usuarioExistente.FechaCreacion
                 };
             }
             else
             {
-                Titulo = "Crear Nuevo Usuario";
+                Titulo = "Crear nuevo usuario";
                 Usuario = new UsuarioModel { Activo = true };
             }
 
-            GuardarCommand = new RelayCommand(async p => await GuardarAsync(p));
+            GuardarCommand = new AsyncRelayCommand(GuardarAsync);
             CancelarCommand = new RelayCommand(Cancelar);
 
             _ = CargarRolesAsync();
@@ -75,87 +99,29 @@ namespace ClinicaDentalMario.ViewModel.Usuarios
 
         private async Task CargarRolesAsync()
         {
-            try
-            {
-                var listaRoles = await _usuarioRepo.ListarRolesAsync();
-                Roles = new ObservableCollection<RolModel>(listaRoles);
-
-                if (EsEdicion)
-                {
-                    RolSeleccionado = System.Linq.Enumerable.FirstOrDefault(Roles, r => r.IdRol == Usuario.IdRol);
-                }
-                else if (Roles.Count > 0)
-                {
-                    RolSeleccionado = Roles[0];
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al cargar roles: " + ex.Message);
-            }
-        }
-
-        private string EncriptarSHA256(string texto)
-        {
-            using SHA256 sha256 = SHA256.Create();
-            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(texto));
-            StringBuilder builder = new StringBuilder();
-            foreach (byte b in bytes) builder.Append(b.ToString("x2"));
-            return builder.ToString();
-        }
-
-        private async Task GuardarAsync(object? parameter)
-        {
-            if (string.IsNullOrWhiteSpace(Usuario.NombreCompleto) || string.IsNullOrWhiteSpace(Usuario.NombreUsuario))
-            {
-                MensajeError = "⚠️ El Nombre Completo y el Nombre de Usuario son obligatorios.";
-                return;
-            }
-
-            if (RolSeleccionado == null)
-            {
-                MensajeError = "⚠️ Debes seleccionar un Rol.";
-                return;
-            }
-
-            var ventana = parameter as Window;
-            var txtPassword = ventana?.FindName("txtPassword") as System.Windows.Controls.PasswordBox;
-            string passwordIngresada = txtPassword?.Password ?? "";
-
-            if (!EsEdicion && string.IsNullOrWhiteSpace(passwordIngresada))
-            {
-                MensajeError = "⚠️ La contraseña es obligatoria para un usuario nuevo.";
-                return;
-            }
-
             EstaCargando = true;
-            MensajeError = "";
+            MensajeError = string.Empty;
 
             try
             {
+                Roles = new ObservableCollection<RolModel>(await _usuarioRepo.ListarRolesAsync());
+
                 if (EsEdicion)
                 {
-                    await _usuarioRepo.ActualizarUsuarioAsync(Usuario);
-
-                    // Si escribió una nueva contraseña en edición, también se la actualizamos
-                    if (!string.IsNullOrWhiteSpace(passwordIngresada))
-                    {
-                        string nuevoHash = EncriptarSHA256(passwordIngresada);
-                        await _usuarioRepo.CambiarPasswordAsync(Usuario.IdUsuario, nuevoHash);
-                    }
+                    RolSeleccionado = Roles.FirstOrDefault(r => r.IdRol == Usuario.IdRol);
                 }
                 else
                 {
-                    Usuario.PasswordHash = EncriptarSHA256(passwordIngresada);
-                    await _usuarioRepo.CrearUsuarioAsync(Usuario);
+                    RolSeleccionado = Roles.FirstOrDefault(r =>
+                                          r.Nombre.Equals(RolesSistema.Recepcionista, StringComparison.OrdinalIgnoreCase))
+                                      ?? Roles.FirstOrDefault(r =>
+                                          !r.Nombre.Equals(RolesSistema.Administrador, StringComparison.OrdinalIgnoreCase))
+                                      ?? Roles.FirstOrDefault();
                 }
-
-                UsuarioGuardado = true;
-                if (ventana != null) ventana.DialogResult = true;
             }
             catch (Exception ex)
             {
-                MensajeError = "❌ Error al guardar: " + ex.Message;
+                MensajeError = "No se pudieron cargar los roles: " + ex.Message;
             }
             finally
             {
@@ -163,9 +129,206 @@ namespace ClinicaDentalMario.ViewModel.Usuarios
             }
         }
 
+        private static string EncriptarSHA256(string texto)
+        {
+            using SHA256 sha256 = SHA256.Create();
+            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(texto));
+            StringBuilder builder = new StringBuilder(bytes.Length * 2);
+
+            foreach (byte b in bytes)
+                builder.Append(b.ToString("x2"));
+
+            return builder.ToString();
+        }
+
+        private async Task GuardarAsync(object? parameter)
+        {
+            if (EstaCargando)
+                return;
+
+            MensajeError = string.Empty;
+            NormalizarCampos();
+
+            if (!ValidarCamposBasicos())
+                return;
+
+            Window? ventana = parameter as Window;
+            PasswordBox? txtPassword = ventana?.FindName("txtPassword") as PasswordBox;
+            string passwordIngresada = txtPassword?.Password ?? string.Empty;
+
+            if (!ValidarPassword(passwordIngresada))
+                return;
+
+            string actorAuditoria = UsuarioActual.NombreUsuario;
+            bool passwordModificada = !string.IsNullOrWhiteSpace(passwordIngresada);
+            EstaCargando = true;
+
+            try
+            {
+                int? excluirId = EsEdicion ? Usuario.IdUsuario : null;
+                if (await _usuarioRepo.ExisteNombreUsuarioAsync(Usuario.NombreUsuario, excluirId))
+                {
+                    MensajeError = "Ya existe otro usuario con ese nombre de inicio de sesión.";
+                    return;
+                }
+
+                if (!await ValidarSeguridadAdministradoresAsync())
+                    return;
+
+                Usuario.NombreRol = RolSeleccionado!.Nombre;
+
+                if (EsEdicion)
+                {
+                    await _usuarioRepo.ActualizarUsuarioAsync(Usuario);
+
+                    if (passwordModificada)
+                        await _usuarioRepo.CambiarPasswordAsync(Usuario.IdUsuario, EncriptarSHA256(passwordIngresada));
+
+                    await RegistrarAuditoriaSeguraAsync(
+                        actorAuditoria,
+                        "UPDATE",
+                        $"Usuario actualizado | IdUsuario: {Usuario.IdUsuario} | Login: {Usuario.NombreUsuario} | Rol: {Usuario.NombreRol} | Activo: {Usuario.Activo} | Contraseña modificada: {(passwordModificada ? "Sí" : "No")}");
+
+                    if (EsUsuarioActual)
+                        UsuarioActual.IniciarSesion(Usuario, Usuario.NombreRol);
+                }
+                else
+                {
+                    Usuario.PasswordHash = EncriptarSHA256(passwordIngresada);
+                    await _usuarioRepo.CrearUsuarioAsync(Usuario);
+
+                    await RegistrarAuditoriaSeguraAsync(
+                        actorAuditoria,
+                        "INSERT",
+                        $"Usuario creado | Login: {Usuario.NombreUsuario} | Rol: {Usuario.NombreRol}");
+                }
+
+                UsuarioGuardado = true;
+                if (ventana != null)
+                    ventana.DialogResult = true;
+            }
+            catch (Exception ex)
+            {
+                MensajeError = "No se pudo guardar el usuario: " + ex.Message;
+            }
+            finally
+            {
+                EstaCargando = false;
+            }
+        }
+
+        private void NormalizarCampos()
+        {
+            Usuario.NombreCompleto = Usuario.NombreCompleto.Trim();
+            Usuario.NombreUsuario = Usuario.NombreUsuario.Trim();
+            Usuario.Correo = string.IsNullOrWhiteSpace(Usuario.Correo)
+                ? null
+                : Usuario.Correo.Trim();
+        }
+
+        private bool ValidarCamposBasicos()
+        {
+            if (string.IsNullOrWhiteSpace(Usuario.NombreCompleto))
+            {
+                MensajeError = "El nombre completo es obligatorio.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Usuario.NombreUsuario))
+            {
+                MensajeError = "El nombre de usuario es obligatorio.";
+                return false;
+            }
+
+            if (Usuario.NombreUsuario.Any(char.IsWhiteSpace))
+            {
+                MensajeError = "El nombre de usuario no debe contener espacios.";
+                return false;
+            }
+
+            if (Usuario.Correo != null && !MailAddress.TryCreate(Usuario.Correo, out _))
+            {
+                MensajeError = "Ingresa un correo electrónico válido o deja el campo vacío.";
+                return false;
+            }
+
+            if (RolSeleccionado == null)
+            {
+                MensajeError = "Debes seleccionar un rol.";
+                return false;
+            }
+
+            if (EsUsuarioActual && !Usuario.Activo)
+            {
+                MensajeError = "No puedes desactivar el usuario con el que tienes la sesión iniciada.";
+                return false;
+            }
+
+            if (EsUsuarioActual && !RolSeleccionado.Nombre.Equals(RolesSistema.Administrador, StringComparison.OrdinalIgnoreCase))
+            {
+                MensajeError = "No puedes retirar tu propio rol de Administrador durante la sesión actual.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ValidarPassword(string password)
+        {
+            if (!EsEdicion && string.IsNullOrWhiteSpace(password))
+            {
+                MensajeError = "La contraseña es obligatoria para un usuario nuevo.";
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(password) && password.Length < 6)
+            {
+                MensajeError = "La contraseña debe tener al menos 6 caracteres.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<bool> ValidarSeguridadAdministradoresAsync()
+        {
+            if (!EsEdicion || !_eraAdministrador)
+                return true;
+
+            bool seguiraAdministrador = Usuario.Activo &&
+                RolSeleccionado?.Nombre.Equals(RolesSistema.Administrador, StringComparison.OrdinalIgnoreCase) == true;
+
+            if (seguiraAdministrador)
+                return true;
+
+            int otrosAdministradores = await _usuarioRepo.ContarAdministradoresActivosAsync(Usuario.IdUsuario);
+            if (otrosAdministradores > 0)
+                return true;
+
+            MensajeError = "No puedes desactivar o cambiar de rol al último Administrador activo del sistema.";
+            return false;
+        }
+
+        private async Task RegistrarAuditoriaSeguraAsync(string actor, string accion, string detalle)
+        {
+            try
+            {
+                await _bitacoraRepo.RegistrarMovimientoAsync(
+                    actor,
+                    accion,
+                    "Seguridad.Usuarios",
+                    detalle);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"No se pudo registrar la auditoría de usuarios: {ex.Message}");
+            }
+        }
+
         private void Cancelar(object? parameter)
         {
-            if (parameter is Window ventana) ventana.DialogResult = false;
+            if (parameter is Window ventana)
+                ventana.DialogResult = false;
         }
     }
 }

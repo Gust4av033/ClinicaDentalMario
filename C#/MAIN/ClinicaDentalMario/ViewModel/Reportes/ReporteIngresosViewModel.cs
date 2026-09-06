@@ -82,13 +82,20 @@ namespace ClinicaDentalMario.ViewModel.Reportes
         private void ActualizarResumen()
         {
             TotalPagos = ListaIngresos.Count;
-            TotalIngresosPeriodo = ListaIngresos.Sum(x => Convert.ToDecimal(x.Monto));
+
+            // Las filas de Dapper son dynamic. Se fuerza object antes de Convert para que
+            // la resolución de sobrecargas no quede en manos del runtime binder.
+            TotalIngresosPeriodo = ListaIngresos.Sum(x => Convert.ToDecimal((object?)x.Monto));
             PromedioPago = TotalPagos == 0 ? 0m : TotalIngresosPeriodo / TotalPagos;
 
             MetodoPrincipal = ListaIngresos.Count == 0
                 ? "---"
                 : ListaIngresos
-                    .GroupBy(x => string.IsNullOrWhiteSpace(Convert.ToString(x.MetodoPago)) ? "Sin especificar" : Convert.ToString(x.MetodoPago)!)
+                    .GroupBy(x =>
+                    {
+                        string? metodo = Convert.ToString((object?)x.MetodoPago);
+                        return string.IsNullOrWhiteSpace(metodo) ? "Sin especificar" : metodo;
+                    })
                     .OrderByDescending(g => g.Count())
                     .ThenBy(g => g.Key)
                     .First().Key;

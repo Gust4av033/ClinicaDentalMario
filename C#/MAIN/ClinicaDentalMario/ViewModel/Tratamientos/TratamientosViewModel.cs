@@ -41,6 +41,9 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
                 if (!SetProperty(ref _pacienteSeleccionado, value))
                     return;
 
+                // Invalida cualquier consulta anterior que todavía esté esperando respuesta.
+                Interlocked.Increment(ref _versionCargaTratamientos);
+
                 TratamientoSeleccionado = null;
                 NotificarComandos();
                 OnPropertyChanged(nameof(TextoEstadoVacio));
@@ -243,6 +246,8 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
             EstaCargando = true;
             NotificarEstadoVacio();
 
+            PacienteModel? pacienteInicial = null;
+
             try
             {
                 var pacientes = await _pacienteRepository.ObtenerTodosAsync();
@@ -250,7 +255,7 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
 
                 if (_idPacienteInicial.HasValue)
                 {
-                    PacienteSeleccionado = ListaPacientes.FirstOrDefault(
+                    pacienteInicial = ListaPacientes.FirstOrDefault(
                         x => x.IdPaciente == _idPacienteInicial.Value);
                 }
             }
@@ -266,6 +271,9 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
                 EstaCargando = false;
                 NotificarEstadoVacio();
             }
+
+            if (pacienteInicial is not null)
+                PacienteSeleccionado = pacienteInicial;
         }
 
         private async Task CargarTratamientosAsync(int idPaciente)
@@ -317,9 +325,6 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
 
         private void AplicarFiltroPacientes()
         {
-            if (ListaPacientes is null)
-                return;
-
             var vista = CollectionViewSource.GetDefaultView(ListaPacientes);
             string termino = BusquedaPaciente.Trim();
 
@@ -345,9 +350,6 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
 
         private void AplicarFiltroTratamientos()
         {
-            if (TratamientosDelPaciente is null)
-                return;
-
             var vista = CollectionViewSource.GetDefaultView(TratamientosDelPaciente);
             string termino = BusquedaTratamiento.Trim();
             string estado = EstadoFiltroSeleccionado;
@@ -358,7 +360,7 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
                     return false;
 
                 bool coincideEstado = estado == TodosLosEstados
-                    || tratamiento.Estado.Equals(estado, StringComparison.OrdinalIgnoreCase);
+                    || string.Equals(tratamiento.Estado, estado, StringComparison.OrdinalIgnoreCase);
 
                 if (!coincideEstado)
                     return false;

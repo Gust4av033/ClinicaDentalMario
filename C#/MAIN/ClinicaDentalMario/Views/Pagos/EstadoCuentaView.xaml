@@ -339,7 +339,7 @@
                                        HorizontalAlignment="Right"
                                        Foreground="{StaticResource AccentBrush}" FontSize="10" FontWeight="Bold"/>
                         </Grid>
-                        <ProgressBar Value="{Binding PorcentajePagado}" Maximum="100" Height="6" Margin="0,6,0,0"/>
+                        <ProgressBar Value="{Binding PorcentajePagado, Mode=OneWay}" Maximum="100" Height="6" Margin="0,6,0,0"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="4" VerticalAlignment="Center">

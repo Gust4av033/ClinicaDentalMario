@@ -173,9 +173,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             Titulo = $"Expediente Clínico - {paciente.NombreCompleto}";
 
             GaleriaVM = new ImagenesPacienteViewModel(PacienteActual.IdPaciente, _cambiarVista);
-            OdontogramaVM = new OdontogramaViewModel(
-                PacienteActual.IdPaciente,
-                PacienteActual.NombreCompleto);
+            OdontogramaVM = new OdontogramaViewModel(PacienteActual.IdPaciente);
 
             AbrirNuevaConsultaCommand = new RelayCommand(_ => AbrirNuevaConsulta());
             AbrirNuevoTratamientoCommand = new RelayCommand(_ => AbrirNuevoTratamiento());
@@ -224,9 +222,15 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                     return;
                 }
 
+                HistorialConsultas = new ObservableCollection<HistorialClinicoModel>();
+                AntecedentesGenerales = null;
+                _antecedenteMedicoLegado = null;
+                _antecedenteOdontologicoLegado = null;
+                NotificarCambioAntecedentes();
+
                 MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
                     ex,
-                    "No fue posible cargar el expediente clínico.");
+                    "No fue posible cargar el expediente clínico del paciente.");
             }
             finally
             {
@@ -240,13 +244,32 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
         private void CargarFallbackAntecedentesLegados(IEnumerable<HistorialClinicoModel> historial)
         {
-            _antecedenteMedicoLegado = historial
-                .Select(x => x.AntecedentesMedicos)
-                .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
+            _antecedenteMedicoLegado = null;
+            _antecedenteOdontologicoLegado = null;
 
-            _antecedenteOdontologicoLegado = historial
-                .Select(x => x.AntecedentesOdontologicos)
-                .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
+            if (AntecedentesGenerales is null)
+            {
+                foreach (HistorialClinicoModel consulta in historial.OrderByDescending(x => x.FechaConsulta))
+                {
+                    if (string.IsNullOrWhiteSpace(_antecedenteMedicoLegado) &&
+                        !string.IsNullOrWhiteSpace(consulta.AntecedentesMedicos))
+                    {
+                        _antecedenteMedicoLegado = consulta.AntecedentesMedicos.Trim();
+                    }
+
+                    if (string.IsNullOrWhiteSpace(_antecedenteOdontologicoLegado) &&
+                        !string.IsNullOrWhiteSpace(consulta.AntecedentesOdontologicos))
+                    {
+                        _antecedenteOdontologicoLegado = consulta.AntecedentesOdontologicos.Trim();
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(_antecedenteMedicoLegado) &&
+                        !string.IsNullOrWhiteSpace(_antecedenteOdontologicoLegado))
+                    {
+                        break;
+                    }
+                }
+            }
 
             NotificarCambioAntecedentes();
         }
@@ -260,44 +283,172 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             OnPropertyChanged(nameof(MensajeFuenteAntecedentes));
         }
 
-        private void AbrirNuevaConsulta()
+        private async Task AbrirVistaPreviaAsync()
         {
-            var vista = new NuevaConsultaView
+            MensajeError = string.Empty;
+            try
             {
-                DataContext = new NuevaConsultaViewModel(PacienteActual, _cambiarVista)
-            };
+                List<HistorialClinicoModel> historial = HistorialConsultas.ToList();
+                AntecedentesPacienteModel? antecedentes = AntecedentesGenerales;
+                PacienteModel paciente = PacienteActual;
 
-            _cambiarVista(vista);
+                await Task.Run(() =>
+                    _pdfService.AbrirVistaPreviaExpediente(
+                        paciente,
+                        antecedentes,
+                        historial));
+            }
+            catch (Exception ex)
+            {
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible abrir la vista previa del expediente.");
+            }
         }
 
-        private void AbrirNuevoTratamiento()
+        private async Task ExportarExpedienteAsync()
         {
-            var vista = new NuevoTratamientoView
+            MensajeError = string.Empty;
+
+            var dialogo = new SaveFileDialog
             {
-                DataContext = new NuevoTratamientoViewModel(PacienteActual, _cambiarVista)
+                Title = "Exportar expediente clínico",
+                Filter = "Archivo PDF (*.pdf)|*.pdf",
+                DefaultExt = ".pdf",
+                AddExtension = true,
+                FileName = $"Expediente_{PacienteActual.IdPaciente:D5}_{SanitizarNombreArchivo(PacienteActual.NombreCompleto)}.pdf"
             };
 
-            _cambiarVista(vista);
+            if (dialogo.ShowDialog() != true)
+            {
+                return;
+            }
+
+            try
+            {
+                List<HistorialClinicoModel> historial = HistorialConsultas.ToList();
+                AntecedentesPacienteModel? antecedentes = AntecedentesGenerales;
+                PacienteModel paciente = PacienteActual;
+                string ruta = dialogo.FileName;
+
+                await Task.Run(() =>
+                    _pdfService.GenerarExpedientePdf(
+                        paciente,
+                        antecedentes,
+                        historial,
+                        ruta));
+
+                _messageService.MostrarExito(
+                    "El expediente clínico fue exportado correctamente.",
+                    "Expediente exportado");
+            }
+            catch (Exception ex)
+            {
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible exportar el expediente clínico.");
+            }
         }
 
         private void EditarPaciente()
         {
-            var vista = new EditarPacienteView
+            try
             {
-                DataContext = new EditarPacienteViewModel(PacienteActual, _cambiarVista)
+                var vista = new EditarPacienteView
+                {
+                    DataContext = new EditarPacienteViewModel(
+                        PacienteActual,
+                        _cambiarVista,
+                        RegresarDesdeEdicion)
+                };
+
+                _cambiarVista(vista);
+            }
+            catch (Exception ex)
+            {
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible abrir la edición del paciente.");
+            }
+        }
+
+        private void RegresarDesdeEdicion(PacienteModel pacienteActualizado)
+        {
+            var vista = new HistorialPacienteView
+            {
+                DataContext = new HistorialPacienteViewModel(
+                    pacienteActualizado,
+                    _cambiarVista)
             };
 
             _cambiarVista(vista);
         }
 
+        private void AbrirNuevaConsulta()
+        {
+            try
+            {
+                var vm = new NuevaConsultaViewModel(
+                    PacienteActual.IdPaciente,
+                    PacienteActual.NombreCompleto);
+
+                var ventana = new NuevaConsultaWindow
+                {
+                    DataContext = vm
+                };
+
+                ventana.ShowDialog();
+
+                if (!vm.ConsultaGuardada)
+                {
+                    return;
+                }
+
+                _ = CargarExpedienteAsync();
+
+                if (vm.DeseaAsignarTratamiento)
+                {
+                    AbrirNuevoTratamiento();
+                }
+            }
+            catch (Exception ex)
+            {
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible abrir el registro de una nueva consulta.");
+            }
+        }
+
+        private void AbrirNuevoTratamiento()
+        {
+            try
+            {
+                var vista = new NuevoTratamientoView
+                {
+                    DataContext = new NuevoTratamientoViewModel(
+                        PacienteActual.IdPaciente,
+                        PacienteActual.NombreCompleto,
+                        _cambiarVista)
+                };
+
+                _cambiarVista(vista);
+            }
+            catch (Exception ex)
+            {
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible abrir el registro de tratamiento.");
+            }
+        }
+
         private void Volver()
         {
-            var vista = new ListaPacientesView
+            var vistaLista = new ListaPacientesView
             {
                 DataContext = new ListaPacientesViewModel(_cambiarVista)
             };
 
-            _cambiarVista(vista);
+            _cambiarVista(vistaLista);
         }
 
         private void VerDetalleConsulta(object? parameter)
@@ -307,84 +458,41 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 return;
             }
 
-            var vista = new DetalleConsultaView
-            {
-                DataContext = new DetalleConsultaViewModel(
-                    PacienteActual,
-                    consulta,
-                    _cambiarVista)
-            };
-
-            _cambiarVista(vista);
-        }
-
-        private async Task AbrirVistaPreviaAsync()
-        {
-            await ExportarExpedienteInternoAsync(abrirDespues: true);
-        }
-
-        private async Task ExportarExpedienteAsync()
-        {
-            await ExportarExpedienteInternoAsync(abrirDespues: false);
-        }
-
-        private async Task ExportarExpedienteInternoAsync(bool abrirDespues)
-        {
             try
             {
-                var saveDialog = new SaveFileDialog
+                var vm = new DetalleConsultaViewModel(
+                    consulta,
+                    _historialRepo,
+                    _messageService,
+                    _exceptionHandler);
+
+                var ventana = new DetalleConsultaWindow
                 {
-                    Title = "Guardar expediente clínico",
-                    Filter = "Documento PDF (*.pdf)|*.pdf",
-                    FileName = $"Expediente_{SanitizarNombreArchivo(PacienteActual.NombreCompleto)}_{DateTime.Now:yyyyMMdd}.pdf"
+                    DataContext = vm
                 };
 
-                if (!abrirDespues && saveDialog.ShowDialog() != true)
-                {
-                    return;
-                }
+                ventana.ShowDialog();
 
-                string rutaDestino;
-                if (abrirDespues)
+                if (vm.CambiosGuardados)
                 {
-                    rutaDestino = Path.Combine(
-                        Path.GetTempPath(),
-                        $"Expediente_{PacienteActual.IdPaciente}_{Guid.NewGuid():N}.pdf");
-                }
-                else
-                {
-                    rutaDestino = saveDialog.FileName;
-                }
-
-                await _pdfService.GenerarExpedienteClinicoAsync(
-                    PacienteActual,
-                    AntecedentesGenerales,
-                    HistorialConsultas,
-                    rutaDestino);
-
-                if (abrirDespues)
-                {
-                    _pdfService.AbrirPdf(rutaDestino);
-                }
-                else
-                {
-                    _messageService.MostrarExito(
-                        "El expediente clínico fue exportado correctamente.",
-                        "Expediente exportado");
+                    _ = CargarExpedienteAsync();
                 }
             }
             catch (Exception ex)
             {
-                _exceptionHandler.Manejar(
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
                     ex,
-                    "No fue posible generar el expediente clínico en PDF.");
+                    "No fue posible abrir el detalle de la consulta clínica.");
             }
         }
 
         private static string SanitizarNombreArchivo(string nombre)
         {
             char[] invalidos = Path.GetInvalidFileNameChars();
-            return string.Concat(nombre.Select(c => invalidos.Contains(c) ? '_' : c));
+            string limpio = new(nombre.Where(c => !invalidos.Contains(c)).ToArray());
+            return string.IsNullOrWhiteSpace(limpio)
+                ? "Paciente"
+                : limpio.Trim().Replace(' ', '_');
         }
     }
 }

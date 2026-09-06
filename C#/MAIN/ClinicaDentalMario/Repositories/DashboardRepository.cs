@@ -1,81 +1,191 @@
-﻿using ClinicaDentalMario.Data;
+using ClinicaDentalMario.Data;
+using ClinicaDentalMario.Models;
 using Dapper;
 using System.Data;
 
 namespace ClinicaDentalMario.Repositories
 {
-    public class DashboardRepository
+    public sealed class DashboardRepository
     {
-        public async Task<decimal> ObtenerIngresosDelDiaAsync(DateTime fecha)
+        public async Task<DashboardResumenModel> ObtenerResumenAsync(DateTime fecha)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
 
-            // Suma los montos de los pagos realizados en la fecha indicada
-            string sql = "SELECT ISNULL(SUM(Monto), 0) FROM Odontologia.Pagos WHERE CAST(FechaPago AS DATE) = CAST(@Fecha AS DATE)";
+            DateTime inicioDia = fecha.Date;
+            DateTime finDia = inicioDia.AddDays(1);
+            DateTime inicioMes = new(inicioDia.Year, inicioDia.Month, 1);
+            DateTime finMes = inicioMes.AddMonths(1);
 
-            return await db.ExecuteScalarAsync<decimal>(sql, new { Fecha = fecha });
+            const string sql = @"
+                SELECT
+                    (SELECT ISNULL(SUM(pg.Monto), 0)
+                     FROM Odontologia.Pagos pg
+                     WHERE pg.FechaPago >= @InicioDia AND pg.FechaPago < @FinDia) AS IngresosHoy,
+
+                    (SELECT ISNULL(SUM(pg.Monto), 0)
+                     FROM Odontologia.Pagos pg
+                     WHERE pg.FechaPago >= @InicioMes AND pg.FechaPago < @FinMes) AS IngresosMes,
+
+                    (SELECT COUNT(*)
+                     FROM Pacientes.Pacientes p
+                     WHERE p.Activo = 1) AS PacientesActivos,
+
+                    (SELECT COUNT(*)
+                     FROM Pacientes.Pacientes p
+                     WHERE p.Activo = 1
+                       AND p.FechaRegistro >= @InicioMes AND p.FechaRegistro < @FinMes) AS PacientesNuevosMes,
+
+                    (SELECT COUNT(*)
+                     FROM Agenda.Citas c
+                     WHERE c.FechaHora >= @InicioDia AND c.FechaHora < @FinDia) AS CitasHoy,
+
+                    (SELECT COUNT(*)
+                     FROM Agenda.Citas c
+                     INNER JOIN Catalogos.EstadosCita e ON e.IdEstado = c.IdEstado
+                     WHERE c.FechaHora >= @InicioDia AND c.FechaHora < @FinDia
+                       AND e.Nombre = 'Pendiente') AS CitasPendientes,
+
+                    (SELECT COUNT(*)
+                     FROM Agenda.Citas c
+                     INNER JOIN Catalogos.EstadosCita e ON e.IdEstado = c.IdEstado
+                     WHERE c.FechaHora >= @InicioDia AND c.FechaHora < @FinDia
+                       AND e.Nombre = 'Confirmada') AS CitasConfirmadas,
+
+                    (SELECT COUNT(*)
+                     FROM Agenda.Citas c
+                     INNER JOIN Catalogos.EstadosCita e ON e.IdEstado = c.IdEstado
+                     WHERE c.FechaHora >= @InicioDia AND c.FechaHora < @FinDia
+                       AND e.Nombre = 'Atendida') AS CitasAtendidas,
+
+                    (SELECT COUNT(*)
+                     FROM Odontologia.TratamientosPaciente tp
+                     WHERE tp.Estado IN ('Pendiente', 'En progreso')) AS TratamientosActivos,
+
+                    (SELECT COUNT(*)
+                     FROM Odontologia.TratamientosPaciente tp
+                     WHERE tp.Estado = 'Pendiente') AS TratamientosPendientes,
+
+                    (SELECT COUNT(*)
+                     FROM Odontologia.TratamientosPaciente tp
+                     WHERE tp.Estado = 'En progreso') AS TratamientosEnProgreso,
+
+                    (SELECT ISNULL(SUM(
+                        CASE
+                            WHEN tp.CostoTotal > ISNULL(pagos.TotalAbonado, 0)
+                                THEN tp.CostoTotal - ISNULL(pagos.TotalAbonado, 0)
+                            ELSE 0
+                        END), 0)
+                     FROM Odontologia.TratamientosPaciente tp
+                     LEFT JOIN (
+                         SELECT IdTratamientoPaciente, SUM(Monto) AS TotalAbonado
+                         FROM Odontologia.Pagos
+                         GROUP BY IdTratamientoPaciente
+                     ) pagos ON pagos.IdTratamientoPaciente = tp.Id
+                     WHERE tp.Estado IN ('Pendiente', 'En progreso')) AS SaldoPendiente;";
+
+            return await db.QuerySingleAsync<DashboardResumenModel>(sql, new
+            {
+                InicioDia = inicioDia,
+                FinDia = finDia,
+                InicioMes = inicioMes,
+                FinMes = finMes
+            });
         }
 
-        public async Task<int> ObtenerTotalCitasHoyAsync(DateTime fecha)
+        public async Task<IReadOnlyList<DashboardCitaModel>> ObtenerCitasDelDiaAsync(
+            DateTime fecha,
+            int limite = 12)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
 
-            // CORRECCIÓN: La tabla está en Agenda.Citas, no en Odontologia
-            string sql = "SELECT COUNT(*) FROM Agenda.Citas WHERE CAST(FechaHora AS DATE) = CAST(@Fecha AS DATE)";
+            DateTime inicioDia = fecha.Date;
+            DateTime finDia = inicioDia.AddDays(1);
 
-            return await db.ExecuteScalarAsync<int>(sql, new { Fecha = fecha });
-        }
-
-        // 🟢 1. OBTENER LAS CITAS DE HOY (Para la tabla)
-        public async Task<IEnumerable<dynamic>> ObtenerCitasHoyListaAsync()
-        {
-            using IDbConnection db = DatabaseConnection.GetConnection();
-            string sql = @"
-                SELECT 
-                    FORMAT(c.FechaHora, 'hh:mm tt') AS Hora,
+            const string sql = @"
+                SELECT TOP (@Limite)
+                    c.IdCita,
+                    c.FechaHora,
                     p.NombreCompleto AS Paciente,
-                    ISNULL(c.Observaciones, 'Consulta General') AS Tratamiento,
-                    e.Nombre AS Estado
+                    d.NombreCompleto AS Doctor,
+                    e.Nombre AS Estado,
+                    c.Observaciones
                 FROM Agenda.Citas c
-                INNER JOIN Pacientes.Pacientes p ON c.IdPaciente = p.IdPaciente
-                INNER JOIN Catalogos.EstadosCita e ON c.IdEstado = e.IdEstado
-                WHERE CAST(c.FechaHora AS DATE) = CAST(GETDATE() AS DATE)
-                ORDER BY c.FechaHora ASC";
+                INNER JOIN Pacientes.Pacientes p ON p.IdPaciente = c.IdPaciente
+                INNER JOIN Personal.Doctores d ON d.IdDoctor = c.IdDoctor
+                INNER JOIN Catalogos.EstadosCita e ON e.IdEstado = c.IdEstado
+                WHERE c.FechaHora >= @InicioDia AND c.FechaHora < @FinDia
+                ORDER BY c.FechaHora ASC;";
 
-            return await db.QueryAsync<dynamic>(sql);
+            var resultado = await db.QueryAsync<DashboardCitaModel>(sql, new
+            {
+                InicioDia = inicioDia,
+                FinDia = finDia,
+                Limite = limite
+            });
+
+            return resultado.AsList();
         }
 
-        // 🔴 2. OBTENER LOS PACIENTES MOROSOS (Saldo Pendiente > 0)
-        public async Task<IEnumerable<dynamic>> ObtenerMorososAsync()
+        public async Task<DashboardCitaModel?> ObtenerProximaCitaAsync(DateTime desde)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            string sql = @"
-        SELECT 
-            p.NombreCompleto AS Paciente,
-            (tp.CostoTotal - ISNULL((SELECT SUM(Monto) FROM Odontologia.Pagos pg WHERE pg.IdTratamientoPaciente = tp.Id), 0)) AS Saldo
-        FROM Odontologia.TratamientosPaciente tp
-        INNER JOIN Pacientes.Pacientes p ON tp.IdPaciente = p.IdPaciente
-        WHERE tp.Estado = 'En progreso'
-        AND (tp.CostoTotal - ISNULL((SELECT SUM(Monto) FROM Odontologia.Pagos pg WHERE pg.IdTratamientoPaciente = tp.Id), 0)) > 0
-        ORDER BY Saldo DESC";
 
-            return await db.QueryAsync<dynamic>(sql);
+            const string sql = @"
+                SELECT TOP 1
+                    c.IdCita,
+                    c.FechaHora,
+                    p.NombreCompleto AS Paciente,
+                    d.NombreCompleto AS Doctor,
+                    e.Nombre AS Estado,
+                    c.Observaciones
+                FROM Agenda.Citas c
+                INNER JOIN Pacientes.Pacientes p ON p.IdPaciente = c.IdPaciente
+                INNER JOIN Personal.Doctores d ON d.IdDoctor = c.IdDoctor
+                INNER JOIN Catalogos.EstadosCita e ON e.IdEstado = c.IdEstado
+                WHERE c.FechaHora >= @Desde
+                  AND e.Nombre NOT IN ('Cancelada', 'No Asistió', 'Atendida')
+                ORDER BY c.FechaHora ASC;";
+
+            return await db.QueryFirstOrDefaultAsync<DashboardCitaModel>(sql, new { Desde = desde });
         }
-        
-        // 🟡 3. OBTENER CUMPLEAÑEROS DEL MES
-        public async Task<IEnumerable<dynamic>> ObtenerCumpleanerosMesAsync()
+
+        public async Task<IReadOnlyList<DashboardSaldoPacienteModel>> ObtenerSaldosPendientesAsync(
+            int limite = 5)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            string sql = @"
-                SELECT 
-                    NombreCompleto AS Paciente,
-                    CONCAT(DAY(FechaNacimiento), ' de este mes') AS Fecha
-                FROM Pacientes.Pacientes
-                WHERE MONTH(FechaNacimiento) = MONTH(GETDATE()) 
-                AND Activo = 1
-                ORDER BY DAY(FechaNacimiento) ASC";
 
-            return await db.QueryAsync<dynamic>(sql);
+            const string sql = @"
+                SELECT TOP (@Limite)
+                    p.IdPaciente,
+                    p.NombreCompleto AS Paciente,
+                    p.Telefono,
+                    CAST(SUM(
+                        CASE
+                            WHEN tp.CostoTotal > ISNULL(pagos.TotalAbonado, 0)
+                                THEN tp.CostoTotal - ISNULL(pagos.TotalAbonado, 0)
+                            ELSE 0
+                        END
+                    ) AS DECIMAL(10, 2)) AS SaldoPendiente
+                FROM Odontologia.TratamientosPaciente tp
+                INNER JOIN Pacientes.Pacientes p ON p.IdPaciente = tp.IdPaciente
+                LEFT JOIN (
+                    SELECT IdTratamientoPaciente, SUM(Monto) AS TotalAbonado
+                    FROM Odontologia.Pagos
+                    GROUP BY IdTratamientoPaciente
+                ) pagos ON pagos.IdTratamientoPaciente = tp.Id
+                WHERE tp.Estado IN ('Pendiente', 'En progreso')
+                GROUP BY p.IdPaciente, p.NombreCompleto, p.Telefono
+                HAVING SUM(
+                    CASE
+                        WHEN tp.CostoTotal > ISNULL(pagos.TotalAbonado, 0)
+                            THEN tp.CostoTotal - ISNULL(pagos.TotalAbonado, 0)
+                        ELSE 0
+                    END
+                ) > 0
+                ORDER BY SaldoPendiente DESC, p.NombreCompleto ASC;";
+
+            var resultado = await db.QueryAsync<DashboardSaldoPacienteModel>(sql, new { Limite = limite });
+            return resultado.AsList();
         }
     }
 }

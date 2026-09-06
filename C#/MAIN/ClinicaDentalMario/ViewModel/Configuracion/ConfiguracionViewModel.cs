@@ -41,7 +41,7 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
                     OnPropertyChanged(nameof(EsEdicionTratamiento));
                     OnPropertyChanged(nameof(TituloFormularioTratamiento));
                     OnPropertyChanged(nameof(TextoBotonGuardar));
-                    DesactivarTratamientoCommand.NotificarCanExecuteChanged();
+                    DesactivarTratamientoCommand?.NotificarCanExecuteChanged();
                 }
             }
         }
@@ -168,6 +168,7 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
 
             EstaCargando = true;
             LimpiarMensaje();
+            string mensajeExito;
 
             try
             {
@@ -181,13 +182,13 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
                 if (TratamientoSeleccionado == null)
                 {
                     await _catalogoRepo.InsertarTratamientoAsync(tratamiento);
-                    MostrarExito("Tratamiento agregado al catálogo correctamente.");
+                    mensajeExito = "Tratamiento agregado al catálogo correctamente.";
                 }
                 else
                 {
                     tratamiento.IdTratamiento = TratamientoSeleccionado.IdTratamiento;
                     await _catalogoRepo.ActualizarTratamientoAsync(tratamiento);
-                    MostrarExito("Tratamiento actualizado correctamente.");
+                    mensajeExito = "Tratamiento actualizado correctamente.";
                 }
             }
             catch (Exception ex)
@@ -200,8 +201,9 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
                 EstaCargando = false;
             }
 
-            PrepararNuevoTratamiento(mantenerMensaje: true);
+            PrepararNuevoTratamiento();
             await CargarTratamientosAsync();
+            MostrarExito(mensajeExito);
         }
 
         private async Task DesactivarTratamientoAsync()
@@ -289,13 +291,11 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
             DuracionMinutosTexto = (TratamientoSeleccionado.DuracionMinutos ?? 30).ToString(CultureInfo.CurrentCulture);
         }
 
-        private void PrepararNuevoTratamiento(bool mantenerMensaje = false)
+        private void PrepararNuevoTratamiento()
         {
             TratamientoSeleccionado = null;
             LimpiarFormulario();
-
-            if (!mantenerMensaje)
-                LimpiarMensaje();
+            LimpiarMensaje();
         }
 
         private void LimpiarFormulario()

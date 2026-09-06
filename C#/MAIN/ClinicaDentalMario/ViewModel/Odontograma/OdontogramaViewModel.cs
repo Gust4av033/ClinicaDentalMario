@@ -5,6 +5,7 @@ using ClinicaDentalMario.ViewModel.Base;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Windows;
@@ -353,7 +354,6 @@ namespace ClinicaDentalMario.ViewModel.Odontograma
                 ? partes[2]
                 : "Herramienta clínica";
 
-            // Los presets clínicos pueden fijar el color correcto de la norma.
             if (partes.Length > 3 && !string.IsNullOrWhiteSpace(partes[3]))
             {
                 ColorActivoHex = partes[3];
@@ -390,7 +390,6 @@ namespace ClinicaDentalMario.ViewModel.Odontograma
 
             if (HerramientaActivaDatoExtra == "Edentulo")
             {
-                // Evita superponer el mismo edentulismo varias veces en el mismo maxilar.
                 _hallazgosCanvas.RemoveAll(x =>
                     x.Tipo == "Edentulo" && x.EsSuperior == esSuperior);
 
@@ -921,9 +920,6 @@ namespace ClinicaDentalMario.ViewModel.Odontograma
 
         private async Task CargarOdontogramaPorFechaAsync(DateTime fecha)
         {
-            if (EstaCargando)
-                return;
-
             EstaCargando = true;
             LimpiarMensaje();
 
@@ -1029,7 +1025,6 @@ namespace ClinicaDentalMario.ViewModel.Odontograma
             }
             catch
             {
-                // Compatibilidad: las evoluciones antiguas no tenían persistencia de Canvas.
                 _hallazgosCanvas.Clear();
                 FigurasSuperiores.Clear();
                 FigurasInferiores.Clear();
@@ -1061,8 +1056,6 @@ namespace ClinicaDentalMario.ViewModel.Odontograma
                     PiezaDentalViewModel pieza = piezas[i];
                     string serial = SerializarPieza(pieza);
 
-                    // El payload se guarda una sola vez dentro de la misma evolución.
-                    // Así se aprovecha Observaciones (NVARCHAR(MAX)) sin alterar la estructura de BD.
                     if (i == 0)
                     {
                         serial += $"|VER:{VersionSerializacion}|CVS:{payloadCanvas}";
@@ -1106,7 +1099,7 @@ namespace ClinicaDentalMario.ViewModel.Odontograma
 
         private static string SerializarPieza(PiezaDentalViewModel pieza)
         {
-            return string.Join('|', new[]
+            return string.Join("|", new[]
             {
                 $"CA:{pieza.ColorArriba}",
                 $"CB:{pieza.ColorAbajo}",

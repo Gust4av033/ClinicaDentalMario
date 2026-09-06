@@ -22,7 +22,14 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         private bool _catalogosCargados;
 
         public string NombrePaciente { get; }
-        public IReadOnlyList<int> DuracionesDisponibles { get; } = new[] { 15, 30, 45, 60, 90 };
+        public ObservableCollection<int> DuracionesDisponibles { get; } = new();
+
+        private bool _soportaDuracionPersonalizada;
+        public bool SoportaDuracionPersonalizada
+        {
+            get => _soportaDuracionPersonalizada;
+            private set => SetProperty(ref _soportaDuracionPersonalizada, value);
+        }
 
         private ObservableCollection<DoctorModel> _listaDoctores = new();
         public ObservableCollection<DoctorModel> ListaDoctores
@@ -151,20 +158,20 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             NombrePaciente = cita.Paciente;
             _fechaSeleccionada = cita.FechaHora.Date;
             _horaSeleccionada = cita.FechaHora.ToString("HH:mm");
-            _duracionMinutos = DuracionesDisponibles.Contains(cita.DuracionMinutos)
-                ? cita.DuracionMinutos
-                : 30;
+            _duracionMinutos = cita.DuracionMinutos > 0 ? cita.DuracionMinutos : 30;
             _observaciones = cita.Observaciones ?? string.Empty;
+
+            ConfigurarDuraciones(false, _duracionMinutos);
 
             ActualizarCommand = new AsyncRelayCommand(
                 _ => ActualizarAsync(),
                 _ => !EstaCargando && _catalogosCargados);
             VolverCommand = new RelayCommand(_ => Volver());
 
-            _ = CargarCatalogosAsync(cita.IdDoctor, cita.IdEstado);
+            _ = CargarCatalogosAsync(cita.IdDoctor, cita.IdEstado, _duracionMinutos);
         }
 
-        private async Task CargarCatalogosAsync(int idDoctorActual, int idEstadoActual)
+        private async Task CargarCatalogosAsync(int idDoctorActual, int idEstadoActual, int duracionActual)
         {
             MensajeError = string.Empty;
             _catalogosCargados = false;
@@ -176,12 +183,15 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                 {
                     var doctores = await _doctorRepository.ObtenerDoctoresActivosAsync();
                     var estados = await _citaRepository.ObtenerEstadosAsync();
+                    bool soportaDuracion = await _citaRepository.SoportaDuracionPersonalizadaAsync();
 
                     ListaDoctores = new ObservableCollection<DoctorModel>(doctores);
                     ListaEstados = new ObservableCollection<EstadoCitaModel>(
                         estados.Where(x =>
                             x.Nombre.Equals("Pendiente", StringComparison.OrdinalIgnoreCase) ||
                             x.Nombre.Equals("Confirmada", StringComparison.OrdinalIgnoreCase)));
+
+                    ConfigurarDuraciones(soportaDuracion, duracionActual);
 
                     DoctorSeleccionado = ListaDoctores.FirstOrDefault(x => x.IdDoctor == idDoctorActual);
                     EstadoSeleccionado = ListaEstados.FirstOrDefault(x => x.IdEstado == idEstadoActual)
@@ -201,6 +211,27 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             });
 
             ActualizarCommand.NotificarCanExecuteChanged();
+        }
+
+        private void ConfigurarDuraciones(bool soportaDuracionPersonalizada, int duracionActual)
+        {
+            SoportaDuracionPersonalizada = soportaDuracionPersonalizada;
+            DuracionesDisponibles.Clear();
+
+            if (soportaDuracionPersonalizada)
+            {
+                foreach (int duracion in new[] { 15, 30, 45, 60, 90 })
+                    DuracionesDisponibles.Add(duracion);
+
+                DuracionMinutos = DuracionesDisponibles.Contains(duracionActual)
+                    ? duracionActual
+                    : 30;
+            }
+            else
+            {
+                DuracionesDisponibles.Add(30);
+                DuracionMinutos = 30;
+            }
         }
 
         private async Task ActualizarAsync()

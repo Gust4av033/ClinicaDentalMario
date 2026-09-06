@@ -11,10 +11,18 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 {
     public class AgendaViewModel : ViewModelBase
     {
+        private const string ModoDia = "Dia";
+        private const string ModoSemana = "Semana";
+        private const string ModoTodas = "Todas";
+
         private readonly Action<object> _cambiarVista;
         private readonly CitaRepository _citaRepository;
+        private readonly DoctorRepository _doctorRepository;
         private readonly IMessageService _messageService;
         private readonly IExceptionHandler _exceptionHandler;
+
+        private bool _filtrosCargados;
+        private bool _suspenderRecarga;
 
         private ObservableCollection<AgendaCitaModel> _citasDelDia = new();
         public ObservableCollection<AgendaCitaModel> CitasDelDia
@@ -45,18 +53,105 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             {
                 if (SetProperty(ref _fechaSeleccionada, value.Date))
                 {
-                    OnPropertyChanged(nameof(FechaSeleccionadaTexto));
-                    OnPropertyChanged(nameof(EsHoy));
+                    NotificarPeriodo();
                     CerrarDetalle();
-                    _ = CargarCitasDelDiaAsync();
+
+                    if (_filtrosCargados && !_suspenderRecarga && !EsVistaTodas)
+                        _ = CargarAgendaAsync();
                 }
             }
         }
 
-        public string FechaSeleccionadaTexto =>
-            FechaSeleccionada.ToString("dddd, dd 'de' MMMM 'de' yyyy", CultureInfo.CurrentCulture);
+        private string _modoVista = ModoDia;
+        public string ModoVista
+        {
+            get => _modoVista;
+            private set
+            {
+                if (SetProperty(ref _modoVista, value))
+                {
+                    NotificarPeriodo();
+                    DiaAnteriorCommand.NotificarCanExecuteChanged();
+                    DiaSiguienteCommand.NotificarCanExecuteChanged();
+                }
+            }
+        }
 
-        public bool EsHoy => FechaSeleccionada.Date == DateTime.Today;
+        public bool EsVistaDia => ModoVista == ModoDia;
+        public bool EsVistaSemana => ModoVista == ModoSemana;
+        public bool EsVistaTodas => ModoVista == ModoTodas;
+        public bool MostrarFechaEnListado => !EsVistaDia;
+
+        public string FechaSeleccionadaTexto
+        {
+            get
+            {
+                if (EsVistaTodas)
+                    return "Todas las citas registradas";
+
+                if (EsVistaSemana)
+                {
+                    DateTime inicio = ObtenerInicioSemana(FechaSeleccionada);
+                    DateTime fin = inicio.AddDays(6);
+                    return $"Semana del {inicio:dd/MM/yyyy} al {fin:dd/MM/yyyy}";
+                }
+
+                return FechaSeleccionada.ToString(
+                    "dddd, dd 'de' MMMM 'de' yyyy",
+                    CultureInfo.CurrentCulture);
+            }
+        }
+
+        public bool EsHoy => EsVistaDia && FechaSeleccionada.Date == DateTime.Today;
+
+        private ObservableCollection<DoctorModel> _doctoresFiltro = new();
+        public ObservableCollection<DoctorModel> DoctoresFiltro
+        {
+            get => _doctoresFiltro;
+            private set => SetProperty(ref _doctoresFiltro, value);
+        }
+
+        private ObservableCollection<EstadoCitaModel> _estadosFiltro = new();
+        public ObservableCollection<EstadoCitaModel> EstadosFiltro
+        {
+            get => _estadosFiltro;
+            private set => SetProperty(ref _estadosFiltro, value);
+        }
+
+        private DoctorModel? _doctorFiltroSeleccionado;
+        public DoctorModel? DoctorFiltroSeleccionado
+        {
+            get => _doctorFiltroSeleccionado;
+            set
+            {
+                if (SetProperty(ref _doctorFiltroSeleccionado, value) &&
+                    _filtrosCargados && !_suspenderRecarga)
+                {
+                    _ = CargarAgendaAsync();
+                }
+            }
+        }
+
+        private EstadoCitaModel? _estadoFiltroSeleccionado;
+        public EstadoCitaModel? EstadoFiltroSeleccionado
+        {
+            get => _estadoFiltroSeleccionado;
+            set
+            {
+                if (SetProperty(ref _estadoFiltroSeleccionado, value) &&
+                    _filtrosCargados && !_suspenderRecarga)
+                {
+                    _ = CargarAgendaAsync();
+                }
+            }
+        }
+
+        private string _terminoBusqueda = string.Empty;
+        public string TerminoBusqueda
+        {
+            get => _terminoBusqueda;
+            set => SetProperty(ref _terminoBusqueda, value ?? string.Empty);
+        }
 
         private AgendaCitaModel? _citaSeleccionada;
         public AgendaCitaModel? CitaSeleccionada
@@ -104,6 +199,11 @@ namespace ClinicaDentalMario.ViewModel.Agenda
         public AsyncRelayCommand NoAsistioCommand { get; }
         public RelayCommand CerrarDetalleCommand { get; }
         public AsyncRelayCommand RecargarCommand { get; }
+        public AsyncRelayCommand BuscarCommand { get; }
+        public RelayCommand LimpiarFiltrosCommand { get; }
+        public RelayCommand MostrarDiaCommand { get; }
+        public RelayCommand MostrarSemanaCommand { get; }
+        public RelayCommand MostrarTodasCommand { get; }
         public RelayCommand DiaAnteriorCommand { get; }
         public RelayCommand IrHoyCommand { get; }
         public RelayCommand DiaSiguienteCommand { get; }
@@ -113,6 +213,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                 cambiarVista,
                 fechaInicial,
                 new CitaRepository(),
+                new DoctorRepository(),
                 new MessageService(),
                 new ExceptionHandler(new MessageService()))
         {
@@ -124,9 +225,27 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             CitaRepository citaRepository,
             IMessageService messageService,
             IExceptionHandler exceptionHandler)
+            : this(
+                cambiarVista,
+                fechaInicial,
+                citaRepository,
+                new DoctorRepository(),
+                messageService,
+                exceptionHandler)
+        {
+        }
+
+        public AgendaViewModel(
+            Action<object> cambiarVista,
+            DateTime? fechaInicial,
+            CitaRepository citaRepository,
+            DoctorRepository doctorRepository,
+            IMessageService messageService,
+            IExceptionHandler exceptionHandler)
         {
             _cambiarVista = cambiarVista ?? throw new ArgumentNullException(nameof(cambiarVista));
             _citaRepository = citaRepository ?? throw new ArgumentNullException(nameof(citaRepository));
+            _doctorRepository = doctorRepository ?? throw new ArgumentNullException(nameof(doctorRepository));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
             _fechaSeleccionada = fechaInicial?.Date ?? DateTime.Today;
@@ -139,15 +258,20 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             FinalizarCitaCommand = new AsyncRelayCommand(_ => FinalizarCitaAsync(), _ => PuedeMarcarAtendida());
             NoAsistioCommand = new AsyncRelayCommand(_ => MarcarNoAsistioAsync(), _ => PuedeMarcarNoAsistio());
             CerrarDetalleCommand = new RelayCommand(_ => CerrarDetalle());
-            RecargarCommand = new AsyncRelayCommand(_ => CargarCitasDelDiaAsync());
-            DiaAnteriorCommand = new RelayCommand(_ => FechaSeleccionada = FechaSeleccionada.AddDays(-1));
-            IrHoyCommand = new RelayCommand(_ => FechaSeleccionada = DateTime.Today);
-            DiaSiguienteCommand = new RelayCommand(_ => FechaSeleccionada = FechaSeleccionada.AddDays(1));
+            RecargarCommand = new AsyncRelayCommand(_ => CargarAgendaAsync());
+            BuscarCommand = new AsyncRelayCommand(_ => CargarAgendaAsync());
+            LimpiarFiltrosCommand = new RelayCommand(_ => LimpiarFiltros());
+            MostrarDiaCommand = new RelayCommand(_ => CambiarModo(ModoDia));
+            MostrarSemanaCommand = new RelayCommand(_ => CambiarModo(ModoSemana));
+            MostrarTodasCommand = new RelayCommand(_ => CambiarModo(ModoTodas));
+            DiaAnteriorCommand = new RelayCommand(_ => MoverPeriodo(-1), _ => !EsVistaTodas);
+            IrHoyCommand = new RelayCommand(_ => IrHoy());
+            DiaSiguienteCommand = new RelayCommand(_ => MoverPeriodo(1), _ => !EsVistaTodas);
 
-            _ = CargarCitasDelDiaAsync();
+            _ = InicializarAsync();
         }
 
-        private async Task CargarCitasDelDiaAsync()
+        private async Task InicializarAsync()
         {
             MensajeError = string.Empty;
             EstaCargando = true;
@@ -155,7 +279,90 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
             try
             {
-                var citas = await _citaRepository.ObtenerCitasPorFechaAsync(FechaSeleccionada);
+                var doctores = await _doctorRepository.ObtenerDoctoresActivosAsync();
+                var estados = await _citaRepository.ObtenerEstadosAsync();
+
+                var todosDoctores = new DoctorModel
+                {
+                    IdDoctor = 0,
+                    NombreCompleto = "Todos los doctores",
+                    Activo = true
+                };
+
+                var todosEstados = new EstadoCitaModel
+                {
+                    IdEstado = 0,
+                    Nombre = "Todos los estados"
+                };
+
+                DoctoresFiltro = new ObservableCollection<DoctorModel>(
+                    new[] { todosDoctores }.Concat(doctores));
+                EstadosFiltro = new ObservableCollection<EstadoCitaModel>(
+                    new[] { todosEstados }.Concat(estados));
+
+                _suspenderRecarga = true;
+                DoctorFiltroSeleccionado = todosDoctores;
+                EstadoFiltroSeleccionado = todosEstados;
+                _suspenderRecarga = false;
+                _filtrosCargados = true;
+            }
+            catch (Exception ex)
+            {
+                _filtrosCargados = false;
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible cargar los filtros de la agenda.");
+            }
+            finally
+            {
+                EstaCargando = false;
+                OnPropertyChanged(nameof(SinCitas));
+            }
+
+            if (_filtrosCargados)
+                await CargarAgendaAsync();
+        }
+
+        private async Task CargarAgendaAsync()
+        {
+            if (!_filtrosCargados)
+                return;
+
+            MensajeError = string.Empty;
+            EstaCargando = true;
+            OnPropertyChanged(nameof(SinCitas));
+            CerrarDetalle();
+
+            try
+            {
+                DateTime? fechaDesde = null;
+                DateTime? fechaHasta = null;
+
+                if (EsVistaDia)
+                {
+                    fechaDesde = FechaSeleccionada.Date;
+                    fechaHasta = fechaDesde.Value.AddDays(1);
+                }
+                else if (EsVistaSemana)
+                {
+                    fechaDesde = ObtenerInicioSemana(FechaSeleccionada);
+                    fechaHasta = fechaDesde.Value.AddDays(7);
+                }
+
+                int? idDoctor = DoctorFiltroSeleccionado is { IdDoctor: > 0 }
+                    ? DoctorFiltroSeleccionado.IdDoctor
+                    : null;
+                int? idEstado = EstadoFiltroSeleccionado is { IdEstado: > 0 }
+                    ? EstadoFiltroSeleccionado.IdEstado
+                    : null;
+
+                var citas = await _citaRepository.ObtenerCitasAsync(
+                    fechaDesde,
+                    fechaHasta,
+                    idDoctor,
+                    idEstado,
+                    TerminoBusqueda);
+
                 CitasDelDia = new ObservableCollection<AgendaCitaModel>(citas);
             }
             catch (Exception ex)
@@ -171,6 +378,68 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                 OnPropertyChanged(nameof(SinCitas));
                 NotificarComandosSeleccion();
             }
+        }
+
+        private void CambiarModo(string modo)
+        {
+            if (ModoVista == modo)
+                return;
+
+            ModoVista = modo;
+            CerrarDetalle();
+
+            if (_filtrosCargados)
+                _ = CargarAgendaAsync();
+        }
+
+        private void MoverPeriodo(int direccion)
+        {
+            if (EsVistaTodas)
+                return;
+
+            int dias = EsVistaSemana ? 7 : 1;
+            FechaSeleccionada = FechaSeleccionada.AddDays(dias * direccion);
+        }
+
+        private void IrHoy()
+        {
+            bool requiereRecarga = !EsVistaDia || FechaSeleccionada.Date != DateTime.Today;
+
+            _suspenderRecarga = true;
+            ModoVista = ModoDia;
+            FechaSeleccionada = DateTime.Today;
+            _suspenderRecarga = false;
+
+            if (requiereRecarga && _filtrosCargados)
+                _ = CargarAgendaAsync();
+        }
+
+        private void LimpiarFiltros()
+        {
+            _suspenderRecarga = true;
+            TerminoBusqueda = string.Empty;
+            DoctorFiltroSeleccionado = DoctoresFiltro.FirstOrDefault();
+            EstadoFiltroSeleccionado = EstadosFiltro.FirstOrDefault();
+            _suspenderRecarga = false;
+
+            if (_filtrosCargados)
+                _ = CargarAgendaAsync();
+        }
+
+        private static DateTime ObtenerInicioSemana(DateTime fecha)
+        {
+            int diferencia = (7 + (int)fecha.DayOfWeek - (int)DayOfWeek.Monday) % 7;
+            return fecha.Date.AddDays(-diferencia);
+        }
+
+        private void NotificarPeriodo()
+        {
+            OnPropertyChanged(nameof(FechaSeleccionadaTexto));
+            OnPropertyChanged(nameof(EsHoy));
+            OnPropertyChanged(nameof(EsVistaDia));
+            OnPropertyChanged(nameof(EsVistaSemana));
+            OnPropertyChanged(nameof(EsVistaTodas));
+            OnPropertyChanged(nameof(MostrarFechaEnListado));
         }
 
         private void AbrirNuevaCita()
@@ -279,7 +548,7 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                 await _citaRepository.CambiarEstadoCitaAsync(cita.IdCita, estado);
                 _messageService.MostrarExito(mensajeExito, tituloExito);
                 CerrarDetalle();
-                await CargarCitasDelDiaAsync();
+                await CargarAgendaAsync();
             }
             catch (Exception ex)
             {

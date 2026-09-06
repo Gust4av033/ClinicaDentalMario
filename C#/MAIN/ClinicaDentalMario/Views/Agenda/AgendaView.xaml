@@ -23,16 +23,20 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
+
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <iconPacks:PackIconMaterial Kind="CalendarClock" Width="30" Height="30" Foreground="#E67E22" Margin="0,0,12,0"/>
+                    <iconPacks:PackIconMaterial Kind="CalendarClock" Width="30" Height="30"
+                                                Foreground="#E67E22" Margin="0,0,12,0"/>
                     <StackPanel>
                         <TextBlock Text="Agenda de Citas" FontSize="26" FontWeight="Bold"/>
-                        <TextBlock Text="Organiza, confirma y da seguimiento a las citas por intervalos reales."
+                        <TextBlock Text="Organiza, confirma y da seguimiento a las citas."
                                    FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
                     </StackPanel>
                 </StackPanel>
+
                 <Button Grid.Column="1" Command="{Binding NuevaCitaCommand}" Height="42"
-                        Background="{StaticResource AccentBrush}" Foreground="White" BorderThickness="0" Padding="20,0">
+                        Background="{StaticResource AccentBrush}" Foreground="White"
+                        BorderThickness="0" Padding="20,0">
                     <StackPanel Orientation="Horizontal">
                         <iconPacks:PackIconMaterial Kind="CalendarPlus" Margin="0,0,8,0" Foreground="White"/>
                         <TextBlock Text="Agendar Cita" FontSize="15" FontWeight="Bold" Foreground="White"/>
@@ -41,69 +45,197 @@
             </Grid>
 
             <Grid Grid.Row="1" Margin="0,0,0,14">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Command="{Binding DiaAnteriorCommand}" Width="38" Height="38" Padding="0" ToolTip="Día anterior">
-                        <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="20" Height="20"/>
-                    </Button>
-                    <Button Command="{Binding IrHoyCommand}" Height="38" Padding="14,0" Margin="8,0" ToolTip="Volver a hoy">
-                        <TextBlock Text="Hoy" FontWeight="SemiBold"/>
-                    </Button>
-                    <Button Command="{Binding DiaSiguienteCommand}" Width="38" Height="38" Padding="0" ToolTip="Día siguiente">
-                        <iconPacks:PackIconMaterial Kind="ChevronRight" Width="20" Height="20"/>
-                    </Button>
-                </StackPanel>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding FechaSeleccionadaTexto}" FontSize="16" FontWeight="Bold" TextAlignment="Center"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
-                        <TextBlock Text="{Binding CantidadCitas, StringFormat={}{0} citas}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
-                        <TextBlock Text="  •  " Foreground="{StaticResource TextSecondaryBrush}"/>
-                        <TextBlock Text="{Binding CantidadPendientes, StringFormat={}{0} pendientes}" Foreground="#E67E22" FontSize="12"/>
-                        <TextBlock Text="  •  " Foreground="{StaticResource TextSecondaryBrush}"/>
-                        <TextBlock Text="{Binding CantidadConfirmadas, StringFormat={}{0} confirmadas}" Foreground="{StaticResource AccentBrush}" FontSize="12"/>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="{StaticResource BgControlBrush}" CornerRadius="8"
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="3">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Command="{Binding MostrarDiaCommand}" Height="34" Padding="14,0" BorderThickness="0">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding EsVistaDia}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <TextBlock Text="Día" FontWeight="SemiBold"/>
+                                </Button>
+                                <Button Command="{Binding MostrarSemanaCommand}" Height="34" Padding="14,0" BorderThickness="0">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding EsVistaSemana}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <TextBlock Text="Semana" FontWeight="SemiBold"/>
+                                </Button>
+                                <Button Command="{Binding MostrarTodasCommand}" Height="34" Padding="14,0" BorderThickness="0">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding EsVistaTodas}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                    <TextBlock Text="Todas" FontWeight="SemiBold"/>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+
+                        <Button Command="{Binding DiaAnteriorCommand}" Width="38" Height="38" Padding="0"
+                                Margin="12,0,0,0" ToolTip="Periodo anterior">
+                            <iconPacks:PackIconMaterial Kind="ChevronLeft" Width="20" Height="20"/>
+                        </Button>
+                        <Button Command="{Binding IrHoyCommand}" Height="38" Padding="14,0" Margin="8,0"
+                                ToolTip="Volver a hoy">
+                            <TextBlock Text="Hoy" FontWeight="SemiBold"/>
+                        </Button>
+                        <Button Command="{Binding DiaSiguienteCommand}" Width="38" Height="38" Padding="0"
+                                ToolTip="Periodo siguiente">
+                            <iconPacks:PackIconMaterial Kind="ChevronRight" Width="20" Height="20"/>
+                        </Button>
                     </StackPanel>
-                </StackPanel>
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Ir a fecha:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"
-                               VerticalAlignment="Center" Margin="0,0,8,0"/>
-                    <DatePicker SelectedDate="{Binding FechaSeleccionada, UpdateSourceTrigger=PropertyChanged}"
-                                Width="165" Height="38" FontSize="14" Padding="6"/>
-                    <Button Command="{Binding RecargarCommand}" Width="38" Height="38" Padding="0" Margin="8,0,0,0" ToolTip="Recargar citas">
-                        <iconPacks:PackIconMaterial Kind="Refresh" Width="18" Height="18"/>
-                    </Button>
-                </StackPanel>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15,0">
+                        <TextBlock Text="{Binding FechaSeleccionadaTexto}" FontSize="16" FontWeight="Bold" TextAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,0">
+                            <TextBlock Text="{Binding CantidadCitas, StringFormat={}{0} citas}"
+                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+                            <TextBlock Text="  •  " Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock Text="{Binding CantidadPendientes, StringFormat={}{0} pendientes}"
+                                       Foreground="#E67E22" FontSize="12"/>
+                            <TextBlock Text="  •  " Foreground="{StaticResource TextSecondaryBrush}"/>
+                            <TextBlock Text="{Binding CantidadConfirmadas, StringFormat={}{0} confirmadas}"
+                                       Foreground="{StaticResource AccentBrush}" FontSize="12"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Ir a fecha:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <DatePicker SelectedDate="{Binding FechaSeleccionada, UpdateSourceTrigger=PropertyChanged}"
+                                    Width="155" Height="38" FontSize="14" Padding="6"/>
+                        <Button Command="{Binding RecargarCommand}" Width="38" Height="38" Padding="0"
+                                Margin="8,0,0,0" ToolTip="Recargar citas">
+                            <iconPacks:PackIconMaterial Kind="Refresh" Width="18" Height="18"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <Border Grid.Row="1" Background="{StaticResource BgControlBrush}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="9" Padding="10" Margin="0,12,0,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Grid.Column="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0"
+                                     Text="{Binding TerminoBusqueda, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="38" Padding="10,6" MaxLength="150"
+                                     ToolTip="Busca por nombre, teléfono o DUI del paciente"/>
+                            <Button Grid.Column="1" Command="{Binding BuscarCommand}" Height="38"
+                                    Padding="14,0" Margin="8,0,0,0" Background="{StaticResource AccentBrush}"
+                                    Foreground="White" BorderThickness="0">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="Magnify" Width="17" Height="17" Margin="0,0,6,0" Foreground="White"/>
+                                    <TextBlock Text="Buscar" FontWeight="SemiBold" Foreground="White"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+
+                        <ComboBox Grid.Column="2" ItemsSource="{Binding DoctoresFiltro}"
+                                  SelectedItem="{Binding DoctorFiltroSeleccionado, UpdateSourceTrigger=PropertyChanged}"
+                                  DisplayMemberPath="NombreCompleto" Height="38"
+                                  ToolTip="Filtrar por doctor"/>
+
+                        <ComboBox Grid.Column="4" ItemsSource="{Binding EstadosFiltro}"
+                                  SelectedItem="{Binding EstadoFiltroSeleccionado, UpdateSourceTrigger=PropertyChanged}"
+                                  DisplayMemberPath="Nombre" Height="38"
+                                  ToolTip="Filtrar por estado"/>
+
+                        <Button Grid.Column="5" Command="{Binding LimpiarFiltrosCommand}" Height="38"
+                                Padding="12,0" Margin="12,0,0,0" ToolTip="Limpiar búsqueda y filtros">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="FilterRemove" Width="17" Height="17" Margin="0,0,6,0"/>
+                                <TextBlock Text="Limpiar" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
             </Grid>
 
             <StackPanel Grid.Row="2" Margin="0,0,0,14">
-                <Border Background="#3A1C1C" BorderBrush="{StaticResource DangerBrush}" BorderThickness="1" CornerRadius="8" Padding="10">
+                <Border Background="#3A1C1C" BorderBrush="{StaticResource DangerBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="10">
                     <Border.Style>
                         <Style TargetType="Border">
                             <Setter Property="Visibility" Value="Visible"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding MensajeError}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
-                                <DataTrigger Binding="{Binding MensajeError}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                <DataTrigger Binding="{Binding MensajeError}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding MensajeError}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-                    <TextBlock Text="{Binding MensajeError}" Foreground="{StaticResource DangerBrush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding MensajeError}" Foreground="{StaticResource DangerBrush}"
+                               FontWeight="SemiBold" TextWrapping="Wrap"/>
                 </Border>
-                <Border Background="{StaticResource BgControlBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                        CornerRadius="8" Padding="9" Margin="0,8,0,0">
+
+                <Border Background="{StaticResource BgControlBrush}" BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="9" Margin="0,8,0,0">
                     <Border.Style>
                         <Style TargetType="Border">
                             <Setter Property="Visibility" Value="Collapsed"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding EstaCargando}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                <DataTrigger Binding="{Binding EstaCargando}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-                    <TextBlock Text="Cargando citas..." Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Cargando citas..." Foreground="{StaticResource TextSecondaryBrush}"
+                               HorizontalAlignment="Center"/>
                 </Border>
             </StackPanel>
 
@@ -116,8 +248,17 @@
                 <Grid Grid.Column="0" Margin="0,0,15,0">
                     <DataGrid ItemsSource="{Binding CitasDelDia}" SelectedItem="{Binding CitaSeleccionada}"
                               AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
-                              Background="Transparent" BorderThickness="0" RowHeight="55" FontSize="14" SelectionMode="Single">
+                              Background="Transparent" BorderThickness="0" RowHeight="55" FontSize="14"
+                              SelectionMode="Single">
                         <DataGrid.Columns>
+                            <DataGridTextColumn Header="Fecha" Binding="{Binding FechaHora, StringFormat={}{0:dd/MM/yyyy}}" Width="105">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                             <DataGridTextColumn Header="Horario" Binding="{Binding HorarioTexto}" Width="155">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
@@ -137,10 +278,18 @@
                                         <Setter Property="VerticalAlignment" Value="Center"/>
                                         <Setter Property="Foreground" Value="#E67E22"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Estado}" Value="Confirmada"><Setter Property="Foreground" Value="{StaticResource AccentBrush}"/></DataTrigger>
-                                            <DataTrigger Binding="{Binding Estado}" Value="Atendida"><Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/></DataTrigger>
-                                            <DataTrigger Binding="{Binding Estado}" Value="Cancelada"><Setter Property="Foreground" Value="{StaticResource DangerBrush}"/></DataTrigger>
-                                            <DataTrigger Binding="{Binding Estado}" Value="No Asistió"><Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/></DataTrigger>
+                                            <DataTrigger Binding="{Binding Estado}" Value="Confirmada">
+                                                <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Estado}" Value="Atendida">
+                                                <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Estado}" Value="Cancelada">
+                                                <Setter Property="Foreground" Value="{StaticResource DangerBrush}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Estado}" Value="No Asistió">
+                                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                            </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
@@ -153,7 +302,9 @@
                             <Style TargetType="Border">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SinCitas}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                    <DataTrigger Binding="{Binding SinCitas}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
@@ -161,10 +312,11 @@
                             <iconPacks:PackIconMaterial Kind="CalendarBlankOutline" Width="76" Height="76"
                                                         Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.2"
                                                         HorizontalAlignment="Center" Margin="0,0,0,18"/>
-                            <TextBlock Text="Día libre de citas" FontSize="21" FontWeight="Bold"
+                            <TextBlock Text="Sin citas para mostrar" FontSize="21" FontWeight="Bold"
                                        Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
-                            <TextBlock Text="No hay citas registradas para la fecha seleccionada." FontSize="14"
-                                       Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                            <TextBlock Text="No hay citas que coincidan con la vista y los filtros seleccionados."
+                                       FontSize="14" Foreground="{StaticResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Center" Margin="0,5,0,0"/>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -174,12 +326,16 @@
                         Visibility="{Binding PanelDetalleVisibility}">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <Button Command="{Binding CerrarDetalleCommand}" HorizontalAlignment="Right" Background="Transparent"
-                                    BorderThickness="0" Margin="0,-10,-10,15" ToolTip="Cerrar panel">
-                                <iconPacks:PackIconMaterial Kind="Close" Foreground="{StaticResource TextSecondaryBrush}" Width="22" Height="22"/>
+                            <Button Command="{Binding CerrarDetalleCommand}" HorizontalAlignment="Right"
+                                    Background="Transparent" BorderThickness="0" Margin="0,-10,-10,15"
+                                    ToolTip="Cerrar panel">
+                                <iconPacks:PackIconMaterial Kind="Close" Foreground="{StaticResource TextSecondaryBrush}"
+                                                            Width="22" Height="22"/>
                             </Button>
+
                             <iconPacks:PackIconMaterial Kind="AccountClock" Width="48" Height="48"
-                                                        Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                                        Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center"
+                                                        Margin="0,0,0,12"/>
                             <TextBlock Text="Detalles de la Cita" FontSize="20" FontWeight="Bold"
                                        HorizontalAlignment="Center" Margin="0,0,0,22"/>
 
@@ -187,12 +343,18 @@
                             <TextBlock Text="{Binding CitaSeleccionada.Paciente}" FontSize="16" FontWeight="Bold"
                                        Margin="0,2,0,5" TextWrapping="Wrap"/>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <iconPacks:PackIconMaterial Kind="Phone" Foreground="{StaticResource TextSecondaryBrush}" Width="16" Height="16" Margin="0,0,6,0"/>
-                                <TextBlock Text="{Binding CitaSeleccionada.TelefonoPacienteTexto}" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                <iconPacks:PackIconMaterial Kind="Phone" Foreground="{StaticResource TextSecondaryBrush}"
+                                                            Width="16" Height="16" Margin="0,0,6,0"/>
+                                <TextBlock Text="{Binding CitaSeleccionada.TelefonoPacienteTexto}"
+                                           Foreground="{StaticResource TextSecondaryBrush}"/>
                             </StackPanel>
 
                             <TextBlock Text="Doctor" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"/>
                             <TextBlock Text="{Binding CitaSeleccionada.Doctor}" FontSize="15" Margin="0,2,0,16"/>
+
+                            <TextBlock Text="Fecha" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding CitaSeleccionada.FechaHora, StringFormat={}{0:dd/MM/yyyy}}"
+                                       FontSize="15" Margin="0,2,0,10"/>
 
                             <TextBlock Text="Horario" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"/>
                             <TextBlock Text="{Binding CitaSeleccionada.HorarioTexto}" FontSize="15" FontWeight="Bold"
@@ -204,36 +366,44 @@
                             <TextBlock Text="{Binding CitaSeleccionada.Estado}" FontSize="15" FontWeight="Bold" Margin="0,2,0,16"/>
 
                             <TextBlock Text="Motivo / Observaciones" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold"/>
-                            <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                                    CornerRadius="6" Padding="12" Margin="0,5,0,20" MinHeight="80">
-                                <TextBlock Text="{Binding CitaSeleccionada.Observaciones, TargetNullValue='Sin observaciones'}" TextWrapping="Wrap"/>
+                            <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,5,0,20" MinHeight="80">
+                                <TextBlock Text="{Binding CitaSeleccionada.Observaciones, TargetNullValue='Sin observaciones'}"
+                                           TextWrapping="Wrap"/>
                             </Border>
 
-                            <Border Background="#1A252F" BorderBrush="#2C3E50" BorderThickness="1" CornerRadius="6"
-                                    Padding="12" Margin="0,0,0,12">
+                            <Border Background="#1A252F" BorderBrush="#2C3E50" BorderThickness="1"
+                                    CornerRadius="6" Padding="12" Margin="0,0,0,12">
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding CitaSeleccionada.Estado}" Value="Atendida"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
-                                            <DataTrigger Binding="{Binding CitaSeleccionada.Estado}" Value="Cancelada"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
-                                            <DataTrigger Binding="{Binding CitaSeleccionada.Estado}" Value="No Asistió"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                            <DataTrigger Binding="{Binding CitaSeleccionada.Estado}" Value="Atendida">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding CitaSeleccionada.Estado}" Value="Cancelada">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding CitaSeleccionada.Estado}" Value="No Asistió">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </Border.Style>
                                 <TextBlock Text="Esta cita está cerrada y ya no puede modificarse."
-                                           Foreground="{StaticResource TextSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap"/>
+                                           Foreground="{StaticResource TextSecondaryBrush}" TextAlignment="Center"
+                                           TextWrapping="Wrap"/>
                             </Border>
 
-                            <Button Command="{Binding ConfirmarCitaCommand}" Background="{StaticResource AccentBrush}" Foreground="White"
-                                    BorderThickness="0" Height="42" Margin="0,0,0,10">
+                            <Button Command="{Binding ConfirmarCitaCommand}" Background="{StaticResource AccentBrush}"
+                                    Foreground="White" BorderThickness="0" Height="42" Margin="0,0,0,10">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <iconPacks:PackIconMaterial Kind="CalendarCheck" Margin="0,0,8,0" Foreground="White"/>
                                     <TextBlock Text="Confirmar Cita" FontWeight="Bold" Foreground="White"/>
                                 </StackPanel>
                             </Button>
-                            <Button Command="{Binding FinalizarCitaCommand}" Background="{StaticResource SuccessBrush}" Foreground="White"
-                                    BorderThickness="0" Height="42" Margin="0,0,0,10">
+                            <Button Command="{Binding FinalizarCitaCommand}" Background="{StaticResource SuccessBrush}"
+                                    Foreground="White" BorderThickness="0" Height="42" Margin="0,0,0,10">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <iconPacks:PackIconMaterial Kind="CheckCircle" Margin="0,0,8,0" Foreground="White"/>
                                     <TextBlock Text="Marcar Atendida" FontWeight="Bold" Foreground="White"/>

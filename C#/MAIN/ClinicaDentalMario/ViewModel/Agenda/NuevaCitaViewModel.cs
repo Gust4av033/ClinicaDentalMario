@@ -21,7 +21,14 @@ namespace ClinicaDentalMario.ViewModel.Agenda
 
         private bool _listasCargadas;
 
-        public IReadOnlyList<int> DuracionesDisponibles { get; } = new[] { 15, 30, 45, 60, 90 };
+        public ObservableCollection<int> DuracionesDisponibles { get; } = new();
+
+        private bool _soportaDuracionPersonalizada;
+        public bool SoportaDuracionPersonalizada
+        {
+            get => _soportaDuracionPersonalizada;
+            private set => SetProperty(ref _soportaDuracionPersonalizada, value);
+        }
 
         private ObservableCollection<PacienteModel> _listaPacientes = new();
         public ObservableCollection<PacienteModel> ListaPacientes
@@ -149,6 +156,8 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             if (_fechaSeleccionada < DateTime.Today)
                 _fechaSeleccionada = DateTime.Today;
 
+            ConfigurarDuraciones(false);
+
             Titulo = "Agendar Nueva Cita";
             GuardarCommand = new AsyncRelayCommand(_ => GuardarAsync(), _ => !EstaCargando && _listasCargadas);
             CancelarCommand = new RelayCommand(_ => VolverAAgenda());
@@ -168,9 +177,11 @@ namespace ClinicaDentalMario.ViewModel.Agenda
                 {
                     var pacientes = await _pacienteRepository.ObtenerTodosAsync();
                     var doctores = await _doctorRepository.ObtenerDoctoresActivosAsync();
+                    bool soportaDuracion = await _citaRepository.SoportaDuracionPersonalizadaAsync();
 
                     ListaPacientes = new ObservableCollection<PacienteModel>(pacientes);
                     ListaDoctores = new ObservableCollection<DoctorModel>(doctores);
+                    ConfigurarDuraciones(soportaDuracion);
                     _listasCargadas = true;
                 }
                 catch (Exception ex)
@@ -183,6 +194,24 @@ namespace ClinicaDentalMario.ViewModel.Agenda
             });
 
             GuardarCommand.NotificarCanExecuteChanged();
+        }
+
+        private void ConfigurarDuraciones(bool soportaDuracionPersonalizada)
+        {
+            SoportaDuracionPersonalizada = soportaDuracionPersonalizada;
+            DuracionesDisponibles.Clear();
+
+            if (soportaDuracionPersonalizada)
+            {
+                foreach (int duracion in new[] { 15, 30, 45, 60, 90 })
+                    DuracionesDisponibles.Add(duracion);
+            }
+            else
+            {
+                DuracionesDisponibles.Add(30);
+            }
+
+            DuracionMinutos = 30;
         }
 
         private async Task GuardarAsync()

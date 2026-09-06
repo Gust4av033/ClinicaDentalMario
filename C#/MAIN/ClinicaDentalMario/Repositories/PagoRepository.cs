@@ -36,14 +36,13 @@ namespace ClinicaDentalMario.Repositories
         }
 
         /// <summary>
-        /// Registra un abono validando el saldo dentro de la misma transacción.
-        /// Esto evita que dos registros simultáneos puedan sobrepasar el costo
-        /// del tratamiento sin requerir cambios en la estructura de la base de datos.
+        /// Registra un abono validando dentro de la misma transacción tanto el saldo
+        /// como el estado actual del tratamiento. No requiere cambios en la BD.
         /// </summary>
-        public async Task<(bool Registrado, decimal SaldoAntes)> RegistrarPagoValidadoAsync(PagoModel pago)
+        public async Task<(bool Registrado, decimal SaldoAntes, string EstadoTratamiento)> RegistrarPagoValidadoAsync(PagoModel pago)
         {
             if (pago.Monto <= 0)
-                return (false, 0m);
+                return (false, 0m, string.Empty);
 
             using IDbConnection db = DatabaseConnection.GetConnection();
             db.Open();
@@ -52,29 +51,35 @@ namespace ClinicaDentalMario.Repositories
 
             try
             {
-                const string saldoSql = @"
+                const string estadoSaldoSql = @"
 SELECT
-    CAST(tp.CostoTotal - ISNULL(SUM(pg.Monto), 0) AS DECIMAL(10,2)) AS SaldoPendiente
+    CAST(tp.CostoTotal - ISNULL(SUM(pg.Monto), 0) AS DECIMAL(10,2)) AS SaldoPendiente,
+    tp.Estado
 FROM Odontologia.TratamientosPaciente tp WITH (UPDLOCK, HOLDLOCK)
 LEFT JOIN Odontologia.Pagos pg WITH (UPDLOCK, HOLDLOCK)
     ON pg.IdTratamientoPaciente = tp.Id
 WHERE tp.Id = @IdTratamientoPaciente
-GROUP BY tp.CostoTotal;";
+GROUP BY tp.CostoTotal, tp.Estado;";
 
-                decimal? saldo = await db.QuerySingleOrDefaultAsync<decimal?>(
-                    saldoSql,
+                var datos = await db.QuerySingleOrDefaultAsync<EstadoSaldoTratamientoRow>(
+                    estadoSaldoSql,
                     new { pago.IdTratamientoPaciente },
                     transaction);
 
-                if (!saldo.HasValue)
+                if (datos is null)
                     throw new InvalidOperationException("No se encontró el tratamiento asociado al pago.");
 
-                decimal saldoActual = Math.Max(0m, saldo.Value);
+                decimal saldoActual = Math.Max(0m, datos.SaldoPendiente);
+                string estadoActual = datos.Estado ?? string.Empty;
 
-                if (saldoActual <= 0m || pago.Monto > saldoActual)
+                bool estadoPermitePago =
+                    string.Equals(estadoActual, "Pendiente", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(estadoActual, "En progreso", StringComparison.OrdinalIgnoreCase);
+
+                if (!estadoPermitePago || saldoActual <= 0m || pago.Monto > saldoActual)
                 {
                     transaction.Rollback();
-                    return (false, saldoActual);
+                    return (false, saldoActual, estadoActual);
                 }
 
                 var parameters = new
@@ -92,7 +97,7 @@ GROUP BY tp.CostoTotal;";
                     commandType: CommandType.StoredProcedure);
 
                 transaction.Commit();
-                return (true, saldoActual);
+                return (true, saldoActual, estadoActual);
             }
             catch
             {
@@ -102,7 +107,7 @@ GROUP BY tp.CostoTotal;";
                 }
                 catch
                 {
-                    // La excepción original es la que debe propagarse.
+                    // Se conserva la excepción original.
                 }
 
                 throw;
@@ -189,6 +194,12 @@ ORDER BY p.FechaPago ASC;";
         {
             public int IdTratamientoPaciente { get; set; }
             public decimal TotalPagado { get; set; }
+        }
+
+        private sealed class EstadoSaldoTratamientoRow
+        {
+            public decimal SaldoPendiente { get; set; }
+            public string? Estado { get; set; }
         }
     }
 }

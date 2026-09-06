@@ -1,0 +1,17 @@
+<Window x:Class="ClinicaDentalMario.Views.Pacientes.OdontogramaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:pacientes="clr-namespace:ClinicaDentalMario.Views.Pacientes"
+        Title="Odontograma Digital"
+        Width="1400"
+        Height="850"
+        MinWidth="1000"
+        MinHeight="650"
+        WindowStartupLocation="CenterOwner"
+        WindowState="Maximized"
+        ResizeMode="CanResize"
+        Background="{StaticResource BgWindowBrush}">
+    <Grid>
+        <pacientes:OdontogramaView DataContext="{Binding}"/>
+    </Grid>
+</Window>

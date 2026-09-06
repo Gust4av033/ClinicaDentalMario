@@ -12,7 +12,7 @@
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
                     <Border Width="40" Height="40" CornerRadius="9" Background="#253498DB" Margin="0,0,11,0">
-                        <iconPacks:PackIconMaterial Kind="AccountCog" Width="22" Height="22" Foreground="{StaticResource AccentBrush}"
+                        <iconPacks:PackIconMaterial Kind="Account" Width="22" Height="22" Foreground="{StaticResource AccentBrush}"
                                                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">

@@ -9,6 +9,7 @@ using ClinicaDentalMario.Views.Pacientes;
 using ClinicaDentalMario.Views.Tratamientos;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Pacientes

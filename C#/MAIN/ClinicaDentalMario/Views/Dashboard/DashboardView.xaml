@@ -54,7 +54,7 @@
                                            FontSize="10"
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            HorizontalAlignment="Right"/>
-                                <TextBlock Text="{Binding UltimaActualizacion, TargetNullValue=--}"
+                                <TextBlock Text="{Binding UltimaActualizacion}"
                                            FontSize="12"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}"
@@ -172,7 +172,7 @@
                                 </StackPanel>
                             </StackPanel>
                             <TextBlock Text="{Binding PacientesActivos}" FontSize="27" FontWeight="Bold"/>
-                            <TextBlock Text="{Binding PacientesNuevosMes, StringFormat=+{0} este mes}" FontSize="11" Foreground="#27AE60" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                            <TextBlock Text="{Binding PacientesNuevosMes, StringFormat={}{0} nuevos este mes}" FontSize="11" Foreground="#27AE60" FontWeight="SemiBold" Margin="0,5,0,0"/>
                         </StackPanel>
                     </Border>
 

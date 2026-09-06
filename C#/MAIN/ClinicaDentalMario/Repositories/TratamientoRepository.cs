@@ -63,20 +63,28 @@ namespace ClinicaDentalMario.Repositories
         {
             ArgumentNullException.ThrowIfNull(tratamiento);
 
+            if (tratamiento.CostoTotal < 0)
+                throw new ArgumentOutOfRangeException(nameof(tratamiento), "El costo no puede ser negativo.");
+
             using IDbConnection db = DatabaseConnection.GetConnection();
-            var parameters = new
+
+            // Se inserta el estado de forma explícita para no depender del DEFAULT o de una
+            // versión distinta del procedimiento almacenado instalada en otra PC.
+            // FechaInicio queda NULL hasta que el usuario pulse Iniciar.
+            const string sql = @"
+                INSERT INTO Odontologia.TratamientosPaciente
+                    (IdPaciente, IdDoctor, IdTratamiento, CostoTotal, Estado, FechaInicio, FechaFin, Observaciones)
+                VALUES
+                    (@IdPaciente, @IdDoctor, @IdTratamiento, @CostoTotal, 'Pendiente', NULL, NULL, @Observaciones);";
+
+            await db.ExecuteAsync(sql, new
             {
                 tratamiento.IdPaciente,
                 tratamiento.IdDoctor,
                 tratamiento.IdTratamiento,
                 tratamiento.CostoTotal,
                 Observaciones = NormalizarTexto(tratamiento.Observaciones)
-            };
-
-            await db.ExecuteAsync(
-                "Odontologia.sp_CrearTratamiento",
-                parameters,
-                commandType: CommandType.StoredProcedure);
+            });
         }
 
         public async Task FinalizarTratamientoAsync(int idTratamientoPaciente)

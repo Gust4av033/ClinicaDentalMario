@@ -146,6 +146,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         public bool DeseaAsignarTratamiento { get; private set; }
 
         public AsyncRelayCommand GuardarConsultaCommand { get; }
+        public AsyncRelayCommand GuardarYAsignarTratamientoCommand { get; }
         public ICommand CerrarVentanaCommand { get; }
 
         public NuevaConsultaViewModel(int idPaciente, string nombrePaciente)
@@ -189,7 +190,8 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
             Titulo = "Registrar Nueva Consulta Clínica";
 
-            GuardarConsultaCommand = new AsyncRelayCommand(_ => GuardarAsync(_));
+            GuardarConsultaCommand = new AsyncRelayCommand(parameter => GuardarAsync(parameter, false));
+            GuardarYAsignarTratamientoCommand = new AsyncRelayCommand(parameter => GuardarAsync(parameter, true));
             CerrarVentanaCommand = new RelayCommand(CerrarVentana);
 
             _ = CargarContextoAsync();
@@ -229,7 +231,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             }
         }
 
-        private async Task GuardarAsync(object? parameter)
+        private async Task GuardarAsync(object? parameter, bool asignarTratamiento)
         {
             MensajeError = string.Empty;
 
@@ -258,9 +260,12 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 await _historialRepo.InsertarConsultaAsync(nuevaConsulta);
 
                 ConsultaGuardada = true;
-                DeseaAsignarTratamiento = false;
+                DeseaAsignarTratamiento = asignarTratamiento;
+
                 _messageService.MostrarExito(
-                    "La consulta fue agregada correctamente al expediente del paciente.",
+                    asignarTratamiento
+                        ? "La consulta fue guardada. A continuación puedes registrar el tratamiento del paciente."
+                        : "La consulta fue agregada correctamente al expediente del paciente.",
                     "Consulta guardada");
 
                 CerrarVentana(parameter);

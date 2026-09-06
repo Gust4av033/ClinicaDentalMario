@@ -7,6 +7,7 @@ using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.ViewModel.Login;
 using ClinicaDentalMario.Views;
 using ClinicaDentalMario.Views.Login;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -106,12 +107,26 @@ namespace ClinicaDentalMario
             object sender,
             DispatcherUnhandledExceptionEventArgs e)
         {
-            _exceptionHandler.Manejar(
-                e.Exception,
-                "Ocurrió un error inesperado en la aplicación.");
+            // Los errores de inicialización se manejan y cierran desde OnStartup.
+            // Un error aislado de una vista no debe tumbar toda la aplicación.
+            try
+            {
+                Debug.WriteLine($"[DispatcherUnhandledException] {e.Exception}");
+                _exceptionHandler.Manejar(
+                    e.Exception,
+                    "Ocurrió un error inesperado en la interfaz.");
+            }
+            catch (Exception handlerException)
+            {
+                Debug.WriteLine($"[Error manejando excepción global] {handlerException}");
+                MessageBox.Show(
+                    "Ocurrió un error inesperado en la interfaz.",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
 
             e.Handled = true;
-            Current.Shutdown();
         }
     }
 }

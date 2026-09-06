@@ -30,16 +30,16 @@ namespace ClinicaDentalMario.Models
         public bool Activo { get; set; }
 
         public bool EstaPendiente =>
-            Estado.Equals("Pendiente", StringComparison.OrdinalIgnoreCase);
+            string.Equals(Estado, "Pendiente", StringComparison.OrdinalIgnoreCase);
 
         public bool EstaEnProgreso =>
-            Estado.Equals("En progreso", StringComparison.OrdinalIgnoreCase);
+            string.Equals(Estado, "En progreso", StringComparison.OrdinalIgnoreCase);
 
         public bool EstaFinalizado =>
-            Estado.Equals("Finalizado", StringComparison.OrdinalIgnoreCase);
+            string.Equals(Estado, "Finalizado", StringComparison.OrdinalIgnoreCase);
 
         public bool EstaCancelado =>
-            Estado.Equals("Cancelado", StringComparison.OrdinalIgnoreCase);
+            string.Equals(Estado, "Cancelado", StringComparison.OrdinalIgnoreCase);
 
         public bool PuedeEditar => EstaPendiente || EstaEnProgreso;
         public bool PuedeIniciar => EstaPendiente;

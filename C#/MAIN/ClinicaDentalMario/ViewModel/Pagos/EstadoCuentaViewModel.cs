@@ -100,6 +100,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
                 OnPropertyChanged(nameof(PuedeRegistrarAbono));
                 OnPropertyChanged(nameof(MensajeAccionPago));
+                OnPropertyChanged(nameof(SaldoPendiente));
                 NotificarEstadoVacio();
                 NotificarComandos();
             }
@@ -159,7 +160,10 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             }
         }
 
-        public decimal SaldoPendiente => Math.Max(0m, CostoTotal - TotalAbonado);
+        public decimal SaldoPendiente => TratamientoSeleccionado is not null
+            && PuedeRecibirAbonos(TratamientoSeleccionado)
+                ? Math.Max(0m, CostoTotal - TotalAbonado)
+                : 0m;
 
         public double PorcentajePagado => CostoTotal <= 0m
             ? 0d
@@ -173,6 +177,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             {
                 if (SetProperty(ref _estadoTratamiento, value))
                 {
+                    OnPropertyChanged(nameof(SaldoPendiente));
                     OnPropertyChanged(nameof(PuedeRegistrarAbono));
                     OnPropertyChanged(nameof(MensajeAccionPago));
                     NuevoAbonoCommand?.NotificarCanExecuteChanged();
@@ -193,10 +198,10 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                     return string.Empty;
 
                 if (TratamientoSeleccionado.EstaFinalizado)
-                    return "Tratamiento finalizado: el historial queda disponible solo para consulta y recibos.";
+                    return "Tratamiento finalizado: se considera cerrado y sin saldo pendiente. El historial de pagos permanece disponible.";
 
                 if (TratamientoSeleccionado.EstaCancelado)
-                    return "Tratamiento cancelado: no se permiten nuevos abonos.";
+                    return "Tratamiento cancelado: se considera cerrado y no permite nuevos abonos.";
 
                 if (SaldoPendiente <= 0m)
                     return "Tratamiento liquidado: no existe saldo pendiente.";
@@ -227,7 +232,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             }
         }
 
-        public decimal SaldoTotalPaciente => Math.Max(0m, TotalCargosPaciente - TotalPagadoPaciente);
+        public decimal SaldoTotalPaciente => _tratamientosTodos.Sum(ObtenerSaldo);
 
         private ObservableCollection<PagoModel> _historialPagos = new();
         public ObservableCollection<PagoModel> HistorialPagos
@@ -566,7 +571,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             {
                 _messageService.MostrarAdvertencia(
                     tratamiento.EstaFinalizado
-                        ? "No se pueden registrar nuevos abonos en un tratamiento finalizado. El historial permanece disponible para consulta."
+                        ? "No se pueden registrar nuevos abonos en un tratamiento finalizado. El tratamiento ya se considera cerrado y sin saldo pendiente."
                         : "No se pueden registrar nuevos abonos en un tratamiento cancelado.",
                     "Abono no disponible");
                 return;
@@ -742,6 +747,9 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
         private decimal ObtenerSaldo(TratamientoPacienteModel tratamiento)
         {
+            if (!PuedeRecibirAbonos(tratamiento))
+                return 0m;
+
             decimal pagado = _totalesPagadosPorTratamiento.TryGetValue(tratamiento.Id, out decimal total)
                 ? total
                 : 0m;
@@ -751,8 +759,18 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
         private void ActualizarResumenPaciente()
         {
-            TotalCargosPaciente = _tratamientosTodos.Sum(x => x.CostoTotal);
-            TotalPagadoPaciente = _totalesPagadosPorTratamiento.Values.Sum();
+            // El estado de cuenta global representa únicamente obligaciones abiertas.
+            // Finalizado y Cancelado conservan su historial, pero no forman parte del saldo.
+            var tratamientosCobrables = _tratamientosTodos
+                .Where(PuedeRecibirAbonos)
+                .ToList();
+
+            TotalCargosPaciente = tratamientosCobrables.Sum(x => x.CostoTotal);
+            TotalPagadoPaciente = tratamientosCobrables.Sum(x =>
+                _totalesPagadosPorTratamiento.TryGetValue(x.Id, out decimal total)
+                    ? total
+                    : 0m);
+
             NotificarResumenPaciente();
         }
 

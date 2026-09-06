@@ -1,10 +1,7 @@
-﻿using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Reportes;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -15,136 +12,139 @@ namespace ClinicaDentalMario.ViewModel.Reportes
         private readonly PagoRepository _pagoRepo;
         private readonly Action<object> _navegar;
 
-        // RANGO DE FECHAS
-        private DateTime _fechaInicio = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1); // Primer día del mes actual
-        public DateTime FechaInicio
-        {
-            get => _fechaInicio;
-            set => SetProperty(ref _fechaInicio, value);
-        }
+        private DateTime _fechaInicio = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+        public DateTime FechaInicio { get => _fechaInicio; set => SetProperty(ref _fechaInicio, value); }
 
         private DateTime _fechaFin = DateTime.Today;
-        public DateTime FechaFin
-        {
-            get => _fechaFin;
-            set => SetProperty(ref _fechaFin, value);
-        }
+        public DateTime FechaFin { get => _fechaFin; set => SetProperty(ref _fechaFin, value); }
 
-        // DATOS PARA LA PANTALLA
         private decimal _totalIngresosPeriodo;
-        public decimal TotalIngresosPeriodo
-        {
-            get => _totalIngresosPeriodo;
-            set => SetProperty(ref _totalIngresosPeriodo, value);
-        }
+        public decimal TotalIngresosPeriodo { get => _totalIngresosPeriodo; private set => SetProperty(ref _totalIngresosPeriodo, value); }
+
+        private int _totalPagos;
+        public int TotalPagos { get => _totalPagos; private set => SetProperty(ref _totalPagos, value); }
+
+        private decimal _promedioPago;
+        public decimal PromedioPago { get => _promedioPago; private set => SetProperty(ref _promedioPago, value); }
+
+        private string _metodoPrincipal = "---";
+        public string MetodoPrincipal { get => _metodoPrincipal; private set => SetProperty(ref _metodoPrincipal, value); }
 
         private ObservableCollection<dynamic> _listaIngresos = new();
         public ObservableCollection<dynamic> ListaIngresos
         {
             get => _listaIngresos;
-            set => SetProperty(ref _listaIngresos, value);
+            private set => SetProperty(ref _listaIngresos, value);
         }
 
-        public ICommand GenerarReporteCommand { get; }
+        public AsyncRelayCommand GenerarReporteCommand { get; }
         public ICommand ExportarPdfCommand { get; }
         public ICommand VolverCommand { get; }
 
-
-        public ReporteIngresosViewModel(Action<object> navegar) // 🔥 RECIBE LA NAVEGACIÓN
+        public ReporteIngresosViewModel(Action<object> navegar)
         {
-            _navegar = navegar;
-            Titulo = "Reporte de Ingresos (Corte de Caja)";
+            _navegar = navegar ?? throw new ArgumentNullException(nameof(navegar));
             _pagoRepo = new PagoRepository();
+            Titulo = "Ingresos / Corte de Caja";
 
-            GenerarReporteCommand = new RelayCommand(async (p) => await GenerarAsync());
-            ExportarPdfCommand = new RelayCommand(ExportarPdf, (p) => ListaIngresos.Any());
+            GenerarReporteCommand = new AsyncRelayCommand(_ => GenerarAsync());
+            ExportarPdfCommand = new RelayCommand(ExportarPdf, _ => ListaIngresos.Count > 0);
             VolverCommand = new RelayCommand(Volver);
 
             _ = GenerarAsync();
         }
 
-        private void Volver(object? parameter)
-        {
-            // Instanciamos el panel de tarjetas y nos regresamos
-            var vista = new ReportesView();
-            vista.DataContext = new ReportesViewModel(_navegar);
-            _navegar(vista);
-        }
-
         private async Task GenerarAsync()
         {
-            if (FechaInicio > FechaFin)
+            if (FechaInicio.Date > FechaFin.Date)
             {
-                MessageBox.Show("La Fecha de Inicio no puede ser mayor que la Fecha de Fin.", "Rango Inválido", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("La fecha inicial no puede ser mayor que la fecha final.", "Rango inválido", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            EstaCargando = true;
-            try
+            await EjecutarConCargaAsync(async () =>
             {
-                var ingresos = await _pagoRepo.ObtenerIngresosPorRangoAsync(FechaInicio, FechaFin);
-                ListaIngresos = new ObservableCollection<dynamic>(ingresos);
+                try
+                {
+                    var ingresos = await _pagoRepo.ObtenerIngresosPorRangoAsync(FechaInicio.Date, FechaFin.Date);
+                    ListaIngresos = new ObservableCollection<dynamic>(ingresos);
+                    ActualizarResumen();
+                }
+                catch (Exception ex)
+                {
+                    ListaIngresos = new ObservableCollection<dynamic>();
+                    ActualizarResumen();
+                    MessageBox.Show("No fue posible generar el corte de caja.\n\n" + ex.Message, "Reportes", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            });
+        }
 
-                // Calculamos la suma total de todo lo recaudado en esas fechas
-                TotalIngresosPeriodo = ListaIngresos.Sum(x => (decimal)x.Monto);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al generar el reporte: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally { EstaCargando = false; }
+        private void ActualizarResumen()
+        {
+            TotalPagos = ListaIngresos.Count;
+
+            // Las filas de Dapper son dynamic. Se fuerza object antes de Convert para que
+            // la resolución de sobrecargas no quede en manos del runtime binder.
+            TotalIngresosPeriodo = ListaIngresos.Sum(x => Convert.ToDecimal((object?)x.Monto));
+            PromedioPago = TotalPagos == 0 ? 0m : TotalIngresosPeriodo / TotalPagos;
+
+            MetodoPrincipal = ListaIngresos.Count == 0
+                ? "---"
+                : ListaIngresos
+                    .GroupBy(x =>
+                    {
+                        string? metodo = Convert.ToString((object?)x.MetodoPago);
+                        return string.IsNullOrWhiteSpace(metodo) ? "Sin especificar" : metodo;
+                    })
+                    .OrderByDescending(g => g.Count())
+                    .ThenBy(g => g.Key)
+                    .First().Key;
         }
 
         private void ExportarPdf(object? parameter)
         {
-            if (ListaIngresos == null || !ListaIngresos.Any())
-            {
-                MessageBox.Show("No hay datos para exportar en este periodo.", "Atención", MessageBoxButton.OK, MessageBoxImage.Warning);
+            if (ListaIngresos.Count == 0)
                 return;
-            }
 
             try
             {
-                // Abrimos la ventana de Windows para guardar el archivo
                 var dialog = new Microsoft.Win32.SaveFileDialog
                 {
-                    FileName = $"CorteDeCaja_{FechaInicio:ddMMyy}_{FechaFin:ddMMyy}",
+                    FileName = $"CorteDeCaja_{FechaInicio:yyyyMMdd}_{FechaFin:yyyyMMdd}",
                     DefaultExt = ".pdf",
                     Filter = "Documentos PDF (.pdf)|*.pdf"
                 };
 
-                if (dialog.ShowDialog() == true)
+                if (dialog.ShowDialog() != true)
+                    return;
+
+                var pdfService = new ClinicaDentalMario.Services.PdfService();
+                pdfService.GenerarReporteIngresosPdf(
+                    FechaInicio,
+                    FechaFin,
+                    ListaIngresos,
+                    TotalIngresosPeriodo,
+                    dialog.FileName);
+
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                 {
-                    EstaCargando = true; // Para mostrar feedback visual (opcional si tienes spinner)
-
-                    // Invocamos el PdfService
-                    var pdfService = new ClinicaDentalMario.Services.PdfService();
-                    pdfService.GenerarReporteIngresosPdf(
-                        FechaInicio,
-                        FechaFin,
-                        ListaIngresos,
-                        TotalIngresosPeriodo,
-                        dialog.FileName
-                    );
-
-                    MessageBox.Show("¡Reporte generado y guardado exitosamente!", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    // Opcional: Abrir el PDF automáticamente
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = dialog.FileName,
-                        UseShellExecute = true
-                    });
-                }
+                    FileName = dialog.FileName,
+                    UseShellExecute = true
+                });
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al generar el PDF: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("No fue posible exportar el reporte.\n\n" + ex.Message, "Reportes", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            finally
+        }
+
+        private void Volver(object? parameter)
+        {
+            var vista = new ReportesView
             {
-                EstaCargando = false;
-            }
+                DataContext = new ReportesViewModel(_navegar)
+            };
+            _navegar(vista);
         }
     }
 }

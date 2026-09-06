@@ -1,0 +1,61 @@
+<UserControl x:Class="ClinicaDentalMario.Views.Reportes.ReporteAgendaView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             Background="{StaticResource BgWindowBrush}"
+             Foreground="{StaticResource TextPrimaryBrush}">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,18">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <Button Command="{Binding VolverCommand}" Background="Transparent" BorderThickness="0" Margin="0,0,15,0" VerticalAlignment="Top" Cursor="Hand">
+                <Border Background="{StaticResource BgControlBrush}" CornerRadius="6" Padding="8"><iconPacks:PackIconMaterial Kind="ArrowLeft" Width="20" Height="20"/></Border>
+            </Button>
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="{Binding Titulo}" FontSize="28" FontWeight="Bold"/>
+                <TextBlock Text="Control de citas atendidas, cancelaciones, ausencias y porcentaje de asistencia." FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <UniformGrid Grid.Row="1" Columns="5" Margin="0,0,0,18">
+            <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,8,0"><StackPanel><TextBlock Text="TOTAL CITAS" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/><TextBlock Text="{Binding TotalCitas}" FontSize="24" FontWeight="Bold"/></StackPanel></Border>
+            <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,8,0"><StackPanel><TextBlock Text="ATENDIDAS" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/><TextBlock Text="{Binding Atendidas}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}"/></StackPanel></Border>
+            <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,8,0"><StackPanel><TextBlock Text="CANCELADAS" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/><TextBlock Text="{Binding Canceladas}" FontSize="24" FontWeight="Bold"/></StackPanel></Border>
+            <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,8,0"><StackPanel><TextBlock Text="NO ASISTIÓ" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/><TextBlock Text="{Binding NoAsistio}" FontSize="24" FontWeight="Bold" Foreground="#E67E22"/></StackPanel></Border>
+            <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="0,0,0,4" CornerRadius="8" Padding="14"><StackPanel><TextBlock Text="ASISTENCIA" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/><TextBlock Text="{Binding TasaAsistencia, StringFormat={}{0:F1}%}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/></StackPanel></Border>
+        </UniformGrid>
+
+        <Border Grid.Row="2" Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,18">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Margin="0,0,15,0"><TextBlock Text="Desde" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/><DatePicker SelectedDate="{Binding FechaInicio}" Width="140" Height="34"/></StackPanel>
+                <StackPanel Margin="0,0,15,0"><TextBlock Text="Hasta" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/><DatePicker SelectedDate="{Binding FechaFin}" Width="140" Height="34"/></StackPanel>
+                <StackPanel Margin="0,0,15,0"><TextBlock Text="Paciente / teléfono / DUI" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/><TextBox Text="{Binding TerminoBusqueda, UpdateSourceTrigger=PropertyChanged}" Width="240" Height="34" VerticalContentAlignment="Center"/></StackPanel>
+                <Button Command="{Binding GenerarReporteCommand}" Background="{StaticResource AccentBrush}" Foreground="White" BorderThickness="0" Padding="16,8" VerticalAlignment="Bottom" Cursor="Hand"><StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="Magnify" Margin="0,0,7,0"/><TextBlock Text="Generar" FontWeight="SemiBold"/></StackPanel></Button>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="3" Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+            <DataGrid ItemsSource="{Binding ListaCitas}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Fecha" Binding="{Binding FechaHora, StringFormat=dd/MM/yyyy}" Width="100"/>
+                    <DataGridTextColumn Header="Hora" Binding="{Binding FechaHora, StringFormat=hh:mm tt}" Width="90"/>
+                    <DataGridTextColumn Header="Paciente" Binding="{Binding Paciente}" Width="2*"/>
+                    <DataGridTextColumn Header="Teléfono" Binding="{Binding TelefonoPaciente}" Width="110"/>
+                    <DataGridTextColumn Header="Doctor" Binding="{Binding Doctor}" Width="1.5*"/>
+                    <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="110"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button Command="{Binding ExportarPdfCommand}" Background="#E74C3C" Foreground="White" BorderThickness="0" Padding="18,9" Cursor="Hand"><StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="FilePdfBox" Margin="0,0,7,0"/><TextBlock Text="Exportar PDF" FontWeight="Bold"/></StackPanel></Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

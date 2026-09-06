@@ -1,0 +1,80 @@
+<UserControl x:Class="ClinicaDentalMario.Views.Reportes.ReportePacientesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             Background="{StaticResource BgWindowBrush}"
+             Foreground="{StaticResource TextPrimaryBrush}">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,18">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Command="{Binding VolverCommand}" Background="Transparent" BorderThickness="0" Margin="0,0,15,0" VerticalAlignment="Top" Cursor="Hand">
+                <Border Background="{StaticResource BgControlBrush}" CornerRadius="6" Padding="8">
+                    <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="20" Height="20"/>
+                </Border>
+            </Button>
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="{Binding Titulo}" FontSize="28" FontWeight="Bold"/>
+                <TextBlock Text="Listado general para impresión, control administrativo y consulta rápida de pacientes." FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,18">
+            <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,10,0">
+                <StackPanel><TextBlock Text="PACIENTES" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/><TextBlock Text="{Binding TotalPacientes}" FontSize="26" FontWeight="Bold"/></StackPanel>
+            </Border>
+            <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,10,0">
+                <StackPanel><TextBlock Text="MENORES DE EDAD" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/><TextBlock Text="{Binding MenoresEdad}" FontSize="26" FontWeight="Bold"/></StackPanel>
+            </Border>
+            <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,10,0">
+                <StackPanel><TextBlock Text="REGISTRADOS ESTE MES" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/><TextBlock Text="{Binding RegistradosMes}" FontSize="26" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/></StackPanel>
+            </Border>
+            <Border Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="15">
+                <StackPanel><TextBlock Text="SIN TELÉFONO" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/><TextBlock Text="{Binding SinTelefono}" FontSize="26" FontWeight="Bold"/></StackPanel>
+            </Border>
+        </UniformGrid>
+
+        <Border Grid.Row="2" Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,18">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Margin="0,0,15,0">
+                    <TextBlock Text="Buscar paciente" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
+                    <TextBox Text="{Binding TerminoBusqueda, UpdateSourceTrigger=PropertyChanged}" Width="280" Height="34" VerticalContentAlignment="Center"/>
+                </StackPanel>
+                <CheckBox Content="Incluir inactivos" IsChecked="{Binding IncluirInactivos}" VerticalAlignment="Bottom" Margin="0,0,15,8"/>
+                <Button Command="{Binding GenerarReporteCommand}" Background="{StaticResource AccentBrush}" Foreground="White" BorderThickness="0" Padding="16,8" VerticalAlignment="Bottom" Cursor="Hand">
+                    <StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="Magnify" Margin="0,0,7,0"/><TextBlock Text="Actualizar" FontWeight="SemiBold"/></StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="3" Background="{StaticResource BgCardBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+            <DataGrid ItemsSource="{Binding ListaPacientes}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID" Binding="{Binding IdPaciente}" Width="60"/>
+                    <DataGridTextColumn Header="Paciente" Binding="{Binding NombreCompleto}" Width="2*"/>
+                    <DataGridTextColumn Header="Edad" Binding="{Binding Edad}" Width="70"/>
+                    <DataGridTextColumn Header="Teléfono" Binding="{Binding Telefono}" Width="110"/>
+                    <DataGridTextColumn Header="DUI" Binding="{Binding DUI}" Width="120"/>
+                    <DataGridTextColumn Header="Registro" Binding="{Binding FechaRegistro, StringFormat=dd/MM/yyyy}" Width="105"/>
+                    <DataGridCheckBoxColumn Header="Activo" Binding="{Binding Activo}" Width="70"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button Command="{Binding ExportarPdfCommand}" Background="#E74C3C" Foreground="White" BorderThickness="0" Padding="18,9" Cursor="Hand">
+                <StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="FilePdfBox" Margin="0,0,7,0"/><TextBlock Text="Exportar PDF" FontWeight="Bold"/></StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

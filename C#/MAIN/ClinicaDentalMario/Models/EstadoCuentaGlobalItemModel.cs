@@ -1,9 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace ClinicaDentalMario.Models
 {
     public class EstadoCuentaGlobalItemModel
@@ -11,7 +5,14 @@ namespace ClinicaDentalMario.Models
         public string NombreTratamiento { get; set; } = string.Empty;
         public decimal CostoTotal { get; set; }
         public decimal TotalAbonado { get; set; }
-        public decimal SaldoPendiente => CostoTotal - TotalAbonado;
         public string Estado { get; set; } = string.Empty;
+
+        public bool GeneraSaldo =>
+            string.Equals(Estado, "Pendiente", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(Estado, "En progreso", StringComparison.OrdinalIgnoreCase);
+
+        public decimal SaldoPendiente => GeneraSaldo
+            ? Math.Max(0m, CostoTotal - TotalAbonado)
+            : 0m;
     }
 }

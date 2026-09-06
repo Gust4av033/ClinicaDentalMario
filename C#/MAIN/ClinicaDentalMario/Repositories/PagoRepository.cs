@@ -38,6 +38,7 @@ namespace ClinicaDentalMario.Repositories
         /// <summary>
         /// Registra un abono validando dentro de la misma transacción tanto el saldo
         /// como el estado actual del tratamiento. No requiere cambios en la BD.
+        /// Un tratamiento finalizado o cancelado se considera cerrado y sin saldo cobrable.
         /// </summary>
         public async Task<(bool Registrado, decimal SaldoAntes, string EstadoTratamiento)> RegistrarPagoValidadoAsync(PagoModel pago)
         {
@@ -69,12 +70,14 @@ GROUP BY tp.CostoTotal, tp.Estado;";
                 if (datos is null)
                     throw new InvalidOperationException("No se encontró el tratamiento asociado al pago.");
 
-                decimal saldoActual = Math.Max(0m, datos.SaldoPendiente);
                 string estadoActual = datos.Estado ?? string.Empty;
-
                 bool estadoPermitePago =
                     string.Equals(estadoActual, "Pendiente", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(estadoActual, "En progreso", StringComparison.OrdinalIgnoreCase);
+
+                decimal saldoActual = estadoPermitePago
+                    ? Math.Max(0m, datos.SaldoPendiente)
+                    : 0m;
 
                 if (!estadoPermitePago || saldoActual <= 0m || pago.Monto > saldoActual)
                 {
@@ -114,15 +117,34 @@ GROUP BY tp.CostoTotal, tp.Estado;";
             }
         }
 
+        /// <summary>
+        /// Devuelve el saldo actualmente cobrable. Pendiente y En progreso pueden tener saldo;
+        /// Finalizado y Cancelado se consideran cerrados y devuelven cero.
+        /// La regla se aplica en C# sin modificar funciones ni procedimientos de la BD instalada.
+        /// </summary>
         public async Task<decimal> ObtenerSaldoPendienteAsync(int idTratamientoPaciente)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            var parameters = new { IdTratamientoPaciente = idTratamientoPaciente };
 
-            return await db.ExecuteScalarAsync<decimal>(
-                "Odontologia.sp_SaldoPendiente",
-                parameters,
-                commandType: CommandType.StoredProcedure);
+            const string sql = @"
+SELECT CAST(
+    CASE
+        WHEN tp.Estado IN ('Pendiente', 'En progreso')
+            THEN tp.CostoTotal - ISNULL(SUM(pg.Monto), 0)
+        ELSE 0
+    END
+AS DECIMAL(10,2))
+FROM Odontologia.TratamientosPaciente tp
+LEFT JOIN Odontologia.Pagos pg
+    ON pg.IdTratamientoPaciente = tp.Id
+WHERE tp.Id = @IdTratamientoPaciente
+GROUP BY tp.CostoTotal, tp.Estado;";
+
+            decimal? saldo = await db.QuerySingleOrDefaultAsync<decimal?>(
+                sql,
+                new { IdTratamientoPaciente = idTratamientoPaciente });
+
+            return Math.Max(0m, saldo ?? 0m);
         }
 
         public async Task<IEnumerable<PagoModel>> ListarPagosPorPacienteAsync(int idPaciente)

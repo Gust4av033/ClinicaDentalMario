@@ -1,12 +1,17 @@
-﻿<UserControl x:Class="ClinicaDentalMario.Views.Pagos.EstadoCuentaView"
+<UserControl x:Class="ClinicaDentalMario.Views.Pagos.EstadoCuentaView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              Background="{StaticResource BgWindowBrush}">
 
-    <Border Background="{StaticResource BgCardBrush}" CornerRadius="15" Margin="10" Padding="25" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+    <Border Background="{StaticResource BgCardBrush}"
+            CornerRadius="15"
+            Margin="10"
+            Padding="24"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#000000" Opacity="0.4"/>
+            <DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#000000" Opacity="0.35"/>
         </Border.Effect>
 
         <Grid>
@@ -14,214 +19,469 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- ================= HEADER Y BOTONES DE IMPRESIÓN ================= -->
-            <Grid Grid.Row="0" Margin="0,0,0,20">
+            <!-- HEADER -->
+            <Grid Grid.Row="0" Margin="0,0,0,18">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <iconPacks:PackIconMaterial Kind="CashRegister" Width="30" Height="30" Foreground="{StaticResource SuccessBrush}" Margin="0,0,12,0"/>
-                    <TextBlock Text="Estado de Cuenta y Abonos" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                    <Border Width="46" Height="46" CornerRadius="23" Background="#142B22" Margin="0,0,12,0">
+                        <iconPacks:PackIconMaterial Kind="CashRegister"
+                                                        Width="26" Height="26"
+                                                        Foreground="{StaticResource SuccessBrush}"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Estado de Cuenta y Pagos"
+                                   FontSize="25"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBlock Text="Consulta saldos, registra abonos y revisa el historial financiero por tratamiento."
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,3,0,0"/>
+                    </StackPanel>
                 </StackPanel>
 
-                <!-- 🔥 DOS BOTONES DE IMPRESIÓN 🔥 -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-
-                    <!-- Botón 1: Estado Global -->
-                    <Button Command="{Binding ImprimirReciboGlobalCommand}" Height="40" Background="Transparent" Foreground="{StaticResource AccentBrush}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" Padding="15,0" Margin="0,0,10,0" Cursor="Hand" ToolTip="Imprimir todos los tratamientos del paciente">
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Command="{Binding RecargarCommand}"
+                            Height="40" Width="42"
+                            Margin="0,0,8,0"
+                            Background="{StaticResource BgControlBrush}"
+                            Foreground="{StaticResource TextPrimaryBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            Cursor="Hand"
+                            ToolTip="Recargar estado de cuenta">
                         <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="20"/>
-                            </Style>
+                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="7"/></Style>
+                        </Button.Resources>
+                        <iconPacks:PackIconMaterial Kind="Refresh" Width="19" Height="19"/>
+                    </Button>
+
+                    <Button Command="{Binding ImprimirReciboGlobalCommand}"
+                            Height="40"
+                            Margin="0,0,8,0"
+                            Padding="14,0"
+                            Background="Transparent"
+                            Foreground="{StaticResource AccentBrush}"
+                            BorderBrush="{StaticResource AccentBrush}"
+                            BorderThickness="1"
+                            Cursor="Hand"
+                            ToolTip="Vista previa del estado global del paciente">
+                        <Button.Resources>
+                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="7"/></Style>
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="FileDocumentMultiple" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock Text="Estado Global" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"/>
+                            <iconPacks:PackIconMaterial Kind="FileDocumentMultipleOutline" Width="18" Height="18" Margin="0,0,7,0"/>
+                            <TextBlock Text="Estado global" VerticalAlignment="Center" FontWeight="SemiBold"/>
                         </StackPanel>
                     </Button>
 
-                    <!-- Botón 2: Ticket Individual -->
-                    <Button Command="{Binding ImprimirReciboCommand}" Height="40" Background="{StaticResource BgControlBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="20,0" Cursor="Hand" ToolTip="Imprimir abonos del tratamiento seleccionado">
+                    <Button Command="{Binding ImprimirReciboCommand}"
+                            Height="40"
+                            Padding="14,0"
+                            Background="{StaticResource BgControlBrush}"
+                            Foreground="{StaticResource TextPrimaryBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            Cursor="Hand"
+                            ToolTip="Vista previa del recibo del tratamiento seleccionado">
                         <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="20"/>
-                            </Style>
+                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="7"/></Style>
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="Receipt" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource TextPrimaryBrush}"/>
-                            <TextBlock Text="Imprimir Ticket" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <iconPacks:PackIconMaterial Kind="ReceiptTextOutline" Width="18" Height="18" Margin="0,0,7,0"/>
+                            <TextBlock Text="Recibo" VerticalAlignment="Center" FontWeight="SemiBold"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
             </Grid>
 
-            <!-- ================= FILTROS Y COMBOBOXES ================= -->
-            <Grid Grid.Row="1" Margin="0,0,0,20">
+            <!-- MENSAJE DE ERROR -->
+            <Border Grid.Row="1"
+                    Background="#3A1C1C"
+                    BorderBrush="{StaticResource DangerBrush}"
+                    BorderThickness="1"
+                    CornerRadius="7"
+                    Padding="10"
+                    Margin="0,0,0,14">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MensajeError}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconMaterial Kind="AlertCircleOutline"
+                                                    Width="18" Height="18"
+                                                    Foreground="{StaticResource DangerBrush}"
+                                                    Margin="0,0,8,0"/>
+                    <TextBlock Text="{Binding MensajeError}"
+                               Foreground="{StaticResource DangerBrush}"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- SELECCIÓN Y FILTROS -->
+            <Border Grid.Row="2"
+                    Background="{StaticResource BgControlBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="14"
+                    Margin="0,0,0,14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.05*"/>
+                        <ColumnDefinition Width="1.35*"/>
+                        <ColumnDefinition Width="18"/>
+                        <ColumnDefinition Width="1.05*"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="1.35*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Buscar paciente"
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBox Grid.Row="1" Grid.Column="0"
+                             Text="{Binding BusquedaPaciente, UpdateSourceTrigger=PropertyChanged}"
+                             Padding="8" FontSize="13" ToolTip="Nombre, DUI o teléfono"/>
+
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Paciente"
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" FontWeight="SemiBold" Margin="10,0,0,5"/>
+                    <ComboBox Grid.Row="1" Grid.Column="1"
+                              Margin="10,0,0,0"
+                              ItemsSource="{Binding ListaPacientes}"
+                              SelectedItem="{Binding PacienteSeleccionado}"
+                              DisplayMemberPath="NombreCompleto"
+                              Padding="7" FontSize="13"/>
+
+                    <TextBlock Grid.Row="0" Grid.Column="3" Text="Buscar tratamiento"
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <TextBox Grid.Row="1" Grid.Column="3"
+                             Text="{Binding BusquedaTratamiento, UpdateSourceTrigger=PropertyChanged}"
+                             Padding="8" FontSize="13" ToolTip="Tratamiento, doctor u observación"/>
+
+                    <TextBlock Grid.Row="0" Grid.Column="4" Text="Estado"
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" FontWeight="SemiBold" Margin="10,0,0,5"/>
+                    <ComboBox Grid.Row="1" Grid.Column="4"
+                              Margin="10,0,0,0"
+                              ItemsSource="{Binding EstadosFiltro}"
+                              SelectedItem="{Binding EstadoFiltroSeleccionado}"
+                              Padding="7" FontSize="13"/>
+
+                    <TextBlock Grid.Row="0" Grid.Column="5" Text="Tratamiento seleccionado"
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" FontWeight="SemiBold" Margin="10,0,0,5"/>
+                    <ComboBox Grid.Row="1" Grid.Column="5"
+                              Margin="10,0,0,0"
+                              ItemsSource="{Binding ListaTratamientos}"
+                              SelectedItem="{Binding TratamientoSeleccionado}"
+                              DisplayMemberPath="NombreTratamiento"
+                              Padding="7" FontSize="13"/>
+                </Grid>
+            </Border>
+
+            <!-- RESUMEN GLOBAL DEL PACIENTE -->
+            <Grid Grid.Row="3" Margin="0,0,0,14">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="10"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Column="0" Text="Paciente:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="14"/>
-                <ComboBox Grid.Column="1" ItemsSource="{Binding ListaPacientes}" 
-                          SelectedItem="{Binding PacienteSeleccionado}" 
-                          Text="{Binding BusquedaPaciente, UpdateSourceTrigger=PropertyChanged}"
-                          DisplayMemberPath="NombreCompleto" 
-                          IsEditable="True" StaysOpenOnEdit="True" IsTextSearchEnabled="False"
-                          FontSize="14" Padding="8" VerticalAlignment="Center"/>
+                <Border Grid.Column="0" Padding="13" CornerRadius="9"
+                        Background="{StaticResource BgControlBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Cargos del paciente" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
+                        <TextBlock Text="{Binding TotalCargosPaciente, StringFormat={}{0:C}}"
+                                   Foreground="{StaticResource TextPrimaryBrush}" FontSize="20" FontWeight="Bold" Margin="0,3,0,0"/>
+                    </StackPanel>
+                </Border>
 
-                <TextBlock Grid.Column="3" Text="Tratamiento:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="14"/>
-                <ComboBox Grid.Column="4" ItemsSource="{Binding ListaTratamientos}" 
-                          SelectedItem="{Binding TratamientoSeleccionado}" 
-                          DisplayMemberPath="NombreTratamiento" 
-                          FontSize="14" Padding="8" VerticalAlignment="Center"/>
+                <Border Grid.Column="2" Padding="13" CornerRadius="9"
+                        Background="#142B22" BorderBrush="#1E4634" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Total pagado" Foreground="{StaticResource SuccessBrush}" FontSize="11"/>
+                        <TextBlock Text="{Binding TotalPagadoPaciente, StringFormat={}{0:C}}"
+                                   Foreground="{StaticResource SuccessBrush}" FontSize="20" FontWeight="Bold" Margin="0,3,0,0"/>
+                    </StackPanel>
+                </Border>
 
-                <Button Grid.Column="6" Command="{Binding NuevoAbonoCommand}" Height="42" Background="{StaticResource SuccessBrush}" Foreground="White" BorderThickness="0" Padding="20,0" Cursor="Hand" VerticalAlignment="Center">
+                <Border Grid.Column="4" Padding="13" CornerRadius="9"
+                        Background="#3A1C1C" BorderBrush="{StaticResource DangerBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="Saldo global" Foreground="{StaticResource DangerBrush}" FontSize="11"/>
+                        <TextBlock Text="{Binding SaldoTotalPaciente, StringFormat={}{0:C}}"
+                                   Foreground="{StaticResource DangerBrush}" FontSize="20" FontWeight="Bold" Margin="0,3,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Button Grid.Column="5"
+                        Command="{Binding LimpiarFiltrosCommand}"
+                        Height="38"
+                        Margin="12,0,0,0"
+                        Padding="12,0"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        Foreground="{StaticResource TextSecondaryBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        Cursor="Hand"
+                        ToolTip="Limpiar filtros de tratamientos y pagos">
                     <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="21"/>
-                        </Style>
+                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="7"/></Style>
                     </Button.Resources>
                     <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="PlusCircle" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
-                        <TextBlock Text="Registrar Abono" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                        <iconPacks:PackIconMaterial Kind="FilterRemoveOutline" Width="17" Height="17" Margin="0,0,6,0"/>
+                        <TextBlock Text="Limpiar" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
             </Grid>
 
-            <!-- ================= TARJETAS DE SALDOS ================= -->
-            <Grid Grid.Row="2" Margin="0,0,0,25">
+            <!-- RESUMEN DEL TRATAMIENTO SELECCIONADO -->
+            <Grid Grid.Row="4" Margin="0,0,0,14">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="9"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="9"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="9"/>
+                    <ColumnDefinition Width="1.15*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Background="{StaticResource BgControlBrush}" Padding="18" CornerRadius="10" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                <Border Grid.Column="0" Padding="12" CornerRadius="8"
+                        Background="{StaticResource BgControlBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Costo Total" Foreground="{StaticResource TextSecondaryBrush}" FontSize="13" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding CostoTotal, StringFormat={}{0:C}}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,5,0,0"/>
+                        <TextBlock Text="Costo tratamiento" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
+                        <TextBlock Text="{Binding CostoTotal, StringFormat={}{0:C}}"
+                                   Foreground="{StaticResource TextPrimaryBrush}" FontSize="18" FontWeight="Bold" Margin="0,3,0,0"/>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2" Background="#142B22" Padding="18" CornerRadius="10" BorderBrush="#1E4634" BorderThickness="1">
+                <Border Grid.Column="2" Padding="12" CornerRadius="8"
+                        Background="#142B22" BorderBrush="#1E4634" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Total Abonado" Foreground="{StaticResource SuccessBrush}" FontSize="13" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding TotalAbonado, StringFormat={}{0:C}}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}" Margin="0,5,0,0"/>
+                        <TextBlock Text="Abonado" Foreground="{StaticResource SuccessBrush}" FontSize="11"/>
+                        <TextBlock Text="{Binding TotalAbonado, StringFormat={}{0:C}}"
+                                   Foreground="{StaticResource SuccessBrush}" FontSize="18" FontWeight="Bold" Margin="0,3,0,0"/>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="4" Background="#3A1C1C" Padding="18" CornerRadius="10" BorderBrush="{StaticResource DangerBrush}" BorderThickness="1">
+                <Border Grid.Column="4" Padding="12" CornerRadius="8"
+                        Background="#3A1C1C" BorderBrush="{StaticResource DangerBrush}" BorderThickness="1">
                     <StackPanel>
-                        <TextBlock Text="Saldo Pendiente" Foreground="{StaticResource DangerBrush}" FontSize="13" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding SaldoPendiente, StringFormat={}{0:C}}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource DangerBrush}" Margin="0,5,0,0"/>
+                        <TextBlock Text="Pendiente" Foreground="{StaticResource DangerBrush}" FontSize="11"/>
+                        <TextBlock Text="{Binding SaldoPendiente, StringFormat={}{0:C}}"
+                                   Foreground="{StaticResource DangerBrush}" FontSize="18" FontWeight="Bold" Margin="0,3,0,0"/>
                     </StackPanel>
                 </Border>
+
+                <Border Grid.Column="6" Padding="12" CornerRadius="8"
+                        Background="{StaticResource BgControlBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <TextBlock Text="Avance de pago" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
+                            <TextBlock Text="{Binding PorcentajePagado, StringFormat={}{0:0}%}"
+                                       HorizontalAlignment="Right" Foreground="{StaticResource AccentBrush}" FontSize="11" FontWeight="Bold"/>
+                        </Grid>
+                        <ProgressBar Grid.Row="1" Value="{Binding PorcentajePagado}" Maximum="100" Height="7" Margin="0,8,0,0"/>
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Column="7" Margin="10,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="Estado" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding EstadoTratamiento}"
+                               Foreground="{StaticResource AccentBrush}"
+                               FontSize="12" FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               Margin="0,3,0,0"/>
+                </StackPanel>
             </Grid>
 
-            <!-- ================= TABLA DE ABONOS ================= -->
-            <Grid Grid.Row="3">
+            <!-- HISTORIAL -->
+            <Grid Grid.Row="5">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <DataGrid Grid.Row="0" ItemsSource="{Binding HistorialPagos}" 
-                          SelectedItem="{Binding PagoSeleccionado}"
-                          AutoGenerateColumns="False" 
-                          CanUserAddRows="False" Background="Transparent" BorderThickness="0"
-                          RowHeight="50" FontSize="14">
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="260"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Fecha de Pago" Binding="{Binding FechaPago, StringFormat={}{0:dd/MM/yyyy hh:mm tt}}" Width="180">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Header="Método de Pago" Binding="{Binding MetodoPago}" Width="150">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-
-                        <DataGridTextColumn Header="Concepto / Observaciones" Binding="{Binding Observacion}" Width="2*"/>
-
-                        <DataGridTextColumn Header="Monto Abonado" Binding="{Binding Monto, StringFormat={}{0:C}}" Width="150">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-
-                <!-- EMPTY STATE -->
-                <Border Grid.Row="0" Background="{StaticResource BgCardBrush}" Margin="0,40,0,0">
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HistorialPagos.Count}" Value="0">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding HistorialPagos}" Value="{x:Null}">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <iconPacks:PackIconMaterial Kind="CashRemove" Width="80" Height="80" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.3" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-                        <TextBlock Text="No hay abonos registrados" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Selecciona un paciente y haz clic en 'Registrar Abono' para iniciar." FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.8" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <iconPacks:PackIconMaterial Kind="History" Width="19" Height="19"
+                                                        Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0"/>
+                        <TextBlock Text="Historial de abonos" FontSize="16" FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Border>
 
-                <!-- BOTONES DE ACCIÓN (Ver Detalle / Eliminar) -->
-                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-                    <Button Command="{Binding VerDetalleCommand}" Height="40" Background="{StaticResource BgControlBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="20,0" Margin="0,0,12,0" Cursor="Hand">
+                    <TextBox Grid.Column="1"
+                             Text="{Binding BusquedaPago, UpdateSourceTrigger=PropertyChanged}"
+                             Padding="8"
+                             FontSize="12"
+                             ToolTip="Buscar por método, observación, fecha o monto"/>
+
+                    <Button Grid.Column="2"
+                            Command="{Binding NuevoAbonoCommand}"
+                            Height="38"
+                            Margin="10,0,0,0"
+                            Padding="14,0"
+                            Background="{StaticResource SuccessBrush}"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand">
                         <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6"/>
-                            </Style>
+                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="7"/></Style>
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="Eye" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource TextPrimaryBrush}"/>
-                            <TextBlock Text="Ver Detalle" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"/>
+                            <iconPacks:PackIconMaterial Kind="PlusCircleOutline" Width="18" Height="18" Margin="0,0,7,0"/>
+                            <TextBlock Text="Registrar abono" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
+                </Grid>
 
-                    <Button Command="{Binding EliminarAbonoCommand}" Height="40" Background="Transparent" Foreground="{StaticResource DangerBrush}" BorderBrush="{StaticResource DangerBrush}" BorderThickness="1" Padding="20,0" Cursor="Hand">
-                        <Button.Resources>
+                <Grid Grid.Row="1">
+                    <DataGrid ItemsSource="{Binding HistorialPagos}"
+                              SelectedItem="{Binding PagoSeleccionado}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              IsReadOnly="True"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              RowHeight="46"
+                              FontSize="13">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Fecha"
+                                                Binding="{Binding FechaPago, StringFormat={}{0:dd/MM/yyyy hh:mm tt}}"
+                                                Width="185"/>
+                            <DataGridTextColumn Header="Método"
+                                                Binding="{Binding MetodoPago}"
+                                                Width="190"/>
+                            <DataGridTextColumn Header="Observación"
+                                                Binding="{Binding Observacion}"
+                                                Width="*"/>
+                            <DataGridTextColumn Header="Monto"
+                                                Binding="{Binding Monto, StringFormat={}{0:C}}"
+                                                Width="135">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource SuccessBrush}"/>
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <Border Background="{StaticResource BgCardBrush}" Margin="0,34,0,0">
+                        <Border.Style>
                             <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6"/>
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TratamientoSeleccionado}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding HistorialPagos.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
                             </Style>
+                        </Border.Style>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <iconPacks:PackIconMaterial Kind="CashClock"
+                                                            Width="58" Height="58"
+                                                            Foreground="{StaticResource TextSecondaryBrush}"
+                                                            Opacity="0.28"
+                                                            HorizontalAlignment="Center"
+                                                            Margin="0,0,0,12"/>
+                            <TextBlock Text="{Binding TextoHistorialPagos}"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Row="2" Margin="0,10,0,0">
+                    <TextBlock Text="Los abonos se conservan como historial financiero y no se eliminan desde esta pantalla."
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               VerticalAlignment="Center"/>
+                    <Button Command="{Binding VerDetalleCommand}"
+                            HorizontalAlignment="Right"
+                            Height="36"
+                            Padding="13,0"
+                            Background="{StaticResource BgControlBrush}"
+                            Foreground="{StaticResource TextPrimaryBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
                         </Button.Resources>
                         <StackPanel Orientation="Horizontal">
-                            <iconPacks:PackIconMaterial Kind="TrashCan" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource DangerBrush}"/>
-                            <TextBlock Text="Eliminar Abono" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"/>
+                            <iconPacks:PackIconMaterial Kind="EyeOutline" Width="17" Height="17" Margin="0,0,6,0"/>
+                            <TextBlock Text="Ver detalle" VerticalAlignment="Center" FontWeight="SemiBold"/>
                         </StackPanel>
                     </Button>
-                </StackPanel>
+                </Grid>
             </Grid>
+
+            <!-- OVERLAY DE CARGA -->
+            <Border Grid.RowSpan="6" Background="#66000000" CornerRadius="10" Panel.ZIndex="20">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding EstaCargando}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ProgressBar Width="190" Height="7" IsIndeterminate="True"/>
+                    <TextBlock Text="Actualizando información..."
+                               Foreground="White"
+                               FontWeight="SemiBold"
+                               Margin="0,10,0,0"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
         </Grid>
     </Border>
 </UserControl>

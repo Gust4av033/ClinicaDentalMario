@@ -11,6 +11,7 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
     public class ConfiguracionViewModel : ViewModelBase
     {
         private readonly CatalogoRepository _catalogoRepo;
+        private readonly BitacoraRepository _bitacoraRepo;
         private readonly IPermissionService _permissionService;
         private readonly IMessageService _messageService;
         private readonly IExceptionHandler _exceptionHandler;
@@ -90,6 +91,7 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
         public ConfiguracionViewModel()
             : this(
                 new CatalogoRepository(),
+                new BitacoraRepository(),
                 new PermissionService(),
                 new MessageService(),
                 new ExceptionHandler(new MessageService()))
@@ -98,12 +100,14 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
 
         public ConfiguracionViewModel(
             CatalogoRepository catalogoRepo,
+            BitacoraRepository bitacoraRepo,
             IPermissionService permissionService,
             IMessageService messageService,
             IExceptionHandler exceptionHandler)
         {
             Titulo = "Configuración del Sistema";
             _catalogoRepo = catalogoRepo ?? throw new ArgumentNullException(nameof(catalogoRepo));
+            _bitacoraRepo = bitacoraRepo ?? throw new ArgumentNullException(nameof(bitacoraRepo));
             _permissionService = permissionService ?? throw new ArgumentNullException(nameof(permissionService));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
             _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
@@ -183,12 +187,20 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
                 {
                     await _catalogoRepo.InsertarTratamientoAsync(tratamiento);
                     mensajeExito = "Tratamiento agregado al catálogo correctamente.";
+                    await RegistrarAuditoriaSeguraAsync(
+                        "INSERT",
+                        "Catalogos.CatalogoTratamientos",
+                        $"Tratamiento creado: {tratamiento.Nombre} | Precio base: {tratamiento.PrecioBase:0.00} | Duración: {tratamiento.DuracionMinutos} min");
                 }
                 else
                 {
                     tratamiento.IdTratamiento = TratamientoSeleccionado.IdTratamiento;
                     await _catalogoRepo.ActualizarTratamientoAsync(tratamiento);
                     mensajeExito = "Tratamiento actualizado correctamente.";
+                    await RegistrarAuditoriaSeguraAsync(
+                        "UPDATE",
+                        "Catalogos.CatalogoTratamientos",
+                        $"IdTratamiento: {tratamiento.IdTratamiento} | Nombre: {tratamiento.Nombre} | Precio base: {tratamiento.PrecioBase:0.00} | Duración: {tratamiento.DuracionMinutos} min");
                 }
             }
             catch (Exception ex)
@@ -219,6 +231,7 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
                 return;
             }
 
+            int idTratamiento = TratamientoSeleccionado.IdTratamiento;
             string nombre = TratamientoSeleccionado.Nombre;
             bool confirmar = _messageService.Confirmar(
                 $"¿Deseas desactivar '{nombre}'?\n\nDejará de aparecer para tratamientos nuevos, pero los historiales existentes conservarán su referencia.",
@@ -229,7 +242,12 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
 
             try
             {
-                await _catalogoRepo.EliminarTratamientoAsync(TratamientoSeleccionado.IdTratamiento);
+                await _catalogoRepo.EliminarTratamientoAsync(idTratamiento);
+                await RegistrarAuditoriaSeguraAsync(
+                    "UPDATE",
+                    "Catalogos.CatalogoTratamientos",
+                    $"Tratamiento desactivado | IdTratamiento: {idTratamiento} | Nombre: {nombre}");
+
                 PrepararNuevoTratamiento();
                 await CargarTratamientosAsync();
                 MostrarExito($"'{nombre}' fue desactivado del catálogo.");
@@ -304,6 +322,22 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
             DescripcionTratamiento = string.Empty;
             PrecioBaseTexto = string.Empty;
             DuracionMinutosTexto = "30";
+        }
+
+        private async Task RegistrarAuditoriaSeguraAsync(string accion, string tabla, string detalle)
+        {
+            try
+            {
+                await _bitacoraRepo.RegistrarMovimientoAsync(
+                    UsuarioActual.NombreUsuario,
+                    accion,
+                    tabla,
+                    detalle);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"No se pudo registrar la auditoría administrativa: {ex.Message}");
+            }
         }
 
         private static bool TryParseDecimal(string texto, out decimal valor)

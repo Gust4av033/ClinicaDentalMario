@@ -1,10 +1,7 @@
-﻿using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Reportes;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -12,33 +9,39 @@ namespace ClinicaDentalMario.ViewModel.Reportes
 {
     public class ReporteProductividadViewModel : ViewModelBase
     {
-        private readonly TratamientoRepository _tratamientoRepo; // O el repo donde pusiste el método
+        private readonly TratamientoRepository _tratamientoRepo;
         private readonly Action<object> _navegar;
 
-        private DateTime _fechaInicio = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+        private DateTime _fechaInicio = new(DateTime.Today.Year, DateTime.Today.Month, 1);
         public DateTime FechaInicio { get => _fechaInicio; set => SetProperty(ref _fechaInicio, value); }
 
         private DateTime _fechaFin = DateTime.Today;
         public DateTime FechaFin { get => _fechaFin; set => SetProperty(ref _fechaFin, value); }
 
         private int _totalTratamientosPeriodo;
-        public int TotalTratamientosPeriodo { get => _totalTratamientosPeriodo; set => SetProperty(ref _totalTratamientosPeriodo, value); }
+        public int TotalTratamientosPeriodo { get => _totalTratamientosPeriodo; private set => SetProperty(ref _totalTratamientosPeriodo, value); }
+
+        private decimal _totalProyectadoPeriodo;
+        public decimal TotalProyectadoPeriodo { get => _totalProyectadoPeriodo; private set => SetProperty(ref _totalProyectadoPeriodo, value); }
+
+        private int _tiposTratamiento;
+        public int TiposTratamiento { get => _tiposTratamiento; private set => SetProperty(ref _tiposTratamiento, value); }
 
         private ObservableCollection<dynamic> _listaProductividad = new();
-        public ObservableCollection<dynamic> ListaProductividad { get => _listaProductividad; set => SetProperty(ref _listaProductividad, value); }
+        public ObservableCollection<dynamic> ListaProductividad { get => _listaProductividad; private set => SetProperty(ref _listaProductividad, value); }
 
-        public ICommand GenerarReporteCommand { get; }
+        public AsyncRelayCommand GenerarReporteCommand { get; }
         public ICommand ExportarPdfCommand { get; }
         public ICommand VolverCommand { get; }
 
         public ReporteProductividadViewModel(Action<object> navegar)
         {
-            _navegar = navegar;
-            Titulo = "Productividad Clínica";
+            _navegar = navegar ?? throw new ArgumentNullException(nameof(navegar));
             _tratamientoRepo = new TratamientoRepository();
+            Titulo = "Productividad Clínica";
 
-            GenerarReporteCommand = new RelayCommand(async (p) => await GenerarAsync());
-            ExportarPdfCommand = new RelayCommand(ExportarPdf, (p) => ListaProductividad.Any());
+            GenerarReporteCommand = new AsyncRelayCommand(_ => GenerarAsync());
+            ExportarPdfCommand = new RelayCommand(ExportarPdf, _ => ListaProductividad.Count > 0);
             VolverCommand = new RelayCommand(Volver);
 
             _ = GenerarAsync();
@@ -46,77 +49,79 @@ namespace ClinicaDentalMario.ViewModel.Reportes
 
         private async Task GenerarAsync()
         {
-            if (FechaInicio > FechaFin) return;
+            if (FechaInicio.Date > FechaFin.Date)
+            {
+                MessageBox.Show("La fecha inicial no puede ser mayor que la fecha final.", "Rango inválido", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
-            EstaCargando = true;
-            try
+            await EjecutarConCargaAsync(async () =>
             {
-                var resultados = await _tratamientoRepo.ObtenerProductividadAsync(FechaInicio, FechaFin);
-                ListaProductividad = new ObservableCollection<dynamic>(resultados);
-                TotalTratamientosPeriodo = ListaProductividad.Sum(x => (int)x.Cantidad);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error al generar el reporte: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally { EstaCargando = false; }
+                try
+                {
+                    var resultados = await _tratamientoRepo.ObtenerProductividadAsync(FechaInicio.Date, FechaFin.Date);
+                    ListaProductividad = new ObservableCollection<dynamic>(resultados);
+                    ActualizarResumen();
+                }
+                catch (Exception ex)
+                {
+                    ListaProductividad = new ObservableCollection<dynamic>();
+                    ActualizarResumen();
+                    MessageBox.Show("No fue posible generar el reporte de tratamientos.\n\n" + ex.Message, "Reportes", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            });
+        }
+
+        private void ActualizarResumen()
+        {
+            TotalTratamientosPeriodo = ListaProductividad.Sum(x => Convert.ToInt32(x.Cantidad));
+            TotalProyectadoPeriodo = ListaProductividad.Sum(x => Convert.ToDecimal(x.IngresoProyectado));
+            TiposTratamiento = ListaProductividad.Count;
         }
 
         private void ExportarPdf(object? parameter)
         {
-            if (ListaProductividad == null || !ListaProductividad.Any())
-            {
-                MessageBox.Show("No hay datos para exportar en este periodo.", "Atención", MessageBoxButton.OK, MessageBoxImage.Warning);
+            if (ListaProductividad.Count == 0)
                 return;
-            }
 
             try
             {
-                // Abrimos la ventana de Windows para guardar el archivo
                 var dialog = new Microsoft.Win32.SaveFileDialog
                 {
-                    FileName = $"Productividad_{FechaInicio:ddMMyy}_{FechaFin:ddMMyy}",
+                    FileName = $"Productividad_{FechaInicio:yyyyMMdd}_{FechaFin:yyyyMMdd}",
                     DefaultExt = ".pdf",
                     Filter = "Documentos PDF (.pdf)|*.pdf"
                 };
 
-                if (dialog.ShowDialog() == true)
+                if (dialog.ShowDialog() != true)
+                    return;
+
+                var pdfService = new ClinicaDentalMario.Services.PdfService();
+                pdfService.GenerarReporteProductividadPdf(
+                    FechaInicio,
+                    FechaFin,
+                    ListaProductividad,
+                    TotalTratamientosPeriodo,
+                    dialog.FileName);
+
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                 {
-                    EstaCargando = true;
-
-                    // Invocamos el PdfService
-                    var pdfService = new ClinicaDentalMario.Services.PdfService();
-                    pdfService.GenerarReporteProductividadPdf(
-                        FechaInicio,
-                        FechaFin,
-                        ListaProductividad,
-                        TotalTratamientosPeriodo,
-                        dialog.FileName
-                    );
-
-                    MessageBox.Show("¡Reporte generado y guardado exitosamente!", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    // Abrir el PDF automáticamente para que el doctor lo vea de inmediato
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = dialog.FileName,
-                        UseShellExecute = true
-                    });
-                }
+                    FileName = dialog.FileName,
+                    UseShellExecute = true
+                });
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al generar el PDF: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                EstaCargando = false;
+                MessageBox.Show("No fue posible exportar el reporte.\n\n" + ex.Message, "Reportes", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
         private void Volver(object? parameter)
         {
-            var vista = new ReportesView();
-            vista.DataContext = new ReportesViewModel(_navegar);
+            var vista = new ReportesView
+            {
+                DataContext = new ReportesViewModel(_navegar)
+            };
             _navegar(vista);
         }
     }

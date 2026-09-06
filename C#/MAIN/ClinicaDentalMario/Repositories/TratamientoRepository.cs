@@ -129,12 +129,15 @@ namespace ClinicaDentalMario.Repositories
             {
                 "En progreso" => @"
                     UPDATE Odontologia.TratamientosPaciente
-                    SET Estado = 'En progreso'
+                    SET Estado = 'En progreso',
+                        FechaInicio = GETDATE(),
+                        FechaFin = NULL
                     WHERE Id = @IdTratamientoPaciente
                       AND Estado = 'Pendiente';",
                 "Cancelado" => @"
                     UPDATE Odontologia.TratamientosPaciente
-                    SET Estado = 'Cancelado'
+                    SET Estado = 'Cancelado',
+                        FechaFin = GETDATE()
                     WHERE Id = @IdTratamientoPaciente
                       AND Estado IN ('Pendiente', 'En progreso');",
                 "Pendiente" => @"
@@ -217,6 +220,7 @@ namespace ClinicaDentalMario.Repositories
                     ON tp.IdTratamiento = t.IdTratamiento
                 WHERE tp.FechaInicio >= @Inicio
                   AND tp.FechaInicio < @Fin
+                  AND tp.Estado <> 'Cancelado'
                 GROUP BY t.Nombre
                 ORDER BY Cantidad DESC;";
 

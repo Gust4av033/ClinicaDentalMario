@@ -6,120 +6,700 @@
              Background="{StaticResource BgWindowBrush}">
 
     <UserControl.Resources>
-        <Style x:Key="KitButtonUnah" TargetType="Button">
+        <Style x:Key="OdontoToolButton" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource BgControlBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Padding" Value="10,6"/>
-            <Setter Property="Margin" Value="0,0,8,8"/>
+            <Setter Property="Padding" Value="9,6"/>
+            <Setter Property="Margin" Value="0,0,7,7"/>
+            <Setter Property="MinHeight" Value="32"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="bdr" Background="{TemplateBinding Background}" CornerRadius="6" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="bdr" Property="Background" Value="{StaticResource BgControlHoverBrush}"/><Setter TargetName="bdr" Property="BorderBrush" Value="{StaticResource AccentBrush}"/></Trigger>
-                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="bdr" Property="Background" Value="#1A252F"/></Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource BgControlHoverBrush}"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.78"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="OdontoExpander" TargetType="Expander">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="IsExpanded" Value="False"/>
+        </Style>
+
+        <Style x:Key="OdontoLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,4,0,7"/>
+        </Style>
     </UserControl.Resources>
 
-    <!-- Vista general para el expediente; la lógica clínica completa se cerrará en el módulo Odontograma. -->
-    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly">
-        <Grid Margin="10" MinWidth="980">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="320" MinWidth="270" MaxWidth="420"/>
-                <ColumnDefinition Width="6"/>
-                <ColumnDefinition Width="*" MinWidth="640"/>
-            </Grid.ColumnDefinitions>
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="340" MinWidth="300" MaxWidth="430"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*" MinWidth="620"/>
+        </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="{StaticResource BgCardBrush}" CornerRadius="12" Padding="18,20" Margin="0,0,8,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                <Border.Effect><DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#000000" Opacity="0.5"/></Border.Effect>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
+        <!-- Panel clínico -->
+        <Border Grid.Column="0"
+                Background="{StaticResource BgCardBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="16">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#000000" Opacity="0.35"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0">
+                    <TextBlock Text="Kit clínico odontológico"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                    <TextBlock Text="Simbología FDI / guía UNAH-VS"
+                               FontSize="12"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="0,3,0,12"/>
+
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0"
+                                Command="{Binding AbrirManualCommand}"
+                                Style="{StaticResource OdontoToolButton}"
+                                Margin="0,0,4,0">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="FilePdfBox" Width="17" Height="17" Margin="0,0,6,0"/>
+                                <TextBlock Text="Manual" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="1"
+                                Command="{Binding AbrirInstruccionesUsoCommand}"
+                                Style="{StaticResource OdontoToolButton}"
+                                Margin="4,0,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="HelpCircleOutline" Width="17" Height="17" Margin="0,0,6,0"/>
+                                <TextBlock Text="Guía rápida" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Color activo -->
+                <Border Grid.Row="1"
+                        Background="{StaticResource BgControlBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="10"
+                        Margin="0,0,0,12">
                     <StackPanel>
-                        <TextBlock Text="Kit Clínico UNAH-VS" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,20"/>
-                        <Button Command="{Binding AbrirManualCommand}" Background="#F39C12" Foreground="White" BorderThickness="0" Height="40" Cursor="Hand" Margin="0,0,0,20"><Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources><StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="FilePdfBox" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/><TextBlock Text="Consultar Manual UNAH-VS" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/></StackPanel></Button>
-                        <Button Command="{Binding AbrirInstruccionesUsoCommand}" Background="#8E44AD" Foreground="White" BorderThickness="0" Height="40" Cursor="Hand" Margin="0,0,0,20"><Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources><StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="HelpCircleOutline" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/><TextBlock Text="¿Cómo usar este Odontograma?" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/></StackPanel></Button>
-
-                        <TextBlock Text="1. Estado / Color" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold" FontSize="11" Margin="0,0,0,10"/>
-                        <WrapPanel Margin="0,0,0,15">
-                            <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#E74C3C|Rojo (Mal Estado / Caries / PC-M2-PMA)" Style="{StaticResource KitButtonUnah}"><StackPanel Orientation="Horizontal"><Ellipse Width="15" Height="15" Fill="#E74C3C" Margin="0,0,8,0"/><TextBlock Text="Rojo (Caries/PC)" FontWeight="SemiBold"/></StackPanel></Button>
-                            <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#3498DB|Azul (Buen Estado / Definitivo / TCC-M1-CC-PP)" Style="{StaticResource KitButtonUnah}"><StackPanel Orientation="Horizontal"><Ellipse Width="15" Height="15" Fill="#3498DB" Margin="0,0,8,0"/><TextBlock Text="Azul (Sano/Definitivo)" FontWeight="SemiBold"/></StackPanel></Button>
-                            <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#27AE60|Verde (Temporal / Preventivo / CT-Ausente)" Style="{StaticResource KitButtonUnah}"><StackPanel Orientation="Horizontal"><Ellipse Width="15" Height="15" Fill="#27AE60" Margin="0,0,8,0"/><TextBlock Text="Verde (Temporal/Prev)" FontWeight="SemiBold"/></StackPanel></Button>
-                            <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#E67E22|Naranja (Resina)" Style="{StaticResource KitButtonUnah}"><StackPanel Orientation="Horizontal"><Ellipse Width="15" Height="15" Fill="#E67E22" Margin="0,0,8,0"/><TextBlock Text="Naranja (Resina)" FontWeight="SemiBold"/></StackPanel></Button>
+                        <TextBlock Text="ESTADO / COLOR ACTIVO" Style="{StaticResource OdontoLabel}" Margin="0,0,0,8"/>
+                        <WrapPanel>
+                            <Button Command="{Binding SeleccionarColorCommand}"
+                                    CommandParameter="#E74C3C|Rojo (patología / mal estado)"
+                                    Style="{StaticResource OdontoToolButton}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="12" Height="12" Fill="#E74C3C" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Rojo"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding SeleccionarColorCommand}"
+                                    CommandParameter="#3498DB|Azul (buen estado / definitivo)"
+                                    Style="{StaticResource OdontoToolButton}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="12" Height="12" Fill="#3498DB" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Azul"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding SeleccionarColorCommand}"
+                                    CommandParameter="#27AE60|Verde (temporal / ausente en aparato)"
+                                    Style="{StaticResource OdontoToolButton}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="12" Height="12" Fill="#27AE60" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Verde"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding SeleccionarColorCommand}"
+                                    CommandParameter="#E67E22|Naranja (resina)"
+                                    Style="{StaticResource OdontoToolButton}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="12" Height="12" Fill="#E67E22" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Naranja"/>
+                                </StackPanel>
+                            </Button>
                         </WrapPanel>
+                    </StackPanel>
+                </Border>
 
-                        <TextBlock Text="2. Hallazgos Individuales (Diente/Raíz)" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold" FontSize="11" Margin="0,0,0,10"/>
-                        <WrapPanel Margin="0,0,0,15">
-                            <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Pintar||Pintar Cara (Obturación/Caries)" Content="Pintar Cara" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
-                            <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Cruz||Extracción Indicada (X)" Content="Extraer (X)" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
-                            <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Diagonal||Diente Ausente (/)" Content="Ausente (/)" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
-                            <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Circulo||Corona (O)" Content="Corona (O)" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
-                            <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Raiz||Endodoncia (|)" Content="Conducto (|)" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
-                            <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Fractura||Fractura (Zigzag)" Content="Fractura" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
-                            <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Furca||Compromiso de Furca (II)" Content="Furca (II)" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
-                            <Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Impactado||Diente Impactado" Content="Impactado" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/>
-                        </WrapPanel>
+                <ScrollViewer Grid.Row="2"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Padding="0,0,6,0">
+                    <StackPanel>
+                        <Expander Header="1. Superficies y lesiones"
+                                  Style="{StaticResource OdontoExpander}"
+                                  IsExpanded="True">
+                            <StackPanel Margin="0,8,0,2">
+                                <TextBlock Text="Los presets aplican automáticamente el color indicado por la guía." Style="{StaticResource OdontoLabel}" TextWrapping="Wrap"/>
+                                <WrapPanel>
+                                    <Button Content="Caries" Width="88"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Pintar||Caries por superficie|#E74C3C|Rojo (caries)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Amalgama" Width="88"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Pintar||Amalgama en buen estado|#3498DB|Azul (amalgama)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Resina" Width="88"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Pintar||Resina|#E67E22|Naranja (resina)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Temporal" Width="88"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Pintar||Obturación temporal|#27AE60|Verde (temporal)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Expander>
 
-                        <TextBlock Text="3. Siglas y Códigos UNAH-VS (Dar clic al centro del diente)" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold" FontSize="11" Margin="0,0,0,10"/>
-                        <Border Background="{StaticResource BgControlBrush}" CornerRadius="8" Padding="15,15,7,7" Margin="0,0,0,20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" Height="150"><StackPanel>
-                                <TextBlock Text="Tratamiento Pulpar:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,5"/>
-                                <WrapPanel><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|TCC|TCC (Conducto Completo)" Content="TCC" Width="45" Height="30" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|PC|PC (Pulpectomía)" Content="PC" Width="40" Height="30" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|PP|PP (Pulpotomía)" Content="PP" Width="40" Height="30" Style="{StaticResource KitButtonUnah}"/></WrapPanel>
-                                <TextBlock Text="Coronas definitivas:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" FontSize="11" Margin="0,5,0,5"/>
-                                <WrapPanel><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|CM|CM (Metal)" Content="CM" Width="40" Height="30" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|CMP|CMP (Metal/Porc)" Content="CMP" Width="50" Height="30" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|CMA|CMA (Metal/Acril)" Content="CMA" Width="50" Height="30" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|CPP|CPP (Porc libre Metal)" Content="CPP" Width="50" Height="30" Style="{StaticResource KitButtonUnah}"/></WrapPanel>
-                                <TextBlock Text="Otras Siglas:" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" FontSize="11" Margin="0,5,0,5"/>
-                                <WrapPanel><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|RR|Remanente Radicular (RR)" Content="RR" Width="40" Height="30" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|S|Sellante (S)" Content="S" Width="35" Height="30" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|ME|Mal Estado (ME)" Content="ME" Width="40" Height="30" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|IMP|Implante (IMP)" Content="IMP" Width="45" Height="30" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|MIC|Microdoncia (MIC)" Content="MIC" Width="45" Height="30" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|MAC|Macrodoncia (MAC)" Content="MAC" Width="45" Height="30" Style="{StaticResource KitButtonUnah}"/></WrapPanel>
-                            </StackPanel></ScrollViewer>
-                        </Border>
+                        <Expander Header="2. Pieza, raíz y anomalías"
+                                  Style="{StaticResource OdontoExpander}"
+                                  IsExpanded="True">
+                            <StackPanel Margin="0,8,0,2">
+                                <WrapPanel>
+                                    <Button Content="Ausente /" Width="92"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Diagonal||Diente ausente|#3498DB|Azul (ausente)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Extraer X" Width="92"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Cruz||Extracción indicada|#3498DB|Azul (extracción indicada)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Impactado" Width="92"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Impactado||Diente impactado|#3498DB|Azul + rojo (impactado)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Fractura" Width="92"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Fractura||Fractura|#E74C3C|Rojo (fractura)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Desbordante" Width="92"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Desbordante||Restauración desbordante|#E74C3C|Rojo (desbordante)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Furca" Width="92"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Furca||Compromiso de furca|#E74C3C|Rojo (furca)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="RR" Width="60"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Remanente||Remanente radicular|#E74C3C|Rojo (remanente radicular)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                </WrapPanel>
 
-                        <TextBlock Text="4. Hallazgos Complejos (Entre Dientes / Arco)" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold" FontSize="11" Margin="0,0,0,10"/>
-                        <WrapPanel Margin="0,0,0,20"><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|Puente|Puente Fijo (Arco)" Content="Puente Fijo" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|OrthoFijo|Ortodoncia Fija (Brackets)" Content="Ortho Fija" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|OrthoRem|Ortodoncia Removible (Zigzag)" Content="Ortho Rem" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|Diastema||Diastema (Paren)" Content="Diastema )(" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/><Button Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|Edentulo||Edentulo Total (Línea Horizontal)" Content="Edentulo Tot" Width="100" Height="32" Style="{StaticResource KitButtonUnah}"/></WrapPanel>
+                                <TextBlock Text="Movimientos dentarios" Style="{StaticResource OdontoLabel}"/>
+                                <WrapPanel>
+                                    <Button Content="Intrusión ↑" Width="92"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Movimiento|Intrusion|Intrusión|#3498DB|Azul (movimiento)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Extrusión ↓" Width="92"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Movimiento|Extrusion|Extrusión|#3498DB|Azul (movimiento)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Migrar ←" Width="92"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Movimiento|MigracionIzquierda|Migración izquierda|#3498DB|Azul (movimiento)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Migrar →" Width="92"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Movimiento|MigracionDerecha|Migración derecha|#3498DB|Azul (movimiento)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Giro ↺" Width="92"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Movimiento|GiroIzquierda|Giroversión izquierda|#3498DB|Azul (movimiento)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Giro ↻" Width="92"
+                                            Command="{Binding SeleccionarHerramientaCommand}"
+                                            CommandParameter="Movimiento|GiroDerecha|Giroversión derecha|#3498DB|Azul (movimiento)"
+                                            Style="{StaticResource OdontoToolButton}"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Expander>
 
-                        <Border Background="#1A252F" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"><StackPanel><TextBlock Text="ACCIÓN CLÍNICA SELECCIONADA:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold"/><TextBlock Text="{Binding TextoHerramienta}" FontSize="15" Foreground="#2ECC71" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/></StackPanel></Border>
+                        <Expander Header="3. Siglas y tratamientos"
+                                  Style="{StaticResource OdontoExpander}">
+                            <StackPanel Margin="0,8,0,2">
+                                <TextBlock Text="Tratamiento pulpar (usa azul para buen estado y rojo para mal estado)" Style="{StaticResource OdontoLabel}" TextWrapping="Wrap"/>
+                                <WrapPanel>
+                                    <Button Content="TCC" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="PulparSigla|TCC|Tratamiento de conductos completo" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="PC" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="PulparSigla|PC|Pulpectomía" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="PP" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="PulparSigla|PP|Pulpotomía" Style="{StaticResource OdontoToolButton}"/>
+                                </WrapPanel>
 
-                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Button Grid.Column="0" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Borrador||Borrador (Borrar Caras/Formas)" Style="{StaticResource KitButtonUnah}" Margin="0,0,5,0" Padding="15,10"><StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="Eraser" Margin="0,0,8,0" VerticalAlignment="Center"/><TextBlock Text="Borrador" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel></Button><Button Grid.Column="1" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Ninguno||Cursor Normal" Style="{StaticResource KitButtonUnah}" Margin="5,0,0,0" Padding="15,10"><StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="CursorDefaultOutline" Margin="0,0,8,0" VerticalAlignment="Center"/><TextBlock Text="Soltar" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel></Button></Grid>
+                                <TextBlock Text="Coronas" Style="{StaticResource OdontoLabel}"/>
+                                <WrapPanel>
+                                    <Button Content="CT" Width="48" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="CoronaSigla|CT|Corona temporal|#27AE60|Verde (corona temporal)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="CPP" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="CoronaSigla|CPP|Corona porcelana libre de metal|#3498DB|Azul (corona definitiva)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="CMA" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="CoronaSigla|CMA|Corona metal acrílico|#3498DB|Azul (corona definitiva)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="CMP" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="CoronaSigla|CMP|Corona metal porcelana|#3498DB|Azul (corona definitiva)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="CF" Width="48" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="CoronaSigla|CF|Corona fenestrada de oro|#3498DB|Azul (corona definitiva)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="C¾" Width="48" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="CoronaSigla|C¾|Corona tres cuartos|#3498DB|Azul (corona definitiva)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="CP" Width="48" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="CoronaSigla|CP|Carilla porcelana|#3498DB|Azul (corona definitiva)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="CR" Width="48" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="CoronaSigla|CR|Carilla resina|#3498DB|Azul (corona definitiva)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="CM" Width="48" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="CoronaSigla|CM|Corona metálica|#3498DB|Azul (corona definitiva)" Style="{StaticResource OdontoToolButton}"/>
+                                </WrapPanel>
 
-                        <Button Command="{Binding LimpiarTodoCommand}" Background="#E74C3C" Foreground="White" BorderThickness="0" Height="40" Cursor="Hand" Margin="0,15,0,0"><Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources><StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="Broom" Margin="0,0,8,0" VerticalAlignment="Center"/><TextBlock Text="LIMPIAR TODO EL MAPA" VerticalAlignment="Center" FontWeight="Bold"/></StackPanel></Button>
+                                <TextBlock Text="Otros códigos" Style="{StaticResource OdontoLabel}"/>
+                                <WrapPanel>
+                                    <Button Content="S" Width="42" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|S|Sellante|#E74C3C|Rojo (sellante)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="ME" Width="48" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|ME|Tratamiento en mal estado|#E74C3C|Rojo (mal estado)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="IMP" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|IMP|Implante|#3498DB|Azul (implante)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="#" Width="42" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="SiglaCirculo|#|Supernumerario|#E74C3C|Rojo (supernumerario)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="MIC" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|MIC|Microdoncia|#3498DB|Azul (microdoncia)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="MAC" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|MAC|Macrodoncia|#3498DB|Azul (macrodoncia)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="M1" Width="48" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|M1|Movilidad grado 1|#3498DB|Azul (movilidad)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="M2" Width="48" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|M2|Movilidad grado 2|#3498DB|Azul (movilidad)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="M3" Width="48" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|M3|Movilidad grado 3|#3498DB|Azul (movilidad)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="ATR" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|ATR|Atrición|#3498DB|Azul (desgaste)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="ABR" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|ABR|Abrasión|#3498DB|Azul (desgaste)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="ERS" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|ERS|Erosión|#3498DB|Azul (desgaste)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="ABF" Width="55" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Siglas|ABF|Abfracción|#3498DB|Azul (desgaste)" Style="{StaticResource OdontoToolButton}"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Expander>
+
+                        <Expander Header="4. Hallazgos entre piezas / arco"
+                                  Style="{StaticResource OdontoExpander}"
+                                  IsExpanded="True">
+                            <StackPanel Margin="0,8,0,2">
+                                <TextBlock Text="Estas herramientas usan una o dos piezas como referencia. La primera selección queda resaltada." Style="{StaticResource OdontoLabel}" TextWrapping="Wrap"/>
+                                <WrapPanel>
+                                    <Button Content="Puente fijo" Width="96" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|Puente|Puente fijo|#3498DB|Azul (puente fijo)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Diastema" Width="96" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|Diastema|Diastema|#3498DB|Azul (diastema)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Contacto abierto" Width="116" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|ContactoAbierto|Contacto abierto / alimento impactado|#E74C3C|Rojo (contacto abierto)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Transposición" Width="105" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|Transposicion|Transposición dental|#3498DB|Azul (transposición)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Edéntulo total" Width="105" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|Edentulo|Edéntulo total|#3498DB|Azul (edéntulo total)" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Ortho fija" Width="96" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|OrthoFijo|Ortodoncia fija" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="Ortho remov." Width="96" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|OrthoRem|Ortodoncia removible" Style="{StaticResource OdontoToolButton}"/>
+                                    <Button Content="PPR" Width="70" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Canvas|PPR|Prótesis parcial removible" Style="{StaticResource OdontoToolButton}"/>
+                                </WrapPanel>
+                                <TextBlock Text="En ortodoncia y PPR, el color activo indica buen estado (azul), mal estado (rojo) o condición temporal/ausente cuando corresponda (verde)." Style="{StaticResource OdontoLabel}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Expander>
                     </StackPanel>
                 </ScrollViewer>
-            </Border>
 
-            <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" ShowsPreview="True" Cursor="SizeWE"/>
-
-            <Border Grid.Column="2" Background="White" CornerRadius="12" Padding="20" Margin="8,0,0,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                <Border.Effect><DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#000000" Opacity="0.5"/></Border.Effect>
-                <Grid>
-                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                    <DockPanel Grid.Row="0" Margin="0,0,0,15" LastChildFill="True">
-                        <Border DockPanel.Dock="Right" Background="#F4F6F7" CornerRadius="8" Padding="10" BorderBrush="#BDC3C7" BorderThickness="1" Margin="12,0,0,0"><StackPanel Orientation="Horizontal"><TextBlock Text="Evoluciones:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#7F8C8D" Margin="0,0,10,0"/><ComboBox ItemsSource="{Binding FechasGuardadas}" SelectedItem="{Binding FechaSeleccionada}" FontSize="13" Padding="5" Width="180"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding StringFormat=dd/MM/yyyy hh:mm tt}" FontWeight="Bold" Foreground="#2980B9"/></DataTemplate></ComboBox.ItemTemplate></ComboBox><Button Command="{Binding EliminarOdontogramaCommand}" Background="Transparent" Foreground="#E74C3C" BorderThickness="0" Margin="10,0,0,0" ToolTip="Eliminar fecha"><iconPacks:PackIconMaterial Kind="TrashCan"/></Button></StackPanel></Border>
-                        <TextBlock Text="Mapeo Dental UNAH-VS" FontSize="24" FontWeight="Bold" Foreground="#2C3E50" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                    </DockPanel>
-
-                    <Border Grid.Row="1" Background="#2C3E50" CornerRadius="6" Padding="10,5" Margin="0,0,0,5" VerticalAlignment="Top" HorizontalAlignment="Center" Panel.ZIndex="10"><StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="LightbulbOnOutline" Foreground="#F1C40F" Margin="0,0,8,0" VerticalAlignment="Center" Width="14" Height="14"/><TextBlock Text="TIP: Usa las flechas de dirección (↑ ↓ → ←) o la rueda del mouse para desplazarte por los dientes." Foreground="White" FontSize="11" FontStyle="Italic" TextWrapping="Wrap"/></StackPanel></Border>
-
-                    <Border Grid.Row="1" Background="#FDFEFE" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8">
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="10,25" PanningMode="Both">
-                            <Grid Name="OdontogramaGridRoot" Width="950" Height="420" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="110"/><RowDefinition Height="20"/><RowDefinition Height="Auto"/><RowDefinition Height="110"/></Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="MAXILAR SUPERIOR" Foreground="#7F8C8D" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                                <Grid Grid.Row="1"><ItemsControl ItemsSource="{Binding DientesSuperiores}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/></ItemsPanelTemplate></ItemsControl.ItemsPanel><ItemsControl.ItemTemplate><DataTemplate><local:PiezaDentalControl Margin="2,0"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl><ItemsControl ItemsSource="{Binding FigurasSuperiores}" HorizontalAlignment="Center" IsHitTestVisible="False"><ItemsControl.ItemsPanel><ItemsPanelTemplate><Canvas Width="864" Height="110" Background="Transparent"/></ItemsPanelTemplate></ItemsControl.ItemsPanel><ItemsControl.ItemTemplate><DataTemplate><Path Data="{Binding Geometria}" Stroke="{Binding ColorTrazo}" StrokeThickness="{Binding GrosorTrazo}" StrokeDashArray="{Binding PatronGuiones}"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Grid>
-                                <Border Grid.Row="2" Height="1" Background="{StaticResource BorderBrush}" Margin="20,0" Opacity="0.3"/>
-                                <TextBlock Grid.Row="3" Text="MAXILAR INFERIOR" Foreground="#7F8C8D" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                                <Grid Grid.Row="4"><ItemsControl ItemsSource="{Binding DientesInferiores}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/></ItemsPanelTemplate></ItemsControl.ItemsPanel><ItemsControl.ItemTemplate><DataTemplate><local:PiezaDentalControl Margin="2,0"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl><ItemsControl ItemsSource="{Binding FigurasInferiores}" HorizontalAlignment="Center" IsHitTestVisible="False"><ItemsControl.ItemsPanel><ItemsPanelTemplate><Canvas Width="864" Height="110" Background="Transparent"/></ItemsPanelTemplate></ItemsControl.ItemsPanel><ItemsControl.ItemTemplate><DataTemplate><Path Data="{Binding Geometria}" Stroke="{Binding ColorTrazo}" StrokeThickness="{Binding GrosorTrazo}" StrokeDashArray="{Binding PatronGuiones}"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></Grid>
-                            </Grid>
-                        </ScrollViewer>
+                <!-- Herramienta activa -->
+                <StackPanel Grid.Row="3" Margin="0,12,0,0">
+                    <Border Background="#1A252F"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="11">
+                        <StackPanel>
+                            <TextBlock Text="HERRAMIENTA ACTIVA"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="#AAB7B8"/>
+                            <TextBlock Text="{Binding TextoHerramienta}"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="#2ECC71"
+                                       TextWrapping="Wrap"
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
                     </Border>
 
-                    <Button Grid.Row="2" Command="{Binding GuardarOdontogramaCommand}" HorizontalAlignment="Right" Height="45" Background="{StaticResource SuccessBrush}" Foreground="White" BorderThickness="0" Padding="25,0" Cursor="Hand" Margin="0,15,0,0"><Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources><StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="ContentSaveCheck" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White" Width="20" Height="20"/><TextBlock Text="Guardar Evolución Odontológica" VerticalAlignment="Center" FontSize="15" FontWeight="Bold" Foreground="White"/></StackPanel></Button>
+                    <Grid Margin="0,9,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0"
+                                Command="{Binding SeleccionarHerramientaCommand}"
+                                CommandParameter="Borrador||Borrador"
+                                Style="{StaticResource OdontoToolButton}"
+                                Margin="0,0,4,0"
+                                Content="Borrador"/>
+                        <Button Grid.Column="1"
+                                Command="{Binding DeshacerUltimoTrazoCommand}"
+                                Style="{StaticResource OdontoToolButton}"
+                                Margin="4,0"
+                                Content="Deshacer trazo"/>
+                        <Button Grid.Column="2"
+                                Command="{Binding SeleccionarHerramientaCommand}"
+                                CommandParameter="Ninguno||Cursor normal"
+                                Style="{StaticResource OdontoToolButton}"
+                                Margin="4,0,0,0"
+                                Content="Soltar"/>
+                    </Grid>
+
+                    <Button Command="{Binding LimpiarTodoCommand}"
+                            Background="#E74C3C"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Height="38"
+                            Cursor="Hand"
+                            Margin="0,8,0,0">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="7"/>
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="Broom" Width="17" Height="17" Margin="0,0,7,0"/>
+                            <TextBlock Text="Limpiar mapa completo" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <GridSplitter Grid.Column="1"
+                      Width="8"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      Background="Transparent"
+                      ResizeDirection="Columns"
+                      ResizeBehavior="PreviousAndNext"
+                      ShowsPreview="True"
+                      Cursor="SizeWE"/>
+
+        <!-- Área principal del odontograma -->
+        <Border Grid.Column="2"
+                Background="White"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="18">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#000000" Opacity="0.35"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Cabecera -->
+                <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <TextBlock Text="Odontograma digital"
+                                   FontSize="25"
+                                   FontWeight="Bold"
+                                   Foreground="#2C3E50"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                            <iconPacks:PackIconMaterial Kind="AccountCircleOutline" Width="17" Height="17" Foreground="#7F8C8D" Margin="0,0,6,0"/>
+                            <TextBlock Text="{Binding NombrePaciente}"
+                                       Foreground="#5D6D7E"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock Text="  ·  FDI permanente"
+                                       Foreground="#95A5A6"
+                                       FontSize="12"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Border Grid.Column="1"
+                            Background="#F4F6F7"
+                            BorderBrush="#D5DBDB"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Evolución:"
+                                       VerticalAlignment="Center"
+                                       FontWeight="SemiBold"
+                                       Foreground="#7F8C8D"
+                                       Margin="0,0,8,0"/>
+                            <ComboBox ItemsSource="{Binding FechasGuardadas}"
+                                      SelectedItem="{Binding FechaSeleccionada}"
+                                      Width="180"
+                                      Padding="5"
+                                      FontSize="12">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding StringFormat=dd/MM/yyyy hh:mm tt}"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#2980B9"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Command="{Binding EliminarOdontogramaCommand}"
+                                    Background="Transparent"
+                                    Foreground="#E74C3C"
+                                    BorderThickness="0"
+                                    Margin="8,0,0,0"
+                                    Padding="5"
+                                    Cursor="Hand"
+                                    ToolTip="Eliminar la evolución seleccionada">
+                                <iconPacks:PackIconMaterial Kind="TrashCanOutline" Width="19" Height="19"/>
+                            </Button>
+                        </StackPanel>
+                    </Border>
                 </Grid>
-            </Border>
-        </Grid>
-    </ScrollViewer>
+
+                <!-- Estado contextual. Reemplaza avisos intrusivos y no incluye el antiguo aviso de flechas de navegación. -->
+                <Border Grid.Row="1"
+                        Background="#F8F9F9"
+                        BorderBrush="#D5DBDB"
+                        BorderThickness="1"
+                        CornerRadius="7"
+                        Padding="10,8"
+                        Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <iconPacks:PackIconMaterial Kind="InformationOutline"
+                                                    Width="17"
+                                                    Height="17"
+                                                    Foreground="#2980B9"
+                                                    Margin="0,0,7,0"
+                                                    VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding MensajeInteraccion}"
+                                   Foreground="#566573"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center"/>
+                        <Border Grid.Column="2"
+                                Background="#FEF5E7"
+                                CornerRadius="10"
+                                Padding="8,3"
+                                Margin="10,0,0,0"
+                                Visibility="{Binding TieneCambiosSinGuardar, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Text="Cambios sin guardar"
+                                       Foreground="#B9770E"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Mapa -->
+                <Border Grid.Row="2"
+                        Background="#FDFEFE"
+                        BorderBrush="#D5DBDB"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  Padding="10,18"
+                                  PanningMode="Both">
+                        <Grid Width="950" Height="430" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="112"/>
+                                <RowDefinition Height="28"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="112"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0"
+                                       Text="MAXILAR SUPERIOR"
+                                       Foreground="#7F8C8D"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,8"/>
+
+                            <Grid Grid.Row="1">
+                                <ItemsControl ItemsSource="{Binding DientesSuperiores}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <local:PiezaDentalControl Margin="2,0"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <ItemsControl ItemsSource="{Binding FigurasSuperiores}"
+                                              HorizontalAlignment="Center"
+                                              IsHitTestVisible="False">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <Canvas Width="864" Height="110" Background="Transparent"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Path Data="{Binding Geometria}"
+                                                  Stroke="{Binding ColorTrazo}"
+                                                  StrokeThickness="{Binding GrosorTrazo}"
+                                                  StrokeDashArray="{Binding PatronGuiones}"
+                                                  StrokeLineJoin="Round"
+                                                  StrokeStartLineCap="Round"
+                                                  StrokeEndLineCap="Round"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+
+                            <StackPanel Grid.Row="2" VerticalAlignment="Center">
+                                <Border Height="1" Background="#D5DBDB" Margin="25,0"/>
+                                <TextBlock Text="LÍNEA MEDIA"
+                                           Foreground="#BDC3C7"
+                                           FontSize="9"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,3,0,0"/>
+                            </StackPanel>
+
+                            <TextBlock Grid.Row="3"
+                                       Text="MAXILAR INFERIOR"
+                                       Foreground="#7F8C8D"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,8"/>
+
+                            <Grid Grid.Row="4">
+                                <ItemsControl ItemsSource="{Binding DientesInferiores}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <local:PiezaDentalControl Margin="2,0"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <ItemsControl ItemsSource="{Binding FigurasInferiores}"
+                                              HorizontalAlignment="Center"
+                                              IsHitTestVisible="False">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <Canvas Width="864" Height="110" Background="Transparent"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Path Data="{Binding Geometria}"
+                                                  Stroke="{Binding ColorTrazo}"
+                                                  StrokeThickness="{Binding GrosorTrazo}"
+                                                  StrokeDashArray="{Binding PatronGuiones}"
+                                                  StrokeLineJoin="Round"
+                                                  StrokeStartLineCap="Round"
+                                                  StrokeEndLineCap="Round"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </Grid>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- Mensaje del módulo -->
+                <Border Grid.Row="3"
+                        Background="#EBF5FB"
+                        BorderBrush="#AED6F1"
+                        BorderThickness="1"
+                        CornerRadius="7"
+                        Padding="10"
+                        Margin="0,10,0,0"
+                        Visibility="{Binding TieneMensaje, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock Text="{Binding MensajeUsuario}"
+                               Foreground="#21618C"
+                               FontSize="12"
+                               TextWrapping="Wrap"/>
+                </Border>
+
+                <!-- Acciones -->
+                <Grid Grid.Row="4" Margin="0,12,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Guardar crea una nueva evolución; las anteriores permanecen intactas."
+                                   Foreground="#7F8C8D"
+                                   FontSize="11"/>
+                        <ProgressBar Width="170"
+                                     Height="4"
+                                     IsIndeterminate="True"
+                                     HorizontalAlignment="Left"
+                                     Margin="0,5,0,0"
+                                     Visibility="{Binding EstaCargando, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Command="{Binding GuardarOdontogramaCommand}"
+                            Height="44"
+                            Background="{StaticResource SuccessBrush}"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Padding="22,0"
+                            Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8"/>
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial Kind="ContentSaveCheck" Width="19" Height="19" Margin="0,0,8,0"/>
+                            <TextBlock Text="Guardar nueva evolución"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>

@@ -14,11 +14,12 @@ namespace ClinicaDentalMario.ViewModel.Usuarios
     public class NuevoEditarUsuarioViewModel : ViewModelBase
     {
         private readonly UsuarioRepository _usuarioRepo;
+        private readonly BitacoraRepository _bitacoraRepo;
         private readonly bool _eraAdministrador;
 
         public bool EsEdicion { get; }
         public bool EsUsuarioActual => EsEdicion && UsuarioActual.Detalles?.IdUsuario == Usuario.IdUsuario;
-        public bool PuedeCambiarEstado => !EsUsuarioActual;
+        public bool PuedeCambiarEstado => EsEdicion && !EsUsuarioActual;
         public string TextoAyudaPassword => EsEdicion
             ? "Déjala en blanco para conservar la contraseña actual."
             : "Mínimo 6 caracteres.";
@@ -63,6 +64,7 @@ namespace ClinicaDentalMario.ViewModel.Usuarios
         public NuevoEditarUsuarioViewModel(UsuarioModel? usuarioExistente = null)
         {
             _usuarioRepo = new UsuarioRepository();
+            _bitacoraRepo = new BitacoraRepository();
             EsEdicion = usuarioExistente != null;
             _eraAdministrador = usuarioExistente?.NombreRol.Equals(
                 RolesSistema.Administrador,
@@ -105,9 +107,17 @@ namespace ClinicaDentalMario.ViewModel.Usuarios
                 Roles = new ObservableCollection<RolModel>(await _usuarioRepo.ListarRolesAsync());
 
                 if (EsEdicion)
+                {
                     RolSeleccionado = Roles.FirstOrDefault(r => r.IdRol == Usuario.IdRol);
-                else if (Roles.Count > 0)
-                    RolSeleccionado = Roles[0];
+                }
+                else
+                {
+                    RolSeleccionado = Roles.FirstOrDefault(r =>
+                                          r.Nombre.Equals(RolesSistema.Recepcionista, StringComparison.OrdinalIgnoreCase))
+                                      ?? Roles.FirstOrDefault(r =>
+                                          !r.Nombre.Equals(RolesSistema.Administrador, StringComparison.OrdinalIgnoreCase))
+                                      ?? Roles.FirstOrDefault();
+                }
             }
             catch (Exception ex)
             {
@@ -149,6 +159,8 @@ namespace ClinicaDentalMario.ViewModel.Usuarios
             if (!ValidarPassword(passwordIngresada))
                 return;
 
+            string actorAuditoria = UsuarioActual.NombreUsuario;
+            bool passwordModificada = !string.IsNullOrWhiteSpace(passwordIngresada);
             EstaCargando = true;
 
             try
@@ -163,17 +175,32 @@ namespace ClinicaDentalMario.ViewModel.Usuarios
                 if (!await ValidarSeguridadAdministradoresAsync())
                     return;
 
+                Usuario.NombreRol = RolSeleccionado!.Nombre;
+
                 if (EsEdicion)
                 {
                     await _usuarioRepo.ActualizarUsuarioAsync(Usuario);
 
-                    if (!string.IsNullOrWhiteSpace(passwordIngresada))
+                    if (passwordModificada)
                         await _usuarioRepo.CambiarPasswordAsync(Usuario.IdUsuario, EncriptarSHA256(passwordIngresada));
+
+                    await RegistrarAuditoriaSeguraAsync(
+                        actorAuditoria,
+                        "UPDATE",
+                        $"Usuario actualizado | IdUsuario: {Usuario.IdUsuario} | Login: {Usuario.NombreUsuario} | Rol: {Usuario.NombreRol} | Activo: {Usuario.Activo} | Contraseña modificada: {(passwordModificada ? "Sí" : "No")}");
+
+                    if (EsUsuarioActual)
+                        UsuarioActual.IniciarSesion(Usuario, Usuario.NombreRol);
                 }
                 else
                 {
                     Usuario.PasswordHash = EncriptarSHA256(passwordIngresada);
                     await _usuarioRepo.CrearUsuarioAsync(Usuario);
+
+                    await RegistrarAuditoriaSeguraAsync(
+                        actorAuditoria,
+                        "INSERT",
+                        $"Usuario creado | Login: {Usuario.NombreUsuario} | Rol: {Usuario.NombreRol}");
                 }
 
                 UsuarioGuardado = true;
@@ -280,6 +307,22 @@ namespace ClinicaDentalMario.ViewModel.Usuarios
 
             MensajeError = "No puedes desactivar o cambiar de rol al último Administrador activo del sistema.";
             return false;
+        }
+
+        private async Task RegistrarAuditoriaSeguraAsync(string actor, string accion, string detalle)
+        {
+            try
+            {
+                await _bitacoraRepo.RegistrarMovimientoAsync(
+                    actor,
+                    accion,
+                    "Seguridad.Usuarios",
+                    detalle);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"No se pudo registrar la auditoría de usuarios: {ex.Message}");
+            }
         }
 
         private void Cancelar(object? parameter)

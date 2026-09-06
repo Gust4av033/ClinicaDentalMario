@@ -14,6 +14,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         private readonly IExceptionHandler _exceptionHandler;
         private readonly Action<object> _cambiarVista;
         private CancellationTokenSource? _busquedaCts;
+        private int _versionCarga;
 
         private ObservableCollection<PacienteModel> _pacientes = new();
         public ObservableCollection<PacienteModel> Pacientes
@@ -128,6 +129,8 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
         private async Task CargarSegunFiltroAsync()
         {
+            int versionActual = Interlocked.Increment(ref _versionCarga);
+
             MensajeError = string.Empty;
             EstaCargando = true;
             OnPropertyChanged(nameof(SinResultados));
@@ -136,10 +139,11 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             {
                 IEnumerable<PacienteModel> lista;
                 string termino = TerminoBusqueda.Trim();
+                bool mostrarInactivos = MostrarInactivos;
 
                 if (string.IsNullOrWhiteSpace(termino))
                 {
-                    lista = MostrarInactivos
+                    lista = mostrarInactivos
                         ? await _pacienteRepository.ObtenerInactivosAsync()
                         : await _pacienteRepository.ObtenerTodosAsync();
                 }
@@ -147,13 +151,25 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 {
                     lista = await _pacienteRepository.BuscarAsync(
                         termino,
-                        soloInactivos: MostrarInactivos);
+                        soloInactivos: mostrarInactivos);
+                }
+
+                // Si comenzó otra carga mientras esperábamos la BD,
+                // esta respuesta ya está obsoleta y no debe reemplazar la más reciente.
+                if (versionActual != Volatile.Read(ref _versionCarga))
+                {
+                    return;
                 }
 
                 Pacientes = new ObservableCollection<PacienteModel>(lista);
             }
             catch (Exception ex)
             {
+                if (versionActual != Volatile.Read(ref _versionCarga))
+                {
+                    return;
+                }
+
                 Pacientes = new ObservableCollection<PacienteModel>();
                 MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
                     ex,
@@ -161,8 +177,11 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             }
             finally
             {
-                EstaCargando = false;
-                OnPropertyChanged(nameof(SinResultados));
+                if (versionActual == Volatile.Read(ref _versionCarga))
+                {
+                    EstaCargando = false;
+                    OnPropertyChanged(nameof(SinResultados));
+                }
             }
         }
 

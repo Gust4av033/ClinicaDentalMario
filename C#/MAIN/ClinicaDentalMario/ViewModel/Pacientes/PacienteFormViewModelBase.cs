@@ -35,8 +35,28 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         public DateTime? FechaNacimiento
         {
             get => _fechaNacimiento;
-            set { if (SetProperty(ref _fechaNacimiento, value)) ValidarCampo(ValidationRules.FechaNacimientoRazonable(value)); }
+            set
+            {
+                if (!SetProperty(ref _fechaNacimiento, value)) return;
+
+                ValidarCampo(ValidationRules.FechaNacimientoRazonable(value), nameof(FechaNacimiento));
+                OnPropertyChanged(nameof(EsMenorEdad));
+                OnPropertyChanged(nameof(Edad));
+                OnPropertyChanged(nameof(EtiquetaDui));
+                OnPropertyChanged(nameof(EtiquetaEncargado));
+                OnPropertyChanged(nameof(MensajeMenorEdad));
+                ValidarDui();
+                ValidarNombreEncargado();
+            }
         }
+
+        public bool EsMenorEdad => FechaNacimiento.HasValue && CalcularEdad(FechaNacimiento.Value) < 18;
+        public int? Edad => FechaNacimiento.HasValue ? CalcularEdad(FechaNacimiento.Value) : null;
+        public string EtiquetaDui => EsMenorEdad ? "DUI (opcional para menor de edad)" : "DUI (00000000-0)";
+        public string EtiquetaEncargado => EsMenorEdad ? "Nombre del encargado *" : "Nombre del encargado (si aplica)";
+        public string MensajeMenorEdad => EsMenorEdad
+            ? "Paciente menor de edad: el DUI puede dejarse vacío. Debe registrarse el nombre del encargado responsable."
+            : string.Empty;
 
         public string? Sexo
         {
@@ -47,11 +67,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         public string? DUI
         {
             get => _dui;
-            set
-            {
-                if (SetProperty(ref _dui, value))
-                    ValidarCampo(ValidationRules.Dui(value).Concat(ValidationRules.LongitudMaxima(value, 20, "El DUI")));
-            }
+            set { if (SetProperty(ref _dui, value)) ValidarDui(); }
         }
 
         public string? Telefono
@@ -63,7 +79,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         public string? NombreEncargado
         {
             get => _nombreEncargado;
-            set { if (SetProperty(ref _nombreEncargado, value)) ValidarCampo(ValidationRules.LongitudMaxima(value, 150, "El nombre del encargado")); }
+            set { if (SetProperty(ref _nombreEncargado, value)) ValidarNombreEncargado(); }
         }
 
         public string? ContactoEmergencia
@@ -88,12 +104,8 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             get => _tieneAntecedentesMedicos;
             set
             {
-                if (!SetProperty(ref _tieneAntecedentesMedicos, value))
-                    return;
-
-                if (!value)
-                    DetalleAntecedentesMedicos = null;
-
+                if (!SetProperty(ref _tieneAntecedentesMedicos, value)) return;
+                if (!value) DetalleAntecedentesMedicos = null;
                 ValidarDetalleAntecedentesMedicos();
             }
         }
@@ -101,11 +113,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         public string? DetalleAntecedentesMedicos
         {
             get => _detalleAntecedentesMedicos;
-            set
-            {
-                if (SetProperty(ref _detalleAntecedentesMedicos, value))
-                    ValidarDetalleAntecedentesMedicos();
-            }
+            set { if (SetProperty(ref _detalleAntecedentesMedicos, value)) ValidarDetalleAntecedentesMedicos(); }
         }
 
         public bool TieneAntecedentesOdontologicos
@@ -113,12 +121,8 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             get => _tieneAntecedentesOdontologicos;
             set
             {
-                if (!SetProperty(ref _tieneAntecedentesOdontologicos, value))
-                    return;
-
-                if (!value)
-                    DetalleAntecedentesOdontologicos = null;
-
+                if (!SetProperty(ref _tieneAntecedentesOdontologicos, value)) return;
+                if (!value) DetalleAntecedentesOdontologicos = null;
                 ValidarDetalleAntecedentesOdontologicos();
             }
         }
@@ -126,11 +130,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         public string? DetalleAntecedentesOdontologicos
         {
             get => _detalleAntecedentesOdontologicos;
-            set
-            {
-                if (SetProperty(ref _detalleAntecedentesOdontologicos, value))
-                    ValidarDetalleAntecedentesOdontologicos();
-            }
+            set { if (SetProperty(ref _detalleAntecedentesOdontologicos, value)) ValidarDetalleAntecedentesOdontologicos(); }
         }
 
         protected bool ValidarFormulario()
@@ -139,15 +139,14 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             ValidarCampo(ValidationRules.LongitudMaxima(Direccion, 250, "La dirección"), nameof(Direccion));
             ValidarCampo(ValidationRules.FechaNacimientoRazonable(FechaNacimiento), nameof(FechaNacimiento));
             ValidarSexo();
-            ValidarCampo(ValidationRules.Dui(DUI).Concat(ValidationRules.LongitudMaxima(DUI, 20, "El DUI")), nameof(DUI));
+            ValidarDui();
             ValidarTelefono();
-            ValidarCampo(ValidationRules.LongitudMaxima(NombreEncargado, 150, "El nombre del encargado"), nameof(NombreEncargado));
+            ValidarNombreEncargado();
             ValidarCampo(ValidationRules.LongitudMaxima(ContactoEmergencia, 150, "El contacto de emergencia"), nameof(ContactoEmergencia));
             ValidarCampo(ValidationRules.TelefonoElSalvador(TelefonoEmergencia, "El teléfono de emergencia")
                 .Concat(ValidationRules.LongitudMaxima(TelefonoEmergencia, 20, "El teléfono de emergencia")), nameof(TelefonoEmergencia));
             ValidarDetalleAntecedentesMedicos();
             ValidarDetalleAntecedentesOdontologicos();
-
             return !HasErrors;
         }
 
@@ -210,11 +209,27 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 .Concat(ValidationRules.LongitudMaxima(NombreCompleto, 150, "El nombre completo")), nameof(NombreCompleto));
         }
 
+        private void ValidarDui()
+        {
+            ValidarCampo(ValidationRules.Dui(DUI)
+                .Concat(ValidationRules.LongitudMaxima(DUI, 20, "El DUI")), nameof(DUI));
+        }
+
         private void ValidarTelefono()
         {
             ValidarCampo(ValidationRules.Requerido(Telefono, "El teléfono")
                 .Concat(ValidationRules.TelefonoElSalvador(Telefono, "El teléfono"))
                 .Concat(ValidationRules.LongitudMaxima(Telefono, 20, "El teléfono")), nameof(Telefono));
+        }
+
+        private void ValidarNombreEncargado()
+        {
+            IEnumerable<string> errores = ValidationRules.LongitudMaxima(NombreEncargado, 150, "El nombre del encargado");
+            if (EsMenorEdad)
+            {
+                errores = ValidationRules.Requerido(NombreEncargado, "El nombre del encargado").Concat(errores);
+            }
+            ValidarCampo(errores, nameof(NombreEncargado));
         }
 
         private void ValidarSexo()
@@ -224,7 +239,6 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 LimpiarErrores(nameof(Sexo));
                 return;
             }
-
             EstablecerErrores(new[] { "El sexo seleccionado no es válido." }, nameof(Sexo));
         }
 
@@ -232,12 +246,9 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         {
             if (TieneAntecedentesMedicos && string.IsNullOrWhiteSpace(DetalleAntecedentesMedicos))
             {
-                EstablecerErrores(
-                    new[] { "Describe los antecedentes médicos indicados." },
-                    nameof(DetalleAntecedentesMedicos));
+                EstablecerErrores(new[] { "Describe los antecedentes médicos indicados." }, nameof(DetalleAntecedentesMedicos));
                 return;
             }
-
             LimpiarErrores(nameof(DetalleAntecedentesMedicos));
         }
 
@@ -245,13 +256,18 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         {
             if (TieneAntecedentesOdontologicos && string.IsNullOrWhiteSpace(DetalleAntecedentesOdontologicos))
             {
-                EstablecerErrores(
-                    new[] { "Describe los antecedentes odontológicos indicados." },
-                    nameof(DetalleAntecedentesOdontologicos));
+                EstablecerErrores(new[] { "Describe los antecedentes odontológicos indicados." }, nameof(DetalleAntecedentesOdontologicos));
                 return;
             }
-
             LimpiarErrores(nameof(DetalleAntecedentesOdontologicos));
+        }
+
+        private static int CalcularEdad(DateTime fechaNacimiento)
+        {
+            DateTime hoy = DateTime.Today;
+            int edad = hoy.Year - fechaNacimiento.Year;
+            if (fechaNacimiento.Date > hoy.AddYears(-edad)) edad--;
+            return Math.Max(0, edad);
         }
 
         private static string? LimpiarOpcional(string? valor) =>

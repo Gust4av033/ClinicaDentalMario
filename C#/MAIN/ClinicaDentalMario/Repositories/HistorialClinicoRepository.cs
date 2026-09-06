@@ -58,12 +58,17 @@ namespace ClinicaDentalMario.Repositories
         public async Task EditarConsultaAsync(HistorialClinicoModel historial)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
+
+            // Los antecedentes generales del paciente se administran en
+            // Pacientes.AntecedentesPaciente. Aquí solo se edita la información
+            // propia de la consulta para mantener ambas responsabilidades separadas.
             var parameters = new
             {
                 historial.IdHistorial,
                 historial.MotivoConsulta,
-                historial.AntecedentesMedicos,
-                historial.AntecedentesOdontologicos
+                historial.Diagnostico,
+                historial.PlanTratamiento,
+                historial.Observaciones
             };
 
             await db.ExecuteAsync(

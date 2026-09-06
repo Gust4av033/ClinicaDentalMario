@@ -24,7 +24,6 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- ENCABEZADO -->
             <StackPanel Grid.Row="0" Margin="0,0,0,18">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                     <Border Background="{StaticResource BgControlBrush}"
@@ -85,7 +84,6 @@
                 </Border>
             </StackPanel>
 
-            <!-- FORMULARIO -->
             <ScrollViewer Grid.Row="1"
                           VerticalScrollBarVisibility="Auto"
                           Padding="0,0,10,0">
@@ -112,7 +110,6 @@
                              VerticalScrollBarVisibility="Auto"
                              MaxLength="1000"/>
 
-                    <!-- ANTECEDENTES GENERALES: SOLO REFERENCIA -->
                     <StackPanel Margin="0,18,0,0">
                         <TextBlock Text="Antecedentes generales del expediente"
                                    FontSize="15"
@@ -188,7 +185,6 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- CAMBIOS DE ESTA VISITA -->
                     <StackPanel Margin="0,18,0,0">
                         <TextBlock Text="Cambios o información relevante de esta visita"
                                    FontSize="15"
@@ -275,18 +271,20 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!-- ACCIONES -->
             <Grid Grid.Row="2" Margin="0,20,0,0">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="15"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <Button Grid.Column="0"
                         Command="{Binding CerrarVentanaCommand}"
                         CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
                         Height="42"
+                        Padding="16,0"
                         Background="Transparent"
                         Foreground="{StaticResource TextSecondaryBrush}"
                         BorderBrush="{StaticResource BorderBrush}"
@@ -304,6 +302,7 @@
                         Command="{Binding GuardarConsultaCommand}"
                         CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
                         Height="42"
+                        Padding="16,0"
                         Background="{StaticResource SuccessBrush}"
                         Foreground="White"
                         FontWeight="Bold"
@@ -312,7 +311,27 @@
                         <iconPacks:PackIconMaterial Kind="ContentSave"
                                                     Margin="0,0,8,0"
                                                     Foreground="White"/>
-                        <TextBlock Text="Guardar Consulta" Foreground="White" VerticalAlignment="Center"/>
+                        <TextBlock Text="Guardar" Foreground="White" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="4"
+                        Command="{Binding GuardarYAsignarTratamientoCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                        Height="42"
+                        Padding="16,0"
+                        Background="{StaticResource AccentBrush}"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        BorderThickness="0"
+                        ToolTip="Guarda la consulta y abre el registro de tratamiento">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="ClipboardPlusOutline"
+                                                    Margin="0,0,8,0"
+                                                    Foreground="White"/>
+                        <TextBlock Text="Guardar y asignar tratamiento"
+                                   Foreground="White"
+                                   VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
             </Grid>

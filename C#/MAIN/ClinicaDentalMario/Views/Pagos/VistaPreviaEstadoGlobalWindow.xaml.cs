@@ -1,7 +1,6 @@
 ﻿using ClinicaDentalMario.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -30,21 +29,31 @@ namespace ClinicaDentalMario.Views.Pagos
 
         private void GenerarReporteGlobal()
         {
-            // Verificamos que el contenedor no sea nulo antes de limpiar
             if (ContenedorTratamientos == null) return;
 
             ContenedorTratamientos.Children.Clear();
-            decimal saldoGeneral = 0;
+            decimal saldoGeneral = 0m;
 
             foreach (var t in _tratamientos)
             {
-                decimal costo = (decimal)t.CostoTotal;
-                decimal abonado = _abonosPorTratamiento.ContainsKey(t.Id) ? _abonosPorTratamiento[t.Id] : 0;
-                decimal saldo = costo - abonado;
+                decimal costo = t.CostoTotal;
+                decimal abonado = _abonosPorTratamiento.TryGetValue(t.Id, out decimal totalAbonado)
+                    ? totalAbonado
+                    : 0m;
+
+                // Regla global de cuentas: únicamente Pendiente y En progreso mantienen
+                // saldo cobrable. Finalizado y Cancelado conservan su historial, pero saldo = 0.
+                bool generaSaldo = t.EstaPendiente || t.EstaEnProgreso;
+                decimal saldo = generaSaldo
+                    ? Math.Max(0m, costo - abonado)
+                    : 0m;
+
                 saldoGeneral += saldo;
 
-                Grid fila = new Grid();
-                fila.Margin = new Thickness(0, 5, 0, 5);
+                Grid fila = new Grid
+                {
+                    Margin = new Thickness(0, 5, 0, 5)
+                };
                 fila.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 fila.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(110) });
                 fila.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(110) });
@@ -71,8 +80,12 @@ namespace ClinicaDentalMario.Views.Pagos
 
                 ContenedorTratamientos.Children.Add(fila);
 
-                // Línea divisoria tenue entre tratamientos
-                Border linea = new Border { Height = 1, Background = new SolidColorBrush(Color.FromRgb(220, 221, 225)), Margin = new Thickness(0, 2, 0, 2) };
+                Border linea = new Border
+                {
+                    Height = 1,
+                    Background = new SolidColorBrush(Color.FromRgb(220, 221, 225)),
+                    Margin = new Thickness(0, 2, 0, 2)
+                };
                 ContenedorTratamientos.Children.Add(linea);
             }
 

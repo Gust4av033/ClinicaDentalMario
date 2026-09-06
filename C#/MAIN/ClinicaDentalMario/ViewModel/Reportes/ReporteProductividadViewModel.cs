@@ -74,8 +74,11 @@ namespace ClinicaDentalMario.ViewModel.Reportes
 
         private void ActualizarResumen()
         {
-            TotalTratamientosPeriodo = ListaProductividad.Sum(x => Convert.ToInt32(x.Cantidad));
-            TotalProyectadoPeriodo = ListaProductividad.Sum(x => Convert.ToDecimal(x.IngresoProyectado));
+            // DapperRow expone sus columnas como dynamic. Forzamos la conversión a object
+            // antes de Convert para evitar que el runtime binder intente asignar un decimal
+            // directamente a una propiedad int cuando SQL devuelve agregados numéricos.
+            TotalTratamientosPeriodo = ListaProductividad.Sum(x => Convert.ToInt32((object?)x.Cantidad));
+            TotalProyectadoPeriodo = ListaProductividad.Sum(x => Convert.ToDecimal((object?)x.IngresoProyectado));
             TiposTratamiento = ListaProductividad.Count;
         }
 

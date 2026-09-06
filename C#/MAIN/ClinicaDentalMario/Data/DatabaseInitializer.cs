@@ -111,6 +111,25 @@ namespace ClinicaDentalMario.Data
                     );
                 END;";
 
+            const string sqlIndiceDuiUnico = @"
+                IF OBJECT_ID('Pacientes.Pacientes', 'U') IS NOT NULL
+                   AND NOT EXISTS (
+                       SELECT 1
+                       FROM sys.indexes
+                       WHERE object_id = OBJECT_ID('Pacientes.Pacientes')
+                         AND name = 'UX_Pacientes_DUI')
+                   AND NOT EXISTS (
+                       SELECT DUI
+                       FROM Pacientes.Pacientes
+                       WHERE DUI IS NOT NULL
+                       GROUP BY DUI
+                       HAVING COUNT(*) > 1)
+                BEGIN
+                    CREATE UNIQUE INDEX UX_Pacientes_DUI
+                    ON Pacientes.Pacientes(DUI)
+                    WHERE DUI IS NOT NULL;
+                END;";
+
             // IMPORTANTE: agregar la columna y crear el CHECK deben ejecutarse en batches
             // separados. SQL Server compila el batch completo antes de ejecutar el ALTER,
             // por lo que referenciar una columna recién agregada en el mismo batch puede
@@ -169,6 +188,7 @@ namespace ClinicaDentalMario.Data
                 END;";
 
             await conn.ExecuteAsync(sqlAntecedentesPaciente);
+            await conn.ExecuteAsync(sqlIndiceDuiUnico);
             await conn.ExecuteAsync(sqlAgregarDuracionCita);
             await conn.ExecuteAsync(sqlNormalizarDuracionCita);
             await conn.ExecuteAsync(sqlConstraintDuracionCita);

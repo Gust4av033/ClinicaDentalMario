@@ -342,7 +342,6 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             MensajeError = string.Empty;
             EstaCargando = true;
             NotificarEstadoVacio();
-            NotificarComandos();
 
             try
             {
@@ -360,7 +359,6 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             {
                 EstaCargando = false;
                 NotificarEstadoVacio();
-                NotificarComandos();
             }
         }
 

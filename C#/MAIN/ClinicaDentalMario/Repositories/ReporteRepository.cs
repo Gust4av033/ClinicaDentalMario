@@ -26,9 +26,10 @@ namespace ClinicaDentalMario.Repositories
 
         public async Task<IEnumerable<dynamic>> ObtenerSaldosMorososAsync()
         {
-            using IDbConnection db = DatabaseConnection.GetConnection();
-            const string query = "SELECT * FROM Pacientes.vwSaldoPacientes WHERE (TotalCargos - TotalPagado) > 0";
-            return await db.QueryAsync(query);
+            // Compatibilidad con el método antiguo, pero aplicando la misma regla actual:
+            // únicamente Pendiente/En progreso generan saldo cobrable.
+            var saldos = await ObtenerSaldosPacientesAsync();
+            return saldos.Cast<dynamic>();
         }
 
         public async Task<IEnumerable<ReporteSaldoPacienteModel>> ObtenerSaldosPacientesAsync(string? termino = null)
@@ -49,7 +50,7 @@ OUTER APPLY
     SELECT SUM(tp.CostoTotal) AS TotalCargos
     FROM Odontologia.TratamientosPaciente tp
     WHERE tp.IdPaciente = p.IdPaciente
-      AND tp.Estado <> 'Cancelado'
+      AND tp.Estado IN ('Pendiente', 'En progreso')
 ) cargos
 OUTER APPLY
 (
@@ -58,7 +59,7 @@ OUTER APPLY
     INNER JOIN Odontologia.TratamientosPaciente tp
         ON tp.Id = pg.IdTratamientoPaciente
     WHERE tp.IdPaciente = p.IdPaciente
-      AND tp.Estado <> 'Cancelado'
+      AND tp.Estado IN ('Pendiente', 'En progreso')
 ) pagos
 WHERE p.Activo = 1
   AND ISNULL(cargos.TotalCargos, 0) - ISNULL(pagos.TotalPagado, 0) > 0

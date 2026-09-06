@@ -5,6 +5,8 @@ namespace ClinicaDentalMario.ViewModel.Base
     /// <summary>
     /// Comando asíncrono para WPF que evita ejecuciones simultáneas
     /// y permite deshabilitar automáticamente el botón mientras trabaja.
+    /// Integra CommandManager para que CanExecute se reevalúe también
+    /// cuando cambia la selección o el foco de controles WPF.
     /// </summary>
     public sealed class AsyncRelayCommand : ICommand
     {
@@ -27,7 +29,11 @@ namespace ClinicaDentalMario.ViewModel.Base
 
         public bool IsExecuting => _isExecuting;
 
-        public event EventHandler? CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged
+        {
+            add => CommandManager.RequerySuggested += value;
+            remove => CommandManager.RequerySuggested -= value;
+        }
 
         public bool CanExecute(object? parameter)
         {
@@ -37,9 +43,7 @@ namespace ClinicaDentalMario.ViewModel.Base
         public async void Execute(object? parameter)
         {
             if (!CanExecute(parameter))
-            {
                 return;
-            }
 
             _isExecuting = true;
             NotificarCanExecuteChanged();
@@ -57,7 +61,7 @@ namespace ClinicaDentalMario.ViewModel.Base
 
         public void NotificarCanExecuteChanged()
         {
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+            CommandManager.InvalidateRequerySuggested();
         }
     }
 }

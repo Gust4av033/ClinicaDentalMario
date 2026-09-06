@@ -163,6 +163,8 @@
 
                 <Button Grid.Column="3"
                         Command="{Binding IniciarTratamientoCommand}"
+                        CommandParameter="{Binding TratamientoSeleccionado}"
+                        IsEnabled="{Binding TratamientoSeleccionado.PuedeIniciar, FallbackValue=False, TargetNullValue=False}"
                         Height="38"
                         Background="#2D7DD2"
                         Foreground="White"
@@ -170,7 +172,7 @@
                         Padding="13,0"
                         Margin="0,0,8,0"
                         Cursor="Hand"
-                        ToolTip="Pasa un tratamiento Pendiente a En progreso">
+                        ToolTip="Selecciona un tratamiento Pendiente para iniciarlo">
                     <StackPanel Orientation="Horizontal">
                         <iconPacks:PackIconMaterial Kind="PlayCircle" Margin="0,0,6,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Iniciar" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -179,6 +181,8 @@
 
                 <Button Grid.Column="4"
                         Command="{Binding FinalizarTratamientoCommand}"
+                        CommandParameter="{Binding TratamientoSeleccionado}"
+                        IsEnabled="{Binding TratamientoSeleccionado.PuedeFinalizar, FallbackValue=False, TargetNullValue=False}"
                         Height="38"
                         Background="{StaticResource SuccessBrush}"
                         Foreground="White"
@@ -186,7 +190,7 @@
                         Padding="13,0"
                         Margin="0,0,8,0"
                         Cursor="Hand"
-                        ToolTip="Finaliza el tratamiento seleccionado">
+                        ToolTip="Selecciona un tratamiento En progreso para finalizarlo">
                     <StackPanel Orientation="Horizontal">
                         <iconPacks:PackIconMaterial Kind="CheckCircle" Margin="0,0,6,0" VerticalAlignment="Center"/>
                         <TextBlock Text="Finalizar" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -195,6 +199,8 @@
 
                 <Button Grid.Column="5"
                         Command="{Binding CancelarTratamientoCommand}"
+                        CommandParameter="{Binding TratamientoSeleccionado}"
+                        IsEnabled="{Binding TratamientoSeleccionado.PuedeCancelar, FallbackValue=False, TargetNullValue=False}"
                         Height="38"
                         Background="{StaticResource DangerBrush}"
                         Foreground="White"
@@ -293,7 +299,7 @@
             <!-- Listado -->
             <Grid Grid.Row="5">
                 <DataGrid ItemsSource="{Binding TratamientosDelPaciente}"
-                          SelectedItem="{Binding TratamientoSeleccionado}"
+                          SelectedItem="{Binding TratamientoSeleccionado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
                           IsReadOnly="True"
@@ -301,7 +307,8 @@
                           BorderThickness="0"
                           RowHeight="52"
                           FontSize="14"
-                          SelectionMode="Single">
+                          SelectionMode="Single"
+                          SelectionUnit="FullRow">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Inicio" Binding="{Binding FechaInicio, StringFormat={}{0:dd/MM/yyyy}}" Width="105"/>
                         <DataGridTextColumn Header="Tratamiento" Binding="{Binding NombreTratamiento}" Width="1.7*"/>

@@ -1,19 +1,19 @@
-﻿using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Services;
 using ClinicaDentalMario.ViewModel.Base;
-using System;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 
 namespace ClinicaDentalMario.ViewModel.Tratamientos
 {
     public class EditarTratamientoViewModel : ViewModelBase
     {
-        private readonly TratamientoRepository _tratamientoRepo;
+        private readonly TratamientoRepository _tratamientoRepository;
+        private readonly IMessageService _messageService;
+        private readonly IExceptionHandler _exceptionHandler;
+
         public int IdTratamientoPaciente { get; }
         public string NombreTratamientoTexto { get; }
-
-        public bool FueActualizado { get; private set; } = false;
+        public bool FueActualizado { get; private set; }
 
         private decimal _costoTotal;
         public decimal CostoTotal
@@ -26,63 +26,113 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
         public string Observaciones
         {
             get => _observaciones;
-            set => SetProperty(ref _observaciones, value);
+            set => SetProperty(ref _observaciones, value ?? string.Empty);
         }
 
         private string _mensajeError = string.Empty;
         public string MensajeError
         {
             get => _mensajeError;
-            set => SetProperty(ref _mensajeError, value);
+            private set => SetProperty(ref _mensajeError, value);
         }
 
-        public ICommand GuardarCommand { get; }
-        public ICommand CancelarCommand { get; }
+        public AsyncRelayCommand GuardarCommand { get; }
+        public RelayCommand CancelarCommand { get; }
 
-        public EditarTratamientoViewModel(int idTratamientoPaciente, string nombreTratamiento, decimal costo, string observaciones)
+        public EditarTratamientoViewModel(
+            int idTratamientoPaciente,
+            string nombreTratamiento,
+            decimal costo,
+            string? observaciones)
+            : this(
+                idTratamientoPaciente,
+                nombreTratamiento,
+                costo,
+                observaciones,
+                new TratamientoRepository(),
+                new MessageService(),
+                new ExceptionHandler(new MessageService()))
         {
-            _tratamientoRepo = new TratamientoRepository();
+        }
 
-            // Cargamos los datos actuales
+        public EditarTratamientoViewModel(
+            int idTratamientoPaciente,
+            string nombreTratamiento,
+            decimal costo,
+            string? observaciones,
+            TratamientoRepository tratamientoRepository,
+            IMessageService messageService,
+            IExceptionHandler exceptionHandler)
+        {
+            if (idTratamientoPaciente <= 0)
+                throw new ArgumentOutOfRangeException(nameof(idTratamientoPaciente));
+
+            _tratamientoRepository = tratamientoRepository ?? throw new ArgumentNullException(nameof(tratamientoRepository));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+
             IdTratamientoPaciente = idTratamientoPaciente;
             NombreTratamientoTexto = $"Procedimiento: {nombreTratamiento}";
             CostoTotal = costo;
             Observaciones = observaciones ?? string.Empty;
+            Titulo = "Editar Tratamiento";
 
-            GuardarCommand = new RelayCommand(async (param) => await GuardarAsync(param));
+            GuardarCommand = new AsyncRelayCommand(GuardarAsync);
             CancelarCommand = new RelayCommand(Cancelar);
         }
 
         private async Task GuardarAsync(object? parameter)
         {
+            MensajeError = string.Empty;
+
             if (CostoTotal < 0)
             {
                 MensajeError = "El costo no puede ser un número negativo.";
                 return;
             }
 
+            EstaCargando = true;
+
             try
             {
-                // 🔥 Asegúrate de tener este método en tu TratamientoRepository
-                await _tratamientoRepo.ActualizarTratamientoAsync(IdTratamientoPaciente, CostoTotal, Observaciones);
+                await _tratamientoRepository.ActualizarTratamientoAsync(
+                    IdTratamientoPaciente,
+                    CostoTotal,
+                    Observaciones);
 
                 FueActualizado = true;
-                MessageBox.Show("Tratamiento actualizado correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                Cancelar(parameter); // Cierra la ventana
+                _messageService.MostrarExito("Tratamiento actualizado correctamente.");
+                CerrarVentana(parameter, true);
             }
             catch (Exception ex)
             {
-                MensajeError = "Error al actualizar: " + ex.Message;
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible actualizar el tratamiento.");
+            }
+            finally
+            {
+                EstaCargando = false;
             }
         }
 
         private void Cancelar(object? parameter)
         {
-            if (parameter is Window ventana)
+            CerrarVentana(parameter, FueActualizado);
+        }
+
+        private static void CerrarVentana(object? parameter, bool resultado)
+        {
+            if (parameter is not Window ventana)
+                return;
+
+            if (resultado)
             {
-                if (FueActualizado) ventana.DialogResult = true;
-                ventana.Close();
+                ventana.DialogResult = true;
+                return;
             }
+
+            ventana.Close();
         }
     }
 }

@@ -10,43 +10,39 @@ namespace ClinicaDentalMario.Data
     {
         public static async Task InicializarBaseDeDatosAsync()
         {
-            bool baseCreadaAhora;
+            bool baseExistente;
 
-            using (var conn = new SqlConnection(AppSettings.MasterConnectionString))
+            // Primero solo consultamos master. Si la BD ya existe, nunca se recrea ni se
+            // modifica automáticamente: puede contener información real de producción.
+            using (var master = new SqlConnection(AppSettings.MasterConnectionString))
             {
-                await conn.OpenAsync();
+                await master.OpenAsync();
 
-                int existeBase = await conn.ExecuteScalarAsync<int>(
+                int existeBase = await master.ExecuteScalarAsync<int>(
                     "SELECT COUNT(*) FROM sys.databases WHERE name = @NombreBase",
                     new { NombreBase = AppSettings.DatabaseName });
 
-                baseCreadaAhora = existeBase == 0;
+                baseExistente = existeBase > 0;
 
-                if (baseCreadaAhora)
+                if (!baseExistente)
                 {
-                    await conn.ExecuteAsync($"CREATE DATABASE [{AppSettings.DatabaseName}];");
+                    // Instalación nueva: Script00 es el instalador inicial de la BD.
+                    // Se ejecuta desde master para que pueda crear la base sin intentar
+                    // eliminar una BD a la que la propia conexión esté conectada.
+                    await EjecutarScriptInicialAsync(master);
                 }
             }
 
-            using (var conn = new SqlConnection(AppSettings.ConnectionString))
+            using var conn = new SqlConnection(AppSettings.ConnectionString);
+            await conn.OpenAsync();
+
+            await ValidarEstructuraMinimaAsync(conn);
+
+            if (!baseExistente)
             {
-                await conn.OpenAsync();
-
-                int existeEstructura = await conn.ExecuteScalarAsync<int>(
-                    "SELECT COUNT(*) FROM sys.tables t JOIN sys.schemas s ON t.schema_id = s.schema_id WHERE s.name = 'Pacientes' AND t.name = 'Pacientes'");
-
-                if (existeEstructura == 0)
-                {
-                    if (!baseCreadaAhora)
-                    {
-                        throw new InvalidOperationException(
-                            "La base de datos existe, pero no contiene la estructura esperada. No se ejecutará el script inicial automáticamente para evitar pérdida de datos.");
-                    }
-
-                    await EjecutarScriptInicialAsync(conn);
-                }
-
-                await AplicarActualizacionesEsquemaAsync(conn);
+                // Solo una instalación nueva puede recibir ajustes automáticos de esquema.
+                // Una BD existente nunca pasa por este método.
+                await AplicarActualizacionesInstalacionNuevaAsync(conn);
             }
         }
 
@@ -91,7 +87,39 @@ namespace ClinicaDentalMario.Data
             }
         }
 
-        private static async Task AplicarActualizacionesEsquemaAsync(SqlConnection conn)
+        private static async Task ValidarEstructuraMinimaAsync(SqlConnection conn)
+        {
+            const string sql = @"
+                SELECT
+                    CASE WHEN OBJECT_ID('Pacientes.Pacientes', 'U') IS NOT NULL THEN 1 ELSE 0 END AS TienePacientes,
+                    CASE WHEN OBJECT_ID('Pacientes.HistorialClinico', 'U') IS NOT NULL THEN 1 ELSE 0 END AS TieneHistorial,
+                    CASE WHEN OBJECT_ID('Pacientes.AntecedentesPaciente', 'U') IS NOT NULL THEN 1 ELSE 0 END AS TieneAntecedentes,
+                    CASE WHEN OBJECT_ID('Personal.Doctores', 'U') IS NOT NULL THEN 1 ELSE 0 END AS TieneDoctores,
+                    CASE WHEN OBJECT_ID('Seguridad.Usuarios', 'U') IS NOT NULL THEN 1 ELSE 0 END AS TieneUsuarios;";
+
+            var estado = await conn.QuerySingleAsync<EstructuraMinima>(sql);
+            var faltantes = new List<string>();
+
+            if (estado.TienePacientes == 0)
+                faltantes.Add("Pacientes.Pacientes");
+            if (estado.TieneHistorial == 0)
+                faltantes.Add("Pacientes.HistorialClinico");
+            if (estado.TieneAntecedentes == 0)
+                faltantes.Add("Pacientes.AntecedentesPaciente");
+            if (estado.TieneDoctores == 0)
+                faltantes.Add("Personal.Doctores");
+            if (estado.TieneUsuarios == 0)
+                faltantes.Add("Seguridad.Usuarios");
+
+            if (faltantes.Count > 0)
+            {
+                throw new InvalidOperationException(
+                    "La base de datos existente no tiene toda la estructura requerida por esta versión. " +
+                    "No se realizaron cambios automáticos. Faltan: " + string.Join(", ", faltantes));
+            }
+        }
+
+        private static async Task AplicarActualizacionesInstalacionNuevaAsync(SqlConnection conn)
         {
             const string sqlAntecedentesPaciente = @"
                 IF OBJECT_ID('Pacientes.AntecedentesPaciente', 'U') IS NULL
@@ -130,10 +158,6 @@ namespace ClinicaDentalMario.Data
                     WHERE DUI IS NOT NULL;
                 END;";
 
-            // IMPORTANTE: agregar la columna y crear el CHECK deben ejecutarse en batches
-            // separados. SQL Server compila el batch completo antes de ejecutar el ALTER,
-            // por lo que referenciar una columna recién agregada en el mismo batch puede
-            // producir "Invalid column name 'DuracionMinutos'".
             const string sqlAgregarDuracionCita = @"
                 IF OBJECT_ID('Agenda.Citas', 'U') IS NOT NULL
                    AND COL_LENGTH('Agenda.Citas', 'DuracionMinutos') IS NULL
@@ -193,6 +217,15 @@ namespace ClinicaDentalMario.Data
             await conn.ExecuteAsync(sqlNormalizarDuracionCita);
             await conn.ExecuteAsync(sqlConstraintDuracionCita);
             await conn.ExecuteAsync(sqlFuncionProximaCita);
+        }
+
+        private sealed class EstructuraMinima
+        {
+            public int TienePacientes { get; set; }
+            public int TieneHistorial { get; set; }
+            public int TieneAntecedentes { get; set; }
+            public int TieneDoctores { get; set; }
+            public int TieneUsuarios { get; set; }
         }
     }
 }

@@ -9,15 +9,33 @@ namespace ClinicaDentalMario.Repositories
     {
         public async Task<IEnumerable<AgendaCitaModel>> ObtenerCitasPorFechaAsync(DateTime fecha)
         {
+            return await ObtenerCitasAsync(
+                fecha.Date,
+                fecha.Date.AddDays(1));
+        }
+
+        public async Task<IEnumerable<AgendaCitaModel>> ObtenerCitasAsync(
+            DateTime? fechaDesde = null,
+            DateTime? fechaHastaExclusiva = null,
+            int? idDoctor = null,
+            int? idEstado = null,
+            string? termino = null)
+        {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            const string sql = @"
+            bool tieneDuracion = await TieneDuracionMinutosAsync(db);
+
+            string columnaDuracion = tieneDuracion
+                ? "c.DuracionMinutos"
+                : "30 AS DuracionMinutos";
+
+            string sql = $@"
                 SELECT
                     c.IdCita,
                     c.IdPaciente,
                     c.IdDoctor,
                     c.IdEstado,
                     c.FechaHora,
-                    c.DuracionMinutos,
+                    {columnaDuracion},
                     c.Observaciones,
                     p.NombreCompleto AS Paciente,
                     p.Telefono AS TelefonoPaciente,
@@ -27,10 +45,30 @@ namespace ClinicaDentalMario.Repositories
                 INNER JOIN Pacientes.Pacientes p ON c.IdPaciente = p.IdPaciente
                 INNER JOIN Personal.Doctores d ON c.IdDoctor = d.IdDoctor
                 INNER JOIN Catalogos.EstadosCita e ON c.IdEstado = e.IdEstado
-                WHERE CAST(c.FechaHora AS DATE) = CAST(@Fecha AS DATE)
+                WHERE (@FechaDesde IS NULL OR c.FechaHora >= @FechaDesde)
+                  AND (@FechaHasta IS NULL OR c.FechaHora < @FechaHasta)
+                  AND (@IdDoctor IS NULL OR c.IdDoctor = @IdDoctor)
+                  AND (@IdEstado IS NULL OR c.IdEstado = @IdEstado)
+                  AND (
+                        @Termino IS NULL
+                        OR p.NombreCompleto LIKE '%' + @Termino + '%'
+                        OR p.Telefono LIKE '%' + @Termino + '%'
+                        OR p.DUI LIKE '%' + @Termino + '%'
+                      )
                 ORDER BY c.FechaHora ASC;";
 
-            return await db.QueryAsync<AgendaCitaModel>(sql, new { Fecha = fecha.Date });
+            string? terminoNormalizado = string.IsNullOrWhiteSpace(termino)
+                ? null
+                : termino.Trim();
+
+            return await db.QueryAsync<AgendaCitaModel>(sql, new
+            {
+                FechaDesde = fechaDesde,
+                FechaHasta = fechaHastaExclusiva,
+                IdDoctor = idDoctor,
+                IdEstado = idEstado,
+                Termino = terminoNormalizado
+            });
         }
 
         public async Task<IEnumerable<EstadoCitaModel>> ObtenerEstadosAsync()
@@ -53,6 +91,12 @@ namespace ClinicaDentalMario.Repositories
                 WHERE Nombre = @NombreEstado;";
 
             return await db.QuerySingleOrDefaultAsync<int?>(sql, new { NombreEstado = nombreEstado });
+        }
+
+        public async Task<bool> SoportaDuracionPersonalizadaAsync()
+        {
+            using IDbConnection db = DatabaseConnection.GetConnection();
+            return await TieneDuracionMinutosAsync(db);
         }
 
         public Task<bool> ExisteConflictoDoctorAsync(
@@ -91,17 +135,22 @@ namespace ClinicaDentalMario.Repositories
             int? excluirIdCita)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
+            bool tieneDuracion = await TieneDuracionMinutosAsync(db);
             DateTime fechaHoraFin = fechaHoraInicio.AddMinutes(duracionMinutos);
+
+            string expresionFinCita = tieneDuracion
+                ? "DATEADD(MINUTE, c.DuracionMinutos, c.FechaHora)"
+                : "DATEADD(MINUTE, 30, c.FechaHora)";
 
             string sql = $@"
                 SELECT COUNT(1)
                 FROM Agenda.Citas c
                 INNER JOIN Catalogos.EstadosCita e ON c.IdEstado = e.IdEstado
                 WHERE {filtroEntidad}
-                  AND e.Nombre NOT IN ('Cancelada', 'No Asistió')
+                  AND e.Nombre NOT IN ('Atendida', 'Cancelada', 'No Asistió')
                   AND (@ExcluirIdCita IS NULL OR c.IdCita <> @ExcluirIdCita)
                   AND c.FechaHora < @FechaHoraFin
-                  AND DATEADD(MINUTE, c.DuracionMinutos, c.FechaHora) > @FechaHoraInicio;";
+                  AND {expresionFinCita} > @FechaHoraInicio;";
 
             int cantidad = await db.ExecuteScalarAsync<int>(sql, new
             {
@@ -117,11 +166,19 @@ namespace ClinicaDentalMario.Repositories
         public async Task InsertarAsync(CitaModel cita)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            const string sql = @"
-                INSERT INTO Agenda.Citas
-                    (IdPaciente, IdDoctor, IdEstado, FechaHora, DuracionMinutos, Observaciones)
-                VALUES
-                    (@IdPaciente, @IdDoctor, @IdEstado, @FechaHora, @DuracionMinutos, @Observaciones);";
+            bool tieneDuracion = await TieneDuracionMinutosAsync(db);
+
+            string sql = tieneDuracion
+                ? @"
+                    INSERT INTO Agenda.Citas
+                        (IdPaciente, IdDoctor, IdEstado, FechaHora, DuracionMinutos, Observaciones)
+                    VALUES
+                        (@IdPaciente, @IdDoctor, @IdEstado, @FechaHora, @DuracionMinutos, @Observaciones);"
+                : @"
+                    INSERT INTO Agenda.Citas
+                        (IdPaciente, IdDoctor, IdEstado, FechaHora, Observaciones)
+                    VALUES
+                        (@IdPaciente, @IdDoctor, @IdEstado, @FechaHora, @Observaciones);";
 
             await db.ExecuteAsync(sql, new
             {
@@ -129,7 +186,7 @@ namespace ClinicaDentalMario.Repositories
                 cita.IdDoctor,
                 cita.IdEstado,
                 cita.FechaHora,
-                cita.DuracionMinutos,
+                DuracionMinutos = tieneDuracion ? cita.DuracionMinutos : 30,
                 Observaciones = string.IsNullOrWhiteSpace(cita.Observaciones)
                     ? null
                     : cita.Observaciones.Trim()
@@ -145,14 +202,24 @@ namespace ClinicaDentalMario.Repositories
             string? observaciones)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            const string sql = @"
-                UPDATE Agenda.Citas
-                SET IdDoctor = @IdDoctor,
-                    IdEstado = @IdEstado,
-                    FechaHora = @FechaHora,
-                    DuracionMinutos = @DuracionMinutos,
-                    Observaciones = @Observaciones
-                WHERE IdCita = @IdCita;";
+            bool tieneDuracion = await TieneDuracionMinutosAsync(db);
+
+            string sql = tieneDuracion
+                ? @"
+                    UPDATE Agenda.Citas
+                    SET IdDoctor = @IdDoctor,
+                        IdEstado = @IdEstado,
+                        FechaHora = @FechaHora,
+                        DuracionMinutos = @DuracionMinutos,
+                        Observaciones = @Observaciones
+                    WHERE IdCita = @IdCita;"
+                : @"
+                    UPDATE Agenda.Citas
+                    SET IdDoctor = @IdDoctor,
+                        IdEstado = @IdEstado,
+                        FechaHora = @FechaHora,
+                        Observaciones = @Observaciones
+                    WHERE IdCita = @IdCita;";
 
             await db.ExecuteAsync(sql, new
             {
@@ -160,7 +227,7 @@ namespace ClinicaDentalMario.Repositories
                 IdDoctor = idDoctor,
                 IdEstado = idEstado,
                 FechaHora = fechaHora,
-                DuracionMinutos = duracionMinutos,
+                DuracionMinutos = tieneDuracion ? duracionMinutos : 30,
                 Observaciones = string.IsNullOrWhiteSpace(observaciones)
                     ? null
                     : observaciones.Trim()
@@ -188,6 +255,18 @@ namespace ClinicaDentalMario.Repositories
                 WHERE IdCita = @IdCita;";
 
             await db.ExecuteAsync(sql, new { IdCita = idCita, NombreEstado = nombreEstado });
+        }
+
+        private static async Task<bool> TieneDuracionMinutosAsync(IDbConnection db)
+        {
+            const string sql = @"
+                SELECT CASE
+                    WHEN COL_LENGTH('Agenda.Citas', 'DuracionMinutos') IS NULL THEN 0
+                    ELSE 1
+                END;";
+
+            int resultado = await db.ExecuteScalarAsync<int>(sql);
+            return resultado == 1;
         }
     }
 }

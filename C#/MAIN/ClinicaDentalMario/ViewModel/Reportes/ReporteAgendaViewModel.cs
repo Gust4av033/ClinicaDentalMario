@@ -48,9 +48,16 @@ namespace ClinicaDentalMario.ViewModel.Reportes
         private int _noAsistio;
         public int NoAsistio { get => _noAsistio; private set => SetProperty(ref _noAsistio, value); }
 
-        public double TasaAsistencia => TotalCitas == 0
-            ? 0
-            : Math.Round((double)Atendidas / TotalCitas * 100, 1);
+        public double TasaAsistencia
+        {
+            get
+            {
+                int citasEvaluables = Atendidas + NoAsistio;
+                return citasEvaluables == 0
+                    ? 0
+                    : Math.Round((double)Atendidas / citasEvaluables * 100, 1);
+            }
+        }
 
         public AsyncRelayCommand GenerarReporteCommand { get; }
         public ICommand ExportarPdfCommand { get; }

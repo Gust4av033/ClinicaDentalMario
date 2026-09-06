@@ -36,14 +36,15 @@ namespace ClinicaDentalMario.Data
             using var conn = new SqlConnection(AppSettings.ConnectionString);
             await conn.OpenAsync();
 
-            await ValidarEstructuraMinimaAsync(conn);
-
             if (!baseExistente)
             {
                 // Solo una instalación nueva puede recibir ajustes automáticos de esquema.
                 // Una BD existente nunca pasa por este método.
                 await AplicarActualizacionesInstalacionNuevaAsync(conn);
             }
+
+            // En producción esta operación es exclusivamente de lectura.
+            await ValidarEstructuraMinimaAsync(conn);
         }
 
         private static async Task EjecutarScriptInicialAsync(SqlConnection conn)

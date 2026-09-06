@@ -245,16 +245,42 @@ namespace ClinicaDentalMario.Repositories
 
         public async Task CambiarEstadoCitaAsync(int idCita, string nombreEstado)
         {
+            if (string.IsNullOrWhiteSpace(nombreEstado))
+                throw new ArgumentException("Debe indicar un estado de cita válido.", nameof(nombreEstado));
+
             using IDbConnection db = DatabaseConnection.GetConnection();
-            const string sql = @"
+
+            const string sqlEstado = @"
+                SELECT TOP 1 IdEstado
+                FROM Catalogos.EstadosCita
+                WHERE Nombre = @NombreEstado;";
+
+            int? idEstado = await db.QuerySingleOrDefaultAsync<int?>(
+                sqlEstado,
+                new { NombreEstado = nombreEstado.Trim() });
+
+            if (!idEstado.HasValue)
+            {
+                throw new InvalidOperationException(
+                    $"No se encontró el estado de cita '{nombreEstado}' en el catálogo.");
+            }
+
+            const string sqlActualizar = @"
                 UPDATE Agenda.Citas
-                SET IdEstado = (
-                    SELECT TOP 1 IdEstado
-                    FROM Catalogos.EstadosCita
-                    WHERE Nombre = @NombreEstado)
+                SET IdEstado = @IdEstado
                 WHERE IdCita = @IdCita;";
 
-            await db.ExecuteAsync(sql, new { IdCita = idCita, NombreEstado = nombreEstado });
+            int filas = await db.ExecuteAsync(sqlActualizar, new
+            {
+                IdCita = idCita,
+                IdEstado = idEstado.Value
+            });
+
+            if (filas == 0)
+            {
+                throw new InvalidOperationException(
+                    "La cita ya no existe o no pudo ser actualizada.");
+            }
         }
 
         private static async Task<bool> TieneDuracionMinutosAsync(IDbConnection db)

@@ -50,7 +50,9 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
 
                 if (value is null)
                 {
+                    EstaCargando = false;
                     TratamientosDelPaciente = new ObservableCollection<TratamientoPacienteModel>();
+                    NotificarEstadoVacio();
                     return;
                 }
 

@@ -143,7 +143,7 @@
     </Style>
 
     <!-- ================= DATE PICKER ================= -->
-    <!-- Conservamos el template nativo para no romper PART_* ni navegación del Calendar. -->
+    <!-- Conservamos el template nativo del DatePicker; solo estilizamos sus partes visuales. -->
     <Style TargetType="DatePicker">
         <Setter Property="Background" Value="{StaticResource BgControlBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
@@ -161,11 +161,45 @@
         </Style.Triggers>
     </Style>
 
+    <!--
+        DatePickerTextBox hereda de TextBox. Usamos PART_ContentHost directamente
+        para que el texto escrito, el cursor y la selección respeten siempre el tema
+        oscuro, independientemente del tema nativo de Windows.
+    -->
     <Style TargetType="DatePickerTextBox">
         <Setter Property="Background" Value="{StaticResource BgControlBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="CaretBrush" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="SelectionBrush" Value="{StaticResource AccentBrush}"/>
+        <Setter Property="SelectionTextBrush" Value="White"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DatePickerTextBox">
+                    <Border x:Name="DateTextBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <ScrollViewer x:Name="PART_ContentHost"
+                                      Focusable="False"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Hidden"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="DateTextBorder" Property="Background" Value="{StaticResource BgControlHoverBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="DateTextBorder" Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
 </ResourceDictionary>

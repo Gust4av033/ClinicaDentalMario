@@ -82,10 +82,23 @@ namespace ClinicaDentalMario.Repositories
         public async Task FinalizarTratamientoAsync(int idTratamientoPaciente)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();
-            await db.ExecuteAsync(
-                "Odontologia.sp_FinalizarTratamiento",
-                new { IdTratamientoPaciente = idTratamientoPaciente },
-                commandType: CommandType.StoredProcedure);
+            const string sql = @"
+                UPDATE Odontologia.TratamientosPaciente
+                SET Estado = 'Finalizado',
+                    FechaFin = GETDATE()
+                WHERE Id = @IdTratamientoPaciente
+                  AND Estado = 'En progreso';";
+
+            int filas = await db.ExecuteAsync(sql, new
+            {
+                IdTratamientoPaciente = idTratamientoPaciente
+            });
+
+            if (filas == 0)
+            {
+                throw new InvalidOperationException(
+                    "Solo un tratamiento en progreso puede marcarse como finalizado.");
+            }
         }
 
         public async Task CambiarEstadoTratamientoAsync(
@@ -111,14 +124,37 @@ namespace ClinicaDentalMario.Repositories
             }
 
             using IDbConnection db = DatabaseConnection.GetConnection();
-            await db.ExecuteAsync(
-                "Odontologia.sp_ActualizarEstadoTratamiento",
-                new
-                {
-                    IdTratamientoPaciente = idTratamientoPaciente,
-                    NuevoEstado = estadoNormalizado
-                },
-                commandType: CommandType.StoredProcedure);
+
+            string sql = estadoNormalizado switch
+            {
+                "En progreso" => @"
+                    UPDATE Odontologia.TratamientosPaciente
+                    SET Estado = 'En progreso'
+                    WHERE Id = @IdTratamientoPaciente
+                      AND Estado = 'Pendiente';",
+                "Cancelado" => @"
+                    UPDATE Odontologia.TratamientosPaciente
+                    SET Estado = 'Cancelado'
+                    WHERE Id = @IdTratamientoPaciente
+                      AND Estado IN ('Pendiente', 'En progreso');",
+                "Pendiente" => @"
+                    UPDATE Odontologia.TratamientosPaciente
+                    SET Estado = 'Pendiente'
+                    WHERE Id = @IdTratamientoPaciente
+                      AND Estado = 'Pendiente';",
+                _ => throw new InvalidOperationException("Transición de estado no soportada.")
+            };
+
+            int filas = await db.ExecuteAsync(sql, new
+            {
+                IdTratamientoPaciente = idTratamientoPaciente
+            });
+
+            if (filas == 0)
+            {
+                throw new InvalidOperationException(
+                    "El tratamiento cambió de estado o la transición solicitada ya no es válida.");
+            }
         }
 
         public async Task<int?> ObtenerIdTratamientoActivoAsync(int idPaciente)

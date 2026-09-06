@@ -126,6 +126,30 @@ namespace ClinicaDentalMario.Repositories
             return (usuarios, acciones, tablas);
         }
 
+        public async Task RegistrarMovimientoAsync(
+            string usuario,
+            string accion,
+            string tabla,
+            string? detalle = null)
+        {
+            using IDbConnection db = DatabaseConnection.GetConnection();
+
+            const string sql = @"
+                INSERT INTO Seguridad.Bitacora
+                    (Usuario, Accion, Tabla, Equipo, RegistroAfectado)
+                VALUES
+                    (LEFT(@Usuario, 100), LEFT(@Accion, 50), LEFT(@Tabla, 100), LEFT(@Equipo, 100), @Detalle);";
+
+            await db.ExecuteAsync(sql, new
+            {
+                Usuario = string.IsNullOrWhiteSpace(usuario) ? "Sistema" : usuario.Trim(),
+                Accion = string.IsNullOrWhiteSpace(accion) ? "EVENTO" : accion.Trim(),
+                Tabla = string.IsNullOrWhiteSpace(tabla) ? "Aplicacion" : tabla.Trim(),
+                Equipo = Environment.MachineName,
+                Detalle = string.IsNullOrWhiteSpace(detalle) ? null : detalle.Trim()
+            });
+        }
+
         private static object CrearParametros(
             string? textoBusqueda,
             string? usuario,

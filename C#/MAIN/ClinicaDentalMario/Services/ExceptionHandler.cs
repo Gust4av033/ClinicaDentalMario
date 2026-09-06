@@ -2,12 +2,13 @@ using Microsoft.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
+using System.Text;
 
 namespace ClinicaDentalMario.Services
 {
     /// <summary>
     /// Manejo central de excepciones de la aplicación.
-    /// No expone detalles técnicos al usuario y deja un único punto para incorporar logging más adelante.
+    /// No expone detalles técnicos al usuario y conserva un log local para diagnóstico.
     /// </summary>
     public sealed class ExceptionHandler : IExceptionHandler
     {
@@ -43,10 +44,34 @@ namespace ClinicaDentalMario.Services
         {
             ArgumentNullException.ThrowIfNull(exception);
 
-            // Deja disponible el detalle técnico durante desarrollo sin mostrárselo al usuario.
-            Debug.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {contexto ?? "Error no controlado"}: {exception}");
+            string detalle = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {contexto ?? "Error no controlado"}: {exception}";
+            Debug.WriteLine(detalle);
+            RegistrarEnArchivo(detalle);
 
             _messageService.MostrarError(ObtenerMensajeUsuario(exception, contexto));
+        }
+
+        private static void RegistrarEnArchivo(string detalle)
+        {
+            try
+            {
+                string carpeta = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "CDMario",
+                    "Logs");
+
+                Directory.CreateDirectory(carpeta);
+                string archivo = Path.Combine(carpeta, "errors.log");
+
+                File.AppendAllText(
+                    archivo,
+                    detalle + Environment.NewLine + Environment.NewLine,
+                    Encoding.UTF8);
+            }
+            catch
+            {
+                // Un fallo al escribir el log nunca debe interferir con la aplicación.
+            }
         }
     }
 }

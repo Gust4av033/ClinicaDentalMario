@@ -4,7 +4,6 @@ using ClinicaDentalMario.Services;
 using ClinicaDentalMario.ViewModel.Base;
 using ClinicaDentalMario.Views.Pagos;
 using System.Collections.ObjectModel;
-using System.Windows.Data;
 
 namespace ClinicaDentalMario.ViewModel.Pagos
 {
@@ -18,6 +17,9 @@ namespace ClinicaDentalMario.ViewModel.Pagos
         private readonly IMessageService _messageService;
         private readonly IExceptionHandler _exceptionHandler;
 
+        private List<PacienteModel> _pacientesTodos = new();
+        private List<TratamientoPacienteModel> _tratamientosTodos = new();
+        private List<PagoModel> _pagosTodos = new();
         private Dictionary<int, decimal> _totalesPagadosPorTratamiento = new();
         private int _versionCargaTratamientos;
         private int _versionCargaPagos;
@@ -26,11 +28,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
         public ObservableCollection<PacienteModel> ListaPacientes
         {
             get => _listaPacientes;
-            private set
-            {
-                if (SetProperty(ref _listaPacientes, value))
-                    AplicarFiltroPacientes();
-            }
+            private set => SetProperty(ref _listaPacientes, value);
         }
 
         private PacienteModel? _pacienteSeleccionado;
@@ -44,13 +42,12 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
                 Interlocked.Increment(ref _versionCargaTratamientos);
                 Interlocked.Increment(ref _versionCargaPagos);
-
                 LimpiarEstadoCuentaCompleto();
-                NotificarComandos();
                 NotificarEstadoVacio();
+                NotificarComandos();
 
                 if (value is not null)
-                    _ = CargarTratamientosPacienteAsync(value.IdPaciente);
+                    _ = CargarTratamientosSeguroAsync(value.IdPaciente);
             }
         }
 
@@ -69,14 +66,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
         public ObservableCollection<TratamientoPacienteModel> ListaTratamientos
         {
             get => _listaTratamientos;
-            private set
-            {
-                if (!SetProperty(ref _listaTratamientos, value))
-                    return;
-
-                AplicarFiltroTratamientos();
-                NotificarResumenPaciente();
-            }
+            private set => SetProperty(ref _listaTratamientos, value);
         }
 
         private TratamientoPacienteModel? _tratamientoSeleccionado;
@@ -103,12 +93,15 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                         ? total
                         : 0m;
                     EstadoTratamiento = value.Estado ?? string.Empty;
+                    _pagosTodos = new List<PagoModel>();
                     HistorialPagos = new ObservableCollection<PagoModel>();
-                    _ = CargarEstadoCuentaTratamientoAsync(value);
+                    _ = CargarPagosSeguroAsync(value);
                 }
 
-                NotificarComandos();
+                OnPropertyChanged(nameof(PuedeRegistrarAbono));
+                OnPropertyChanged(nameof(MensajeAccionPago));
                 NotificarEstadoVacio();
+                NotificarComandos();
             }
         }
 
@@ -176,7 +169,40 @@ namespace ClinicaDentalMario.ViewModel.Pagos
         public string EstadoTratamiento
         {
             get => _estadoTratamiento;
-            private set => SetProperty(ref _estadoTratamiento, value);
+            private set
+            {
+                if (SetProperty(ref _estadoTratamiento, value))
+                {
+                    OnPropertyChanged(nameof(PuedeRegistrarAbono));
+                    OnPropertyChanged(nameof(MensajeAccionPago));
+                    NuevoAbonoCommand?.NotificarCanExecuteChanged();
+                }
+            }
+        }
+
+        public bool PuedeRegistrarAbono => TratamientoSeleccionado is not null
+            && PuedeRecibirAbonos(TratamientoSeleccionado)
+            && SaldoPendiente > 0m
+            && !EstaCargando;
+
+        public string MensajeAccionPago
+        {
+            get
+            {
+                if (TratamientoSeleccionado is null)
+                    return string.Empty;
+
+                if (TratamientoSeleccionado.EstaFinalizado)
+                    return "Tratamiento finalizado: el historial queda disponible solo para consulta y recibos.";
+
+                if (TratamientoSeleccionado.EstaCancelado)
+                    return "Tratamiento cancelado: no se permiten nuevos abonos.";
+
+                if (SaldoPendiente <= 0m)
+                    return "Tratamiento liquidado: no existe saldo pendiente.";
+
+                return string.Empty;
+            }
         }
 
         private decimal _totalCargosPaciente;
@@ -207,11 +233,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
         public ObservableCollection<PagoModel> HistorialPagos
         {
             get => _historialPagos;
-            private set
-            {
-                if (SetProperty(ref _historialPagos, value))
-                    AplicarFiltroPagos();
-            }
+            private set => SetProperty(ref _historialPagos, value);
         }
 
         private PagoModel? _pagoSeleccionado;
@@ -243,17 +265,9 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             private set => SetProperty(ref _mensajeError, value);
         }
 
-        public bool SinResultadosTratamientos
-        {
-            get
-            {
-                if (EstaCargando || PacienteSeleccionado is null)
-                    return false;
-
-                var vista = CollectionViewSource.GetDefaultView(ListaTratamientos);
-                return vista.IsEmpty;
-            }
-        }
+        public bool SinResultadosTratamientos => !EstaCargando
+            && PacienteSeleccionado is not null
+            && ListaTratamientos.Count == 0;
 
         public string TextoEstadoTratamientos
         {
@@ -262,7 +276,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                 if (PacienteSeleccionado is null)
                     return "Selecciona un paciente para consultar su estado de cuenta.";
 
-                if (ListaTratamientos.Count == 0)
+                if (_tratamientosTodos.Count == 0)
                     return "Este paciente todavía no tiene tratamientos registrados.";
 
                 return "No hay tratamientos que coincidan con los filtros actuales.";
@@ -275,7 +289,9 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
         public string TextoHistorialPagos => TratamientoSeleccionado is null
             ? "Selecciona un tratamiento para consultar sus abonos."
-            : "Este tratamiento aún no tiene abonos registrados.";
+            : _pagosTodos.Count == 0
+                ? "Este tratamiento aún no tiene abonos registrados."
+                : "No hay abonos que coincidan con la búsqueda.";
 
         public AsyncRelayCommand NuevoAbonoCommand { get; }
         public RelayCommand VerDetalleCommand { get; }
@@ -314,7 +330,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
             NuevoAbonoCommand = new AsyncRelayCommand(
                 _ => AbrirNuevoAbonoAsync(),
-                _ => TratamientoSeleccionado is not null && SaldoPendiente > 0m && !EstaCargando);
+                _ => PuedeRegistrarAbono);
 
             VerDetalleCommand = new RelayCommand(
                 VerDetalleAbono,
@@ -326,7 +342,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
             ImprimirReciboGlobalCommand = new RelayCommand(
                 _ => ImprimirEstadoGlobal(),
-                _ => PacienteSeleccionado is not null && ListaTratamientos.Count > 0);
+                _ => PacienteSeleccionado is not null && _tratamientosTodos.Count > 0);
 
             RecargarCommand = new AsyncRelayCommand(
                 _ => RecargarAsync(),
@@ -334,7 +350,26 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
             LimpiarFiltrosCommand = new RelayCommand(_ => LimpiarFiltros());
 
-            _ = InicializarAsync();
+            _ = InicializarSeguroAsync();
+        }
+
+        private async Task InicializarSeguroAsync()
+        {
+            try
+            {
+                await InicializarAsync();
+            }
+            catch (Exception ex)
+            {
+                EstaCargando = false;
+                _pacientesTodos = new List<PacienteModel>();
+                ListaPacientes = new ObservableCollection<PacienteModel>();
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible inicializar el módulo de pagos.");
+                NotificarEstadoVacio();
+                NotificarComandos();
+            }
         }
 
         private async Task InicializarAsync()
@@ -346,10 +381,12 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             try
             {
                 var pacientes = await _pacienteRepository.ObtenerTodosAsync();
-                ListaPacientes = new ObservableCollection<PacienteModel>(pacientes);
+                _pacientesTodos = pacientes.ToList();
+                AplicarFiltroPacientes();
             }
             catch (Exception ex)
             {
+                _pacientesTodos = new List<PacienteModel>();
                 ListaPacientes = new ObservableCollection<PacienteModel>();
                 MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
                     ex,
@@ -359,6 +396,24 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             {
                 EstaCargando = false;
                 NotificarEstadoVacio();
+                NotificarComandos();
+            }
+        }
+
+        private async Task CargarTratamientosSeguroAsync(int idPaciente, int? idTratamientoPreferido = null)
+        {
+            try
+            {
+                await CargarTratamientosPacienteAsync(idPaciente, idTratamientoPreferido);
+            }
+            catch (Exception ex)
+            {
+                EstaCargando = false;
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible actualizar el estado de cuenta del paciente.");
+                NotificarEstadoVacio();
+                NotificarComandos();
             }
         }
 
@@ -366,10 +421,12 @@ namespace ClinicaDentalMario.ViewModel.Pagos
         {
             int versionActual = Interlocked.Increment(ref _versionCargaTratamientos);
             Interlocked.Increment(ref _versionCargaPagos);
+            TratamientoPacienteModel? tratamientoASeleccionar = null;
 
             MensajeError = string.Empty;
             EstaCargando = true;
             TratamientoSeleccionado = null;
+            _pagosTodos = new List<PagoModel>();
             HistorialPagos = new ObservableCollection<PagoModel>();
             NotificarEstadoVacio();
             NotificarComandos();
@@ -378,39 +435,38 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             {
                 var tratamientosTask = _tratamientoRepository.ObtenerPorPacienteAsync(idPaciente);
                 var totalesTask = _pagoRepository.ObtenerTotalesPagadosPorPacienteAsync(idPaciente);
-
                 await Task.WhenAll(tratamientosTask, totalesTask);
 
                 if (versionActual != Volatile.Read(ref _versionCargaTratamientos))
                     return;
 
-                var tratamientos = await tratamientosTask;
+                _tratamientosTodos = (await tratamientosTask).ToList();
                 _totalesPagadosPorTratamiento = await totalesTask;
-                ListaTratamientos = new ObservableCollection<TratamientoPacienteModel>(tratamientos);
-
+                AplicarFiltroTratamientos();
                 ActualizarResumenPaciente();
-
-                TratamientoPacienteModel? tratamientoASeleccionar = null;
 
                 if (idTratamientoPreferido.HasValue)
                 {
-                    tratamientoASeleccionar = ListaTratamientos.FirstOrDefault(
+                    tratamientoASeleccionar = _tratamientosTodos.FirstOrDefault(
                         x => x.Id == idTratamientoPreferido.Value);
                 }
 
-                tratamientoASeleccionar ??= ListaTratamientos.FirstOrDefault(
-                    x => !x.EstaCancelado && ObtenerSaldo(x) > 0m);
+                tratamientoASeleccionar ??= _tratamientosTodos.FirstOrDefault(
+                    x => PuedeRecibirAbonos(x) && ObtenerSaldo(x) > 0m);
 
-                tratamientoASeleccionar ??= ListaTratamientos.FirstOrDefault();
-                TratamientoSeleccionado = tratamientoASeleccionar;
+                tratamientoASeleccionar ??= _tratamientosTodos.FirstOrDefault(
+                    x => PuedeRecibirAbonos(x));
+
+                tratamientoASeleccionar ??= _tratamientosTodos.FirstOrDefault();
             }
             catch (Exception ex)
             {
                 if (versionActual != Volatile.Read(ref _versionCargaTratamientos))
                     return;
 
-                ListaTratamientos = new ObservableCollection<TratamientoPacienteModel>();
+                _tratamientosTodos = new List<TratamientoPacienteModel>();
                 _totalesPagadosPorTratamiento = new Dictionary<int, decimal>();
+                ListaTratamientos = new ObservableCollection<TratamientoPacienteModel>();
                 ActualizarResumenPaciente();
                 MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
                     ex,
@@ -424,6 +480,29 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                     NotificarEstadoVacio();
                     NotificarComandos();
                 }
+            }
+
+            if (versionActual == Volatile.Read(ref _versionCargaTratamientos)
+                && PacienteSeleccionado?.IdPaciente == idPaciente)
+            {
+                TratamientoSeleccionado = tratamientoASeleccionar;
+            }
+        }
+
+        private async Task CargarPagosSeguroAsync(TratamientoPacienteModel tratamiento)
+        {
+            try
+            {
+                await CargarEstadoCuentaTratamientoAsync(tratamiento);
+            }
+            catch (Exception ex)
+            {
+                EstaCargando = false;
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible actualizar los abonos del tratamiento.");
+                NotificarEstadoVacio();
+                NotificarComandos();
             }
         }
 
@@ -440,15 +519,16 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             {
                 var pagos = (await _pagoRepository.ListarPagosAsync(tratamiento.Id)).ToList();
 
-                if (versionActual != Volatile.Read(ref _versionCargaPagos))
+                if (versionActual != Volatile.Read(ref _versionCargaPagos)
+                    || TratamientoSeleccionado?.Id != tratamiento.Id)
                     return;
 
-                HistorialPagos = new ObservableCollection<PagoModel>(pagos);
+                _pagosTodos = pagos;
+                AplicarFiltroPagos();
                 PagoSeleccionado = null;
                 CostoTotal = tratamiento.CostoTotal;
                 TotalAbonado = pagos.Sum(x => x.Monto);
                 EstadoTratamiento = tratamiento.Estado ?? string.Empty;
-
                 _totalesPagadosPorTratamiento[tratamiento.Id] = TotalAbonado;
                 ActualizarResumenPaciente();
             }
@@ -457,6 +537,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                 if (versionActual != Volatile.Read(ref _versionCargaPagos))
                     return;
 
+                _pagosTodos = new List<PagoModel>();
                 HistorialPagos = new ObservableCollection<PagoModel>();
                 MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
                     ex,
@@ -478,8 +559,26 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             var tratamiento = TratamientoSeleccionado;
             var paciente = PacienteSeleccionado;
 
-            if (tratamiento is null || paciente is null || SaldoPendiente <= 0m)
+            if (tratamiento is null || paciente is null)
                 return;
+
+            if (!PuedeRecibirAbonos(tratamiento))
+            {
+                _messageService.MostrarAdvertencia(
+                    tratamiento.EstaFinalizado
+                        ? "No se pueden registrar nuevos abonos en un tratamiento finalizado. El historial permanece disponible para consulta."
+                        : "No se pueden registrar nuevos abonos en un tratamiento cancelado.",
+                    "Abono no disponible");
+                return;
+            }
+
+            if (SaldoPendiente <= 0m)
+            {
+                _messageService.MostrarInformacion(
+                    "Este tratamiento ya está completamente pagado.",
+                    "Sin saldo pendiente");
+                return;
+            }
 
             var modal = new NuevoPagoWindow(
                 tratamiento.Id,
@@ -488,7 +587,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
             if (modal.ShowDialog() == true && modal.PagoRealizado)
             {
-                await CargarTratamientosPacienteAsync(
+                await CargarTratamientosSeguroAsync(
                     paciente.IdPaciente,
                     tratamiento.Id);
             }
@@ -501,7 +600,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                 return;
 
             int? idTratamiento = TratamientoSeleccionado?.Id;
-            await CargarTratamientosPacienteAsync(paciente.IdPaciente, idTratamiento);
+            await CargarTratamientosSeguroAsync(paciente.IdPaciente, idTratamiento);
         }
 
         private void VerDetalleAbono(object? parameter)
@@ -531,7 +630,7 @@ namespace ClinicaDentalMario.ViewModel.Pagos
                     PacienteSeleccionado.NombreCompleto,
                     TratamientoSeleccionado.NombreTratamiento ?? "Tratamiento",
                     CostoTotal,
-                    HistorialPagos);
+                    new ObservableCollection<PagoModel>(_pagosTodos));
 
                 ventanaPrevia.ShowDialog();
             }
@@ -543,14 +642,14 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
         private void ImprimirEstadoGlobal()
         {
-            if (PacienteSeleccionado is null || ListaTratamientos.Count == 0)
+            if (PacienteSeleccionado is null || _tratamientosTodos.Count == 0)
                 return;
 
             try
             {
                 var ventanaGlobal = new VistaPreviaEstadoGlobalWindow(
                     PacienteSeleccionado.NombreCompleto,
-                    ListaTratamientos,
+                    new ObservableCollection<TratamientoPacienteModel>(_tratamientosTodos),
                     new Dictionary<int, decimal>(_totalesPagadosPorTratamiento));
 
                 ventanaGlobal.ShowDialog();
@@ -563,82 +662,74 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
         private void AplicarFiltroPacientes()
         {
-            var vista = CollectionViewSource.GetDefaultView(ListaPacientes);
             string termino = BusquedaPaciente.Trim();
+            IEnumerable<PacienteModel> consulta = _pacientesTodos;
 
-            if (string.IsNullOrWhiteSpace(termino))
+            if (!string.IsNullOrWhiteSpace(termino))
             {
-                vista.Filter = null;
-            }
-            else
-            {
-                vista.Filter = item =>
-                {
-                    if (item is not PacienteModel paciente)
-                        return false;
-
-                    return Contiene(paciente.NombreCompleto, termino)
-                        || Contiene(paciente.DUI, termino)
-                        || Contiene(paciente.Telefono, termino);
-                };
+                consulta = consulta.Where(p =>
+                    Contiene(p.NombreCompleto, termino)
+                    || Contiene(p.DUI, termino)
+                    || Contiene(p.Telefono, termino));
             }
 
-            vista.Refresh();
+            ListaPacientes = new ObservableCollection<PacienteModel>(consulta);
         }
 
         private void AplicarFiltroTratamientos()
         {
-            var vista = CollectionViewSource.GetDefaultView(ListaTratamientos);
             string termino = BusquedaTratamiento.Trim();
             string estado = EstadoFiltroSeleccionado;
 
-            vista.Filter = item =>
+            IEnumerable<TratamientoPacienteModel> consulta = _tratamientosTodos;
+
+            if (estado != TodosLosEstados)
             {
-                if (item is not TratamientoPacienteModel tratamiento)
-                    return false;
+                consulta = consulta.Where(x =>
+                    string.Equals(x.Estado, estado, StringComparison.OrdinalIgnoreCase));
+            }
 
-                bool coincideEstado = estado == TodosLosEstados
-                    || string.Equals(tratamiento.Estado, estado, StringComparison.OrdinalIgnoreCase);
+            if (!string.IsNullOrWhiteSpace(termino))
+            {
+                consulta = consulta.Where(x =>
+                    Contiene(x.NombreTratamiento, termino)
+                    || Contiene(x.NombreDoctor, termino)
+                    || Contiene(x.Observaciones, termino));
+            }
 
-                if (!coincideEstado)
-                    return false;
+            ListaTratamientos = new ObservableCollection<TratamientoPacienteModel>(consulta);
 
-                if (string.IsNullOrWhiteSpace(termino))
-                    return true;
+            if (TratamientoSeleccionado is not null
+                && !ListaTratamientos.Any(x => x.Id == TratamientoSeleccionado.Id))
+            {
+                TratamientoSeleccionado = null;
+            }
 
-                return Contiene(tratamiento.NombreTratamiento, termino)
-                    || Contiene(tratamiento.NombreDoctor, termino)
-                    || Contiene(tratamiento.Observaciones, termino);
-            };
-
-            vista.Refresh();
             NotificarEstadoVacio();
         }
 
         private void AplicarFiltroPagos()
         {
-            var vista = CollectionViewSource.GetDefaultView(HistorialPagos);
             string termino = BusquedaPago.Trim();
+            IEnumerable<PagoModel> consulta = _pagosTodos;
 
-            if (string.IsNullOrWhiteSpace(termino))
+            if (!string.IsNullOrWhiteSpace(termino))
             {
-                vista.Filter = null;
-            }
-            else
-            {
-                vista.Filter = item =>
-                {
-                    if (item is not PagoModel pago)
-                        return false;
-
-                    return Contiene(pago.MetodoPago, termino)
-                        || Contiene(pago.Observacion, termino)
-                        || pago.FechaPago.ToString("dd/MM/yyyy").Contains(termino, StringComparison.OrdinalIgnoreCase)
-                        || pago.Monto.ToString("0.00").Contains(termino, StringComparison.OrdinalIgnoreCase);
-                };
+                consulta = consulta.Where(p =>
+                    Contiene(p.MetodoPago, termino)
+                    || Contiene(p.Observacion, termino)
+                    || p.FechaPago.ToString("dd/MM/yyyy").Contains(termino, StringComparison.OrdinalIgnoreCase)
+                    || p.Monto.ToString("0.00").Contains(termino, StringComparison.OrdinalIgnoreCase));
             }
 
-            vista.Refresh();
+            HistorialPagos = new ObservableCollection<PagoModel>(consulta);
+
+            if (PagoSeleccionado is not null
+                && !HistorialPagos.Any(x => x.IdPago == PagoSeleccionado.IdPago))
+            {
+                PagoSeleccionado = null;
+            }
+
             NotificarEstadoVacio();
         }
 
@@ -660,13 +751,15 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
         private void ActualizarResumenPaciente()
         {
-            TotalCargosPaciente = ListaTratamientos.Sum(x => x.CostoTotal);
+            TotalCargosPaciente = _tratamientosTodos.Sum(x => x.CostoTotal);
             TotalPagadoPaciente = _totalesPagadosPorTratamiento.Values.Sum();
             NotificarResumenPaciente();
         }
 
         private void LimpiarEstadoCuentaCompleto()
         {
+            _tratamientosTodos = new List<TratamientoPacienteModel>();
+            _pagosTodos = new List<PagoModel>();
             _totalesPagadosPorTratamiento = new Dictionary<int, decimal>();
             ListaTratamientos = new ObservableCollection<TratamientoPacienteModel>();
             TratamientoSeleccionado = null;
@@ -681,14 +774,19 @@ namespace ClinicaDentalMario.ViewModel.Pagos
             CostoTotal = 0m;
             TotalAbonado = 0m;
             EstadoTratamiento = string.Empty;
+            _pagosTodos = new List<PagoModel>();
             HistorialPagos = new ObservableCollection<PagoModel>();
             PagoSeleccionado = null;
+            OnPropertyChanged(nameof(PuedeRegistrarAbono));
+            OnPropertyChanged(nameof(MensajeAccionPago));
         }
 
         private void NotificarResumenTratamiento()
         {
             OnPropertyChanged(nameof(SaldoPendiente));
             OnPropertyChanged(nameof(PorcentajePagado));
+            OnPropertyChanged(nameof(PuedeRegistrarAbono));
+            OnPropertyChanged(nameof(MensajeAccionPago));
             NuevoAbonoCommand?.NotificarCanExecuteChanged();
         }
 
@@ -710,11 +808,17 @@ namespace ClinicaDentalMario.ViewModel.Pagos
 
         private void NotificarComandos()
         {
+            OnPropertyChanged(nameof(PuedeRegistrarAbono));
             NuevoAbonoCommand?.NotificarCanExecuteChanged();
             VerDetalleCommand?.NotificarCanExecuteChanged();
             ImprimirReciboCommand?.NotificarCanExecuteChanged();
             ImprimirReciboGlobalCommand?.NotificarCanExecuteChanged();
             RecargarCommand?.NotificarCanExecuteChanged();
+        }
+
+        private static bool PuedeRecibirAbonos(TratamientoPacienteModel tratamiento)
+        {
+            return tratamiento.EstaPendiente || tratamiento.EstaEnProgreso;
         }
 
         private static PagoModel? ObtenerPago(object? parameter) => parameter as PagoModel;

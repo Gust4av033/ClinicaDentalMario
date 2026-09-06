@@ -76,8 +76,8 @@ namespace ClinicaDentalMario.Repositories
             string sql = @"
                 SELECT
                     COUNT(1) AS Total,
-                    SUM(CASE WHEN Fecha >= @Hoy AND Fecha < @Manana THEN 1 ELSE 0 END) AS Hoy,
-                    SUM(CASE WHEN UPPER(Accion) LIKE '%FALL%' THEN 1 ELSE 0 END) AS AccesosFallidos
+                    ISNULL(SUM(CASE WHEN Fecha >= @Hoy AND Fecha < @Manana THEN 1 ELSE 0 END), 0) AS Hoy,
+                    ISNULL(SUM(CASE WHEN UPPER(Accion) LIKE '%FALL%' THEN 1 ELSE 0 END), 0) AS AccesosFallidos
                 FROM Seguridad.Bitacora
                 " + FiltrosSql + ";";
 

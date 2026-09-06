@@ -35,8 +35,9 @@
         </Style>
     </UserControl.Resources>
 
-    <!-- La vista mantiene un ancho mínimo usable y habilita scroll horizontal como respaldo.
-         El panel clínico puede redimensionarse con el separador sin alterar la lógica del odontograma. -->
+    <!-- Vista general reutilizada por el expediente del paciente.
+         Aquí solo se resuelve composición/adaptación visual; la lógica clínica del
+         odontograma se continuará y cerrará en su módulo específico. -->
     <ScrollViewer HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Disabled"
                   PanningMode="HorizontalOnly">

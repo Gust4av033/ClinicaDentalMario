@@ -1,217 +1,555 @@
-﻿<UserControl x:Class="ClinicaDentalMario.Views.Dashboard.DashboardView"
+<UserControl x:Class="ClinicaDentalMario.Views.Dashboard.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              Background="{StaticResource BgWindowBrush}">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <Grid Grid.Row="0" Margin="10,10,10,25">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <iconPacks:PackIconMaterial Kind="HandWave" Width="32" Height="32" Foreground="{StaticResource AccentBrush}" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                    <StackPanel>
-                        <TextBlock Text="{Binding SaludoDinamico}" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBlock Text="{Binding FechaHoraActual}" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <Button Command="{Binding AbrirConfiguracionCommand}" HorizontalAlignment="Right" Height="40" Background="{StaticResource BgControlBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="15,0" Cursor="Hand">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="8"/>
-                        </Style>
-                    </Button.Resources>
-                    <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconMaterial Kind="Cog" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{StaticResource TextPrimaryBrush}"/>
-                        <TextBlock Text="Configuraciones" VerticalAlignment="Center" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
-                    </StackPanel>
-                </Button>
-            </Grid>
-
-            <Grid Grid.Row="1" Margin="10,0,10,20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0" Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#000000" Opacity="0.4"/>
-                    </Border.Effect>
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <Border Background="#0E2317" Padding="8" CornerRadius="8" Margin="0,0,10,0">
-                                <iconPacks:PackIconMaterial Kind="CashMultiple" Width="20" Height="20" Foreground="#27AE60"/>
-                            </Border>
-                            <TextBlock Text="Ingresos (Hoy)" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <TextBlock Text="{Binding IngresosHoy, StringFormat={}{0:C2}}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="2" Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#000000" Opacity="0.4"/>
-                    </Border.Effect>
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <Border Background="#101F2B" Padding="8" CornerRadius="8" Margin="0,0,10,0">
-                                <iconPacks:PackIconMaterial Kind="CalendarCheck" Width="20" Height="20" Foreground="#3498DB"/>
-                            </Border>
-                            <TextBlock Text="Citas (Hoy)" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <TextBlock Text="{Binding CitasHoy}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="4" Background="{StaticResource BgCardBrush}" CornerRadius="15" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#000000" Opacity="0.4"/>
-                    </Border.Effect>
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <Border Background="#2B1E0D" Padding="8" CornerRadius="8" Margin="0,0,10,0">
-                                <iconPacks:PackIconMaterial Kind="Tooth" Width="20" Height="20" Foreground="#F39C12"/>
-                            </Border>
-                            <TextBlock Text="Tratamientos Activos" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <TextBlock Text="{Binding TratamientosActivos}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-
-            <Grid Grid.Row="2" Margin="10,0,10,10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2.5*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0" Background="{StaticResource BgCardBrush}" CornerRadius="12" Padding="20" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#000000" Opacity="0.4"/>
-                    </Border.Effect>
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Padding="10">
+            <StackPanel>
+                <!-- Encabezado -->
+                <Border Background="{StaticResource BgCardBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="15"
+                        Padding="22"
+                        Margin="0,0,0,14">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                            <iconPacks:PackIconMaterial Kind="FormatListBulleted" Foreground="{StaticResource TextSecondaryBrush}" Width="22" Height="22" Margin="0,0,8,0"/>
-                            <TextBlock Text="Agenda de Hoy" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border Width="48" Height="48" CornerRadius="12" Background="#1A3498DB" Margin="0,0,14,0">
+                                <iconPacks:PackIconMaterial Kind="ViewDashboard"
+                                                            Width="25" Height="25"
+                                                            Foreground="{StaticResource AccentBrush}"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding SaludoDinamico}"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                    <TextBlock Text="{Binding FechaHoraActual}"
+                                               FontSize="12"
+                                               Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    <TextBlock Text="  •  " Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding RolActual}"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource AccentBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
                         </StackPanel>
 
-                        <DataGrid Grid.Row="1" ItemsSource="{Binding ListaCitasHoy}" AutoGenerateColumns="False" CanUserAddRows="False" Background="Transparent" BorderThickness="0" RowHeight="45" FontSize="14" HeadersVisibility="Column">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Hora" Binding="{Binding Hora}" Width="90" FontWeight="Bold">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="#3498DB"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-                                <DataGridTextColumn Header="Paciente" Binding="{Binding Paciente}" Width="*"/>
-                                <DataGridTextColumn Header="Motivo / Tratamiento" Binding="{Binding Tratamiento}" Width="*"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-
-                        <Border Grid.Row="1" Background="{StaticResource BgCardBrush}" Margin="0,30,0,0">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ListaCitasHoy.Count}" Value="0">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding ListaCitasHoy}" Value="{x:Null}">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <iconPacks:PackIconMaterial Kind="CoffeeOutline" Width="50" Height="50" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.5" HorizontalAlignment="Center" Margin="0,0,0,15"/>
-                                <TextBlock Text="No hay citas programadas para hoy." FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center"/>
-                                <TextBlock Text="¡Tómate un buen café!" FontSize="14" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.8" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                                <TextBlock Text="Última actualización"
+                                           FontSize="10"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           HorizontalAlignment="Right"/>
+                                <TextBlock Text="{Binding UltimaActualizacion, TargetNullValue=--}"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           HorizontalAlignment="Right"/>
                             </StackPanel>
-                        </Border>
+
+                            <Button Command="{Binding RecargarCommand}"
+                                    Width="42" Height="42" Padding="0"
+                                    Margin="0,0,8,0"
+                                    Background="{StaticResource BgControlBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1"
+                                    ToolTip="Actualizar Dashboard">
+                                <iconPacks:PackIconMaterial Kind="Refresh" Width="18" Height="18"/>
+                            </Button>
+
+                            <Button Command="{Binding AbrirConfiguracionCommand}"
+                                    Visibility="{Binding PuedeVerConfiguracion, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Height="42" Padding="14,0"
+                                    Background="{StaticResource BgControlBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1"
+                                    ToolTip="Abrir configuración">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="Cog" Width="17" Height="17" Margin="0,0,7,0"/>
+                                    <TextBlock Text="Configuración" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
                     </Grid>
                 </Border>
 
-                <StackPanel Grid.Column="2">
-                    <Border Background="#261A19" CornerRadius="12" Padding="20" BorderBrush="#512E2F" BorderThickness="1">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="10" ShadowDepth="1" Color="#000000" Opacity="0.4"/>
-                        </Border.Effect>
-                        <Grid>
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,15" HorizontalAlignment="Center">
-                                    <iconPacks:PackIconMaterial Kind="AlertOctagon" Foreground="#E74C3C" Width="22" Height="22" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Cuentas por Cobrar" FontSize="16" FontWeight="Bold" Foreground="#E74C3C"/>
+                <!-- Mensaje de error -->
+                <Border Background="#3A1C1C"
+                        BorderBrush="{StaticResource DangerBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="10"
+                        Margin="0,0,0,14">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding TieneMensaje}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding MensajeUsuario}"
+                               Foreground="{StaticResource DangerBrush}"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap"/>
+                </Border>
+
+                <!-- Indicadores principales -->
+                <UniformGrid Columns="4" Margin="-5,0,-5,14">
+                    <Border Background="{StaticResource BgCardBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="13"
+                            Padding="18" Margin="5">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <Border Width="36" Height="36" CornerRadius="9" Background="#1A27AE60" Margin="0,0,10,0">
+                                    <iconPacks:PackIconMaterial Kind="CashMultiple" Width="19" Height="19" Foreground="#27AE60" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Ingresos de hoy" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    <TextBlock Text="Pagos registrados" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.7"/>
                                 </StackPanel>
-
-                                <TextBlock Text="Los 5 saldos más altos o atrasados:" FontSize="12" Foreground="#D98880" Margin="0,0,0,15" HorizontalAlignment="Center"/>
-
-                                <ItemsControl ItemsSource="{Binding TopMorosos}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="{StaticResource BgControlBrush}" CornerRadius="8" Padding="10" Margin="0,0,0,10" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <StackPanel Grid.Column="0">
-                                                        <TextBlock Text="{Binding Paciente}" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                                        <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                                                            <iconPacks:PackIconMaterial Kind="Phone" Width="10" Height="10" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,3,0"/>
-                                                            <TextBlock Text="{Binding Telefono}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
-                                                        </StackPanel>
-                                                    </StackPanel>
-                                                    <TextBlock Grid.Column="1" Text="{Binding Saldo, StringFormat={}{0:C0}}" FontWeight="Bold" FontSize="15" Foreground="#E74C3C" VerticalAlignment="Center"/>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
                             </StackPanel>
+                            <TextBlock Text="{Binding IngresosHoy, StringFormat={}{0:C2}}" FontSize="27" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding IngresosMes, StringFormat={}{0:C2}}" FontSize="12" Foreground="#27AE60" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                            <TextBlock Text="Acumulado del mes" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                    </Border>
 
-                            <Border Background="#261A19" Margin="0,30,0,0">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding TopMorosos.Count}" Value="0">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding TopMorosos}" Value="{x:Null}">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <iconPacks:PackIconMaterial Kind="CheckDecagram" Width="45" Height="45" Foreground="#27AE60" Opacity="0.8" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                                    <TextBlock Text="¡Excelente!" FontSize="15" FontWeight="Bold" Foreground="#27AE60" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="Todos están al día" FontSize="13" Foreground="#D98880" HorizontalAlignment="Center"/>
+                    <Border Background="{StaticResource BgCardBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="13"
+                            Padding="18" Margin="5">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <Border Width="36" Height="36" CornerRadius="9" Background="#1A3498DB" Margin="0,0,10,0">
+                                    <iconPacks:PackIconMaterial Kind="CalendarClock" Width="19" Height="19" Foreground="#3498DB" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Citas de hoy" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    <TextBlock Text="Agenda del día" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.7"/>
                                 </StackPanel>
-                            </Border>
+                            </StackPanel>
+                            <TextBlock Text="{Binding CitasHoy}" FontSize="27" FontWeight="Bold"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                <TextBlock Text="{Binding CitasPendientes, StringFormat={}{0} pend.}" FontSize="10" Foreground="#E67E22" FontWeight="SemiBold"/>
+                                <TextBlock Text="  •  " FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                <TextBlock Text="{Binding CitasConfirmadas, StringFormat={}{0} conf.}" FontSize="10" Foreground="#3498DB" FontWeight="SemiBold"/>
+                                <TextBlock Text="  •  " FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                <TextBlock Text="{Binding CitasAtendidas, StringFormat={}{0} atend.}" FontSize="10" Foreground="#27AE60" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{StaticResource BgCardBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="13"
+                            Padding="18" Margin="5">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <Border Width="36" Height="36" CornerRadius="9" Background="#1A27AE60" Margin="0,0,10,0">
+                                    <iconPacks:PackIconMaterial Kind="AccountGroup" Width="19" Height="19" Foreground="#27AE60" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Pacientes activos" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    <TextBlock Text="Expedientes vigentes" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.7"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock Text="{Binding PacientesActivos}" FontSize="27" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding PacientesNuevosMes, StringFormat=+{0} este mes}" FontSize="11" Foreground="#27AE60" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="{StaticResource BgCardBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="13"
+                            Padding="18" Margin="5">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <Border Width="36" Height="36" CornerRadius="9" Background="#1A9B59B6" Margin="0,0,10,0">
+                                    <iconPacks:PackIconMaterial Kind="Tooth" Width="19" Height="19" Foreground="#9B59B6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Tratamientos activos" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    <TextBlock Text="Plan clínico abierto" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.7"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <TextBlock Text="{Binding TratamientosActivos}" FontSize="27" FontWeight="Bold"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                <TextBlock Text="{Binding TratamientosPendientes, StringFormat={}{0} pendientes}" FontSize="10" Foreground="#E67E22" FontWeight="SemiBold"/>
+                                <TextBlock Text="  •  " FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                <TextBlock Text="{Binding TratamientosEnProgreso, StringFormat={}{0} en progreso}" FontSize="10" Foreground="#9B59B6" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+
+                <!-- Accesos rápidos -->
+                <Border Background="{StaticResource BgCardBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="14"
+                        Margin="0,0,0,14">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="2,0,22,0" VerticalAlignment="Center">
+                            <TextBlock Text="Accesos rápidos" FontSize="14" FontWeight="Bold"/>
+                            <TextBlock Text="Continúa con las tareas más frecuentes"
+                                       FontSize="10"
+                                       Foreground="{StaticResource TextSecondaryBrush}"/>
+                        </StackPanel>
+
+                        <WrapPanel Grid.Column="1" HorizontalAlignment="Right">
+                            <Button Command="{Binding IrPacientesCommand}"
+                                    Visibility="{Binding PuedeVerPacientes, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Height="38" Padding="14,0" Margin="4">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="AccountGroup" Width="16" Height="16" Foreground="#27AE60" Margin="0,0,7,0"/>
+                                    <TextBlock Text="Pacientes" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding IrAgendaCommand}"
+                                    Visibility="{Binding PuedeVerAgenda, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Height="38" Padding="14,0" Margin="4">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="CalendarClock" Width="16" Height="16" Foreground="#E67E22" Margin="0,0,7,0"/>
+                                    <TextBlock Text="Agenda" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding IrTratamientosCommand}"
+                                    Visibility="{Binding PuedeVerTratamientos, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Height="38" Padding="14,0" Margin="4">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="Tooth" Width="16" Height="16" Foreground="#9B59B6" Margin="0,0,7,0"/>
+                                    <TextBlock Text="Tratamientos" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding IrPagosCommand}"
+                                    Visibility="{Binding PuedeVerPagos, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Height="38" Padding="14,0" Margin="4">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="CashMultiple" Width="16" Height="16" Foreground="#2ECC71" Margin="0,0,7,0"/>
+                                    <TextBlock Text="Pagos" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <Button Command="{Binding IrReportesCommand}"
+                                    Visibility="{Binding PuedeVerReportes, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Height="38" Padding="14,0" Margin="4">
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="ChartBar" Width="16" Height="16" Foreground="#F1C40F" Margin="0,0,7,0"/>
+                                    <TextBlock Text="Reportes" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Agenda y seguimiento -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2.1*"/>
+                        <ColumnDefinition Width="14"/>
+                        <ColumnDefinition Width="1*" MinWidth="300"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Background="{StaticResource BgCardBrush}"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="13"
+                            Padding="18">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <iconPacks:PackIconMaterial Kind="FormatListBulleted" Width="20" Height="20" Foreground="#3498DB" Margin="0,0,8,0"/>
+                                    <StackPanel>
+                                        <TextBlock Text="Agenda de hoy" FontSize="17" FontWeight="Bold"/>
+                                        <TextBlock Text="Vista rápida de las citas programadas"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Button Grid.Column="1"
+                                        Command="{Binding IrAgendaCommand}"
+                                        Visibility="{Binding PuedeVerAgenda, Converter={StaticResource BoolToVisibilityConverter}}"
+                                        Height="34" Padding="12,0">
+                                    <TextBlock Text="Abrir agenda" FontWeight="SemiBold"/>
+                                </Button>
+                            </Grid>
+
+                            <Grid Grid.Row="1">
+                                <DataGrid ItemsSource="{Binding ListaCitasHoy}"
+                                          AutoGenerateColumns="False"
+                                          CanUserAddRows="False"
+                                          IsReadOnly="True"
+                                          HeadersVisibility="Column"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          RowHeight="47"
+                                          Height="330"
+                                          SelectionMode="Single">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Hora" Binding="{Binding Hora}" Width="85"/>
+                                        <DataGridTextColumn Header="Paciente" Binding="{Binding Paciente}" Width="1.4*"/>
+                                        <DataGridTextColumn Header="Doctor" Binding="{Binding Doctor}" Width="1.2*"/>
+                                        <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="105"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <Border Background="{StaticResource BgCardBrush}"
+                                        Panel.ZIndex="2">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ListaCitasHoy.Count}" Value="0">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <iconPacks:PackIconMaterial Kind="CalendarCheck" Width="50" Height="50"
+                                                                    Foreground="{StaticResource TextSecondaryBrush}"
+                                                                    Opacity="0.3"
+                                                                    HorizontalAlignment="Center"
+                                                                    Margin="0,0,0,10"/>
+                                        <TextBlock Text="No hay citas programadas para hoy"
+                                                   FontSize="16"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Puedes abrir Agenda para programar la siguiente."
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
                         </Grid>
                     </Border>
-                </StackPanel>
-                
-            </Grid>
-        </Grid>
-    </ScrollViewer>
+
+                    <StackPanel Grid.Column="2">
+                        <!-- Próxima cita -->
+                        <Border Background="{StaticResource BgCardBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="13"
+                                Padding="17"
+                                Margin="0,0,0,14">
+                            <Grid>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <iconPacks:PackIconMaterial Kind="CalendarCheck" Width="20" Height="20" Foreground="#3498DB" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Próxima cita" FontSize="15" FontWeight="Bold"/>
+                                    </StackPanel>
+
+                                    <StackPanel>
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding TieneProximaCita}" Value="False">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+
+                                        <TextBlock Text="{Binding ProximaCita.Paciente}" FontSize="17" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                            <TextBlock Text="{Binding ProximaCita.FechaCorta}" FontSize="12" Foreground="#3498DB" FontWeight="SemiBold"/>
+                                            <TextBlock Text="  •  " FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                            <TextBlock Text="{Binding ProximaCita.Hora}" FontSize="12" Foreground="#3498DB" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding ProximaCita.Doctor}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,5,0,0"/>
+                                        <TextBlock Text="{Binding ProximaCita.ObservacionMostrar}"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap"
+                                                   MaxHeight="38"
+                                                   Margin="0,8,0,0"/>
+                                    </StackPanel>
+
+                                    <StackPanel HorizontalAlignment="Center" Margin="0,8,0,2">
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding TieneProximaCita}" Value="False">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <TextBlock Text="Sin próximas citas pendientes"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center"/>
+                                        <TextBlock Text="La agenda futura está libre."
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Saldos pendientes -->
+                        <Border Background="{StaticResource BgCardBrush}"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="13"
+                                Padding="17">
+                            <Grid>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                        <iconPacks:PackIconMaterial Kind="CashMultiple" Width="20" Height="20" Foreground="#E67E22" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Saldos pendientes" FontSize="15" FontWeight="Bold"/>
+                                    </StackPanel>
+
+                                    <TextBlock Text="{Binding SaldoPendiente, StringFormat={}{0:C2}}"
+                                               FontSize="25"
+                                               FontWeight="Bold"
+                                               Foreground="#E67E22"/>
+                                    <TextBlock Text="Total pendiente de tratamientos abiertos"
+                                               FontSize="10"
+                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                               Margin="0,2,0,12"/>
+
+                                    <ItemsControl ItemsSource="{Binding TopSaldosPendientes}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{StaticResource BgControlBrush}"
+                                                        BorderBrush="{StaticResource BorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8"
+                                                        Padding="10"
+                                                        Margin="0,0,0,8">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <StackPanel Grid.Column="0">
+                                                            <TextBlock Text="{Binding Paciente}"
+                                                                       FontWeight="SemiBold"
+                                                                       FontSize="12"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                                                <iconPacks:PackIconMaterial Kind="Phone" Width="11" Height="11"
+                                                                                            Foreground="{StaticResource TextSecondaryBrush}"
+                                                                                            Margin="0,0,4,0"/>
+                                                                <TextBlock Text="{Binding TelefonoMostrar}"
+                                                                           FontSize="10"
+                                                                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding SaldoPendiente, StringFormat={}{0:C2}}"
+                                                                   FontWeight="Bold"
+                                                                   FontSize="13"
+                                                                   Foreground="#E67E22"
+                                                                   VerticalAlignment="Center"
+                                                                   Margin="10,0,0,0"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <StackPanel HorizontalAlignment="Center" Margin="0,8,0,0">
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding TopSaldosPendientes.Count}" Value="0">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <TextBlock Text="No hay saldos pendientes activos"
+                                                   Foreground="#27AE60"
+                                                   FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <Button Command="{Binding IrPagosCommand}"
+                                            Visibility="{Binding PuedeVerPagos, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            Height="34"
+                                            Margin="0,10,0,0">
+                                        <TextBlock Text="Abrir Pagos y Cuentas" FontWeight="SemiBold"/>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Carga -->
+        <Border Background="#AA121212"
+                Panel.ZIndex="20">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding EstaCargando}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar IsIndeterminate="True" Width="180" Height="5"/>
+                <TextBlock Text="Actualizando Dashboard..."
+                           Margin="0,12,0,0"
+                           Foreground="White"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
 </UserControl>

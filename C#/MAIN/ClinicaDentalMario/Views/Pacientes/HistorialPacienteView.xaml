@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
              xmlns:archivos="clr-namespace:ClinicaDentalMario.Views.Archivos"
-             xmlns:pacientes="clr-namespace:ClinicaDentalMario.Views.Pacientes"
              Background="{StaticResource BgWindowBrush}">
 
     <Grid Margin="15">
@@ -42,14 +41,14 @@
                 </StackPanel>
             </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <WrapPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <Button Command="{Binding RecargarCommand}" Width="42" Height="42"
-                        Padding="0" Margin="0,0,10,0" ToolTip="Recargar expediente">
+                        Padding="0" Margin="0,0,10,6" ToolTip="Recargar expediente">
                     <iconPacks:PackIconMaterial Kind="Refresh" Width="19" Height="19"/>
                 </Button>
 
                 <Button Command="{Binding VistaPreviaExpedienteCommand}" Width="42" Height="42"
-                        Padding="0" Margin="0,0,10,0"
+                        Padding="0" Margin="0,0,10,6"
                         Background="Transparent"
                         BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
                         ToolTip="Vista previa del expediente">
@@ -58,7 +57,7 @@
                 </Button>
 
                 <Button Command="{Binding ExportarExpedienteCommand}" Width="42" Height="42"
-                        Padding="0" Margin="0,0,10,0"
+                        Padding="0" Margin="0,0,10,6"
                         Background="Transparent"
                         BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
                         ToolTip="Exportar expediente a PDF">
@@ -69,7 +68,7 @@
                 <Button Command="{Binding EditarPacienteCommand}" Height="42"
                         Background="Transparent" Foreground="{StaticResource TextPrimaryBrush}"
                         BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                        Padding="14,0" Margin="0,0,10,0" ToolTip="Editar datos y antecedentes">
+                        Padding="14,0" Margin="0,0,10,6" ToolTip="Editar datos y antecedentes">
                     <StackPanel Orientation="Horizontal">
                         <iconPacks:PackIconMaterial Kind="AccountEdit" Margin="0,0,7,0"
                                                     Foreground="#F39C12"/>
@@ -79,14 +78,14 @@
 
                 <Button Command="{Binding AbrirNuevaConsultaCommand}" Height="42"
                         Background="{StaticResource SuccessBrush}" Foreground="White"
-                        BorderThickness="0" Padding="18,0">
+                        BorderThickness="0" Padding="18,0" Margin="0,0,0,6">
                     <StackPanel Orientation="Horizontal">
                         <iconPacks:PackIconMaterial Kind="Plus" Margin="0,0,8,0" Foreground="White"/>
                         <TextBlock Text="Nueva Consulta" FontWeight="Bold" Foreground="White"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
-            </StackPanel>
+            </WrapPanel>
         </Grid>
 
         <!-- MENSAJES -->
@@ -243,7 +242,7 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
-                <TextBlock Text="Este paciente todavía no tiene antecedentes generales confirmados. Puedes registrarlos desde Editar Paciente."
+                <TextBlock Text="{Binding MensajeFuenteAntecedentes}"
                            Foreground="#E6C965" TextWrapping="Wrap" HorizontalAlignment="Center"/>
             </Border>
         </StackPanel>
@@ -340,8 +339,74 @@
                 </Border>
             </TabItem>
 
+            <!-- En el expediente mostramos un resumen. La edición completa abre una ventana dedicada. -->
             <TabItem Header="Odontograma Digital">
-                <pacientes:OdontogramaView DataContext="{Binding OdontogramaVM}"/>
+                <Border Background="{StaticResource BgCardBrush}" CornerRadius="0,8,8,8"
+                        Padding="24" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    MaxWidth="620">
+                            <Border Width="78" Height="78" CornerRadius="39"
+                                    Background="{StaticResource BgControlBrush}"
+                                    BorderBrush="{StaticResource AccentBrush}" BorderThickness="1"
+                                    HorizontalAlignment="Center" Margin="0,0,0,18">
+                                <iconPacks:PackIconMaterial Kind="FolderAccount" Width="38" Height="38"
+                                                            Foreground="{StaticResource AccentBrush}"
+                                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+
+                            <TextBlock Text="Odontograma digital del paciente"
+                                       FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="El odontograma completo se abre en una ventana independiente para conservar el tamaño y la precisión de las piezas dentales, herramientas y trazos."
+                                       Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"
+                                       TextAlignment="Center" Margin="0,8,0,20"/>
+
+                            <Border Background="{StaticResource BgControlBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                    CornerRadius="10" Padding="16" HorizontalAlignment="Stretch">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="18"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Evoluciones guardadas"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+                                        <TextBlock Text="{Binding OdontogramaVM.FechasGuardadas.Count}"
+                                                   FontSize="24" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Evolución cargada"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+                                        <TextBlock Text="{Binding OdontogramaVM.FechaSeleccionada, StringFormat={}{0:dd/MM/yyyy HH:mm}, TargetNullValue=Sin evoluciones}"
+                                                   FontSize="14" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <Button Grid.Row="1" Click="AbrirOdontogramaCompleto_Click"
+                                Height="46" HorizontalAlignment="Center" MinWidth="260"
+                                Margin="0,22,0,0" Padding="22,0"
+                                Background="{StaticResource AccentBrush}" Foreground="White"
+                                BorderThickness="0" FontWeight="Bold">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="OpenInNew" Width="20" Height="20"
+                                                            Foreground="White" Margin="0,0,8,0"/>
+                                <TextBlock Text="Abrir odontograma completo" Foreground="White"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
             </TabItem>
 
             <TabItem Header="Galería de Imágenes">

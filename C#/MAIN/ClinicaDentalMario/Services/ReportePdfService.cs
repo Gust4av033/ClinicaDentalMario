@@ -200,7 +200,7 @@ namespace ClinicaDentalMario.Services
                     text.CurrentPageNumber();
                     text.Span(" de ");
                     text.TotalPages();
-                }).FontSize(8);
+                });
             });
         }
 

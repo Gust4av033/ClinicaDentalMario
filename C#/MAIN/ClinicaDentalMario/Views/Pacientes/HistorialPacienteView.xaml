@@ -386,7 +386,7 @@
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="Evolución cargada"
                                                    Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
-                                        <TextBlock Text="{Binding OdontogramaVM.FechaSeleccionada, StringFormat={}{0:dd/MM/yyyy HH:mm}, TargetNullValue=Sin evoluciones}"
+                                        <TextBlock Text="{Binding OdontogramaVM.FechaSeleccionada, StringFormat={}{0:dd/MM/yyyy HH:mm}, TargetNullValue='Sin evoluciones'}"
                                                    FontSize="14" FontWeight="SemiBold" Margin="0,5,0,0"/>
                                     </StackPanel>
                                 </Grid>

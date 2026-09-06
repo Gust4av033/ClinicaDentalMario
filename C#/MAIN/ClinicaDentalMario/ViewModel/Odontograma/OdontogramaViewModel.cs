@@ -1,42 +1,75 @@
-﻿using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Models;
+using ClinicaDentalMario.Repositories;
+using ClinicaDentalMario.Services;
 using ClinicaDentalMario.ViewModel.Base;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Input;
-// NUEVAS LIBRERIAS PARA DIBUJO Y GEOMETRÍA
 using System.Windows.Media;
-
 
 namespace ClinicaDentalMario.ViewModel.Odontograma
 {
-    // 🔥 CLASE AUXILIAR PARA GUARDAR LOS DIBUJOS DEL CANVAS 🔥
-    public class FiguraCanvas : ViewModelBase
+    public sealed class FiguraCanvas : ViewModelBase
     {
-        public PathGeometry Geometria { get; set; }
-        public Brush ColorTrazo { get; set; }
-        public double GrosorTrazo { get; set; }
-        public DoubleCollection PatronGuiones { get; set; } // Para hacer líneas punteadas o zigzag
-
-        // Propiedades para saber si lo dibujamos arriba o abajo
+        public PathGeometry Geometria { get; set; } = new();
+        public Brush ColorTrazo { get; set; } = Brushes.DodgerBlue;
+        public double GrosorTrazo { get; set; } = 2;
+        public DoubleCollection? PatronGuiones { get; set; }
         public bool EsMaxilarSuperior { get; set; }
+    }
+
+    public sealed class HallazgoCanvasPersistido
+    {
+        public string Tipo { get; set; } = string.Empty;
+        public int Inicio { get; set; }
+        public int Fin { get; set; }
+        public bool EsSuperior { get; set; }
+        public string ColorHex { get; set; } = "#3498DB";
     }
 
     public class OdontogramaViewModel : ViewModelBase
     {
+        private const string AzulNorma = "#3498DB";
+        private const string RojoNorma = "#E74C3C";
+        private const int AnchoPasoPieza = 54;
+        private const int CentroPieza = 27;
+        private const string VersionSerializacion = "2";
+
         private readonly int _idPaciente;
         private readonly OdontogramaRepository _odontogramaRepo;
+        private readonly IMessageService _messageService;
+        private readonly IExceptionHandler _exceptionHandler;
+        private readonly List<HallazgoCanvasPersistido> _hallazgosCanvas = new();
 
-        public ObservableCollection<PiezaDentalViewModel> DientesSuperiores { get; set; } = new();
-        public ObservableCollection<PiezaDentalViewModel> DientesInferiores { get; set; } = new();
+        private int? _primerDienteClickeadoParaCanvas;
+        private bool _esperandoSegundoClic;
+        private bool _cambioFechaInterno;
+
+        public ObservableCollection<PiezaDentalViewModel> DientesSuperiores { get; } = new();
+        public ObservableCollection<PiezaDentalViewModel> DientesInferiores { get; } = new();
+        public ObservableCollection<FiguraCanvas> FigurasSuperiores { get; } = new();
+        public ObservableCollection<FiguraCanvas> FigurasInferiores { get; } = new();
 
         private ObservableCollection<DateTime> _fechasGuardadas = new();
-        public ObservableCollection<DateTime> FechasGuardadas { get => _fechasGuardadas; set => SetProperty(ref _fechasGuardadas, value); }
+        public ObservableCollection<DateTime> FechasGuardadas
+        {
+            get => _fechasGuardadas;
+            private set
+            {
+                if (SetProperty(ref _fechasGuardadas, value))
+                {
+                    OnPropertyChanged(nameof(TieneEvoluciones));
+                    OnPropertyChanged(nameof(CantidadEvoluciones));
+                }
+            }
+        }
+
+        public bool TieneEvoluciones => FechasGuardadas.Count > 0;
+        public int CantidadEvoluciones => FechasGuardadas.Count;
 
         private DateTime? _fechaSeleccionada;
         public DateTime? FechaSeleccionada
@@ -44,442 +77,1176 @@ namespace ClinicaDentalMario.ViewModel.Odontograma
             get => _fechaSeleccionada;
             set
             {
+                if (_fechaSeleccionada == value)
+                {
+                    return;
+                }
+
+                if (!_cambioFechaInterno &&
+                    TieneCambiosSinGuardar &&
+                    _fechaSeleccionada.HasValue)
+                {
+                    bool descartar = _messageService.Confirmar(
+                        "Hay cambios sin guardar en el odontograma actual. ¿Deseas descartarlos y abrir otra evolución?",
+                        "Cambios sin guardar");
+
+                    if (!descartar)
+                    {
+                        OnPropertyChanged(nameof(FechaSeleccionada));
+                        return;
+                    }
+                }
+
                 if (SetProperty(ref _fechaSeleccionada, value))
                 {
-                    if (value.HasValue) _ = CargarOdontogramaPorFechaAsync(value.Value);
-                    else LimpiarTodoSinAviso();
+                    OnPropertyChanged(nameof(FechaSeleccionadaTexto));
+                    EliminarOdontogramaCommand.NotificarCanExecuteChanged();
+
+                    if (!_cambioFechaInterno)
+                    {
+                        if (value.HasValue)
+                        {
+                            _ = CargarOdontogramaPorFechaAsync(value.Value);
+                        }
+                        else
+                        {
+                            LimpiarTodoSinAviso();
+                            TieneCambiosSinGuardar = false;
+                            MensajeInteraccion = "Nuevo odontograma en blanco. Registra los hallazgos observados y guarda una nueva evolución.";
+                        }
+                    }
                 }
             }
         }
 
-        private bool _estaCargando;
-        public bool EstaCargando { get => _estaCargando; set => SetProperty(ref _estaCargando, value); }
+        public string FechaSeleccionadaTexto => FechaSeleccionada.HasValue
+            ? FechaSeleccionada.Value.ToString("dd/MM/yyyy hh:mm tt")
+            : "Nueva evolución";
 
-        // 🔥 LÓGICA MODULAR (2 PASOS) 🔥
-        private string _colorActivoHex = "#3498DB";
-        public string ColorActivoHex { get => _colorActivoHex; set { SetProperty(ref _colorActivoHex, value); OnPropertyChanged(nameof(TextoHerramienta)); } }
+        private string _nombrePaciente = "Paciente";
+        public string NombrePaciente
+        {
+            get => _nombrePaciente;
+            private set => SetProperty(ref _nombrePaciente, value);
+        }
 
-        private string _colorActivoNombre = "Azul (Sano/Definitivo)";
-        public string ColorActivoNombre { get => _colorActivoNombre; set { SetProperty(ref _colorActivoNombre, value); OnPropertyChanged(nameof(TextoHerramienta)); } }
+        private bool _tieneCambiosSinGuardar;
+        public bool TieneCambiosSinGuardar
+        {
+            get => _tieneCambiosSinGuardar;
+            private set => SetProperty(ref _tieneCambiosSinGuardar, value);
+        }
+
+        private string _mensajeInteraccion = "Selecciona un hallazgo clínico para comenzar.";
+        public string MensajeInteraccion
+        {
+            get => _mensajeInteraccion;
+            private set => SetProperty(ref _mensajeInteraccion, value);
+        }
+
+        private string _colorActivoHex = AzulNorma;
+        public string ColorActivoHex
+        {
+            get => _colorActivoHex;
+            private set
+            {
+                if (SetProperty(ref _colorActivoHex, value))
+                {
+                    OnPropertyChanged(nameof(TextoHerramienta));
+                }
+            }
+        }
+
+        private string _colorActivoNombre = "Azul (buen estado / definitivo)";
+        public string ColorActivoNombre
+        {
+            get => _colorActivoNombre;
+            private set
+            {
+                if (SetProperty(ref _colorActivoNombre, value))
+                {
+                    OnPropertyChanged(nameof(TextoHerramienta));
+                }
+            }
+        }
 
         private string _herramientaActivaModo = "Ninguno";
-        public string HerramientaActivaModo { get => _herramientaActivaModo; set { SetProperty(ref _herramientaActivaModo, value); OnPropertyChanged(nameof(TextoHerramienta)); } }
+        public string HerramientaActivaModo
+        {
+            get => _herramientaActivaModo;
+            private set
+            {
+                if (SetProperty(ref _herramientaActivaModo, value))
+                {
+                    OnPropertyChanged(nameof(TextoHerramienta));
+                }
+            }
+        }
 
-        private string _herramientaActivaDatoExtra = "";
-        public string HerramientaActivaDatoExtra { get => _herramientaActivaDatoExtra; set { SetProperty(ref _herramientaActivaDatoExtra, value); OnPropertyChanged(nameof(TextoHerramienta)); } }
+        private string _herramientaActivaDatoExtra = string.Empty;
+        public string HerramientaActivaDatoExtra
+        {
+            get => _herramientaActivaDatoExtra;
+            private set
+            {
+                if (SetProperty(ref _herramientaActivaDatoExtra, value))
+                {
+                    OnPropertyChanged(nameof(TextoHerramienta));
+                }
+            }
+        }
 
-        private string _herramientaActivaNombre = "Cursor Normal";
-        public string HerramientaActivaNombre { get => _herramientaActivaNombre; set { SetProperty(ref _herramientaActivaNombre, value); OnPropertyChanged(nameof(TextoHerramienta)); } }
+        private string _herramientaActivaNombre = "Cursor normal";
+        public string HerramientaActivaNombre
+        {
+            get => _herramientaActivaNombre;
+            private set
+            {
+                if (SetProperty(ref _herramientaActivaNombre, value))
+                {
+                    OnPropertyChanged(nameof(TextoHerramienta));
+                }
+            }
+        }
 
-        public string TextoHerramienta => HerramientaActivaModo == "Ninguno" || HerramientaActivaModo == "Borrador"
-            ? HerramientaActivaNombre
-            : $"{HerramientaActivaNombre} en color {ColorActivoNombre}";
+        public string TextoHerramienta =>
+            HerramientaActivaModo is "Ninguno" or "Borrador"
+                ? HerramientaActivaNombre
+                : $"{HerramientaActivaNombre} · {ColorActivoNombre}";
 
-        // 🔥 GESTIÓN DE DIBUJOS DEL CANVAS (FASE 2) 🔥
-        public ObservableCollection<FiguraCanvas> FigurasSuperiores { get; set; } = new();
-        public ObservableCollection<FiguraCanvas> FigurasInferiores { get; set; } = new();
-
-        // Variables de estado para los clics en el Canvas
-        private int? _primerDienteClickeadoParaCanvas = null;
-        private bool _esperandoSegundoClic = false;
-
-
-        // Comandos
         public ICommand SeleccionarColorCommand { get; }
         public ICommand SeleccionarHerramientaCommand { get; }
         public ICommand LimpiarTodoCommand { get; }
         public ICommand AbrirManualCommand { get; }
-        public ICommand GuardarOdontogramaCommand { get; }
-        public ICommand EliminarOdontogramaCommand { get; }
         public ICommand AbrirInstruccionesUsoCommand { get; }
+        public ICommand DeshacerUltimoTrazoCommand { get; }
+        public AsyncRelayCommand GuardarOdontogramaCommand { get; }
+        public AsyncRelayCommand EliminarOdontogramaCommand { get; }
 
-        public OdontogramaViewModel(int idPaciente)
+        public OdontogramaViewModel(int idPaciente, string? nombrePaciente = null)
+            : this(
+                idPaciente,
+                nombrePaciente,
+                new OdontogramaRepository(),
+                new MessageService(),
+                new ExceptionHandler(new MessageService()))
         {
+        }
+
+        public OdontogramaViewModel(
+            int idPaciente,
+            string? nombrePaciente,
+            OdontogramaRepository odontogramaRepo,
+            IMessageService messageService,
+            IExceptionHandler exceptionHandler)
+        {
+            if (idPaciente <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(idPaciente));
+            }
+
             _idPaciente = idPaciente;
-            _odontogramaRepo = new OdontogramaRepository();
+            _odontogramaRepo = odontogramaRepo ?? throw new ArgumentNullException(nameof(odontogramaRepo));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _exceptionHandler = exceptionHandler ?? throw new ArgumentNullException(nameof(exceptionHandler));
+
+            NombrePaciente = string.IsNullOrWhiteSpace(nombrePaciente)
+                ? $"Paciente #{idPaciente}"
+                : nombrePaciente.Trim();
+            Titulo = $"Odontograma - {NombrePaciente}";
 
             SeleccionarColorCommand = new RelayCommand(SeleccionarColor);
             SeleccionarHerramientaCommand = new RelayCommand(SeleccionarHerramienta);
             LimpiarTodoCommand = new RelayCommand(LimpiarTodo);
             AbrirManualCommand = new RelayCommand(AbrirManualPdf);
-            GuardarOdontogramaCommand = new RelayCommand(async p => await GuardarOdontogramaAsync());
-            EliminarOdontogramaCommand = new RelayCommand(async p => await EliminarOdontogramaAsync(), p => FechaSeleccionada.HasValue);
             AbrirInstruccionesUsoCommand = new RelayCommand(AbrirInstruccionesUso);
+            DeshacerUltimoTrazoCommand = new RelayCommand(
+                DeshacerUltimoTrazo,
+                _ => _hallazgosCanvas.Count > 0);
+            GuardarOdontogramaCommand = new AsyncRelayCommand(
+                _ => GuardarOdontogramaAsync(),
+                _ => !EstaCargando);
+            EliminarOdontogramaCommand = new AsyncRelayCommand(
+                _ => EliminarOdontogramaAsync(),
+                _ => !EstaCargando && FechaSeleccionada.HasValue);
+
             GenerarDientesAdulto();
-            _ = CargarFechasAsync();
+            _ = InicializarAsync();
         }
 
-        private void SeleccionarColor(object? parametro)
+        private async Task InicializarAsync()
         {
-            if (parametro is string data)
+            EstaCargando = true;
+            LimpiarMensaje();
+
+            try
             {
-                var p = data.Split('|');
-                ColorActivoHex = p[0];
-                ColorActivoNombre = p[1];
-            }
-        }
+                await RefrescarFechasAsync();
 
-        private void SeleccionarHerramienta(object? parametro)
-        {
-            if (parametro is string data)
-            {
-                var p = data.Split('|');
-                HerramientaActivaModo = p[0];
-                HerramientaActivaDatoExtra = p.Length > 1 ? p[1] : "";
-                HerramientaActivaNombre = p.Length > 2 ? p[2] : "";
-
-                // Resetear estado del canvas si cambiamos de herramienta
-                _primerDienteClickeadoParaCanvas = null;
-                _esperandoSegundoClic = false;
-
-                // Si seleccionó Edentulo Total, se dibuja instantáneamente sin esperar clics.
-                if (HerramientaActivaModo == "Canvas" && HerramientaActivaDatoExtra == "Edentulo")
+                if (FechasGuardadas.Count > 0)
                 {
-                    DibujarEdentuloTotal(EsSuperior: true);
-                    DibujarEdentuloTotal(EsSuperior: false);
-                    SeleccionarHerramienta("Ninguno||Cursor Normal"); // Soltar herramienta
+                    DateTime ultima = FechasGuardadas[0];
+                    AsignarFechaInternamente(ultima);
+                    await CargarOdontogramaPorFechaAsync(ultima);
                 }
+                else
+                {
+                    LimpiarTodoSinAviso();
+                    TieneCambiosSinGuardar = false;
+                    MensajeInteraccion = "No hay evoluciones guardadas. Registra el odontograma inicial y guárdalo como primera evolución.";
+                }
+            }
+            catch (Exception ex)
+            {
+                MostrarError(_exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible cargar el odontograma del paciente."));
+            }
+            finally
+            {
+                EstaCargando = false;
+                CommandManager.InvalidateRequerySuggested();
             }
         }
 
         private void GenerarDientesAdulto()
         {
-            for (int i = 18; i >= 11; i--) DientesSuperiores.Add(new PiezaDentalViewModel(i, this));
-            for (int i = 21; i <= 28; i++) DientesSuperiores.Add(new PiezaDentalViewModel(i, this));
-            for (int i = 48; i >= 41; i--) DientesInferiores.Add(new PiezaDentalViewModel(i, this));
-            for (int i = 31; i <= 38; i++) DientesInferiores.Add(new PiezaDentalViewModel(i, this));
+            DientesSuperiores.Clear();
+            DientesInferiores.Clear();
+
+            for (int i = 18; i >= 11; i--)
+                DientesSuperiores.Add(new PiezaDentalViewModel(i, this));
+            for (int i = 21; i <= 28; i++)
+                DientesSuperiores.Add(new PiezaDentalViewModel(i, this));
+            for (int i = 48; i >= 41; i--)
+                DientesInferiores.Add(new PiezaDentalViewModel(i, this));
+            for (int i = 31; i <= 38; i++)
+                DientesInferiores.Add(new PiezaDentalViewModel(i, this));
         }
 
-        // 🔥 MÉTODO QUE RECIBE LOS CLICS DE LOS DIENTES INDIVIDUALES PARA EL CANVAS 🔥
+        private void SeleccionarColor(object? parametro)
+        {
+            if (parametro is not string data)
+                return;
+
+            string[] partes = data.Split('|');
+            if (partes.Length < 2)
+                return;
+
+            ColorActivoHex = partes[0];
+            ColorActivoNombre = partes[1];
+            MensajeInteraccion = $"Color clínico activo: {ColorActivoNombre}.";
+        }
+
+        private void SeleccionarHerramienta(object? parametro)
+        {
+            if (parametro is not string data)
+                return;
+
+            string[] partes = data.Split('|');
+            if (partes.Length == 0)
+                return;
+
+            HerramientaActivaModo = partes[0];
+            HerramientaActivaDatoExtra = partes.Length > 1 ? partes[1] : string.Empty;
+            HerramientaActivaNombre = partes.Length > 2 && !string.IsNullOrWhiteSpace(partes[2])
+                ? partes[2]
+                : "Herramienta clínica";
+
+            // Los presets clínicos pueden fijar el color correcto de la norma.
+            if (partes.Length > 3 && !string.IsNullOrWhiteSpace(partes[3]))
+            {
+                ColorActivoHex = partes[3];
+            }
+
+            if (partes.Length > 4 && !string.IsNullOrWhiteSpace(partes[4]))
+            {
+                ColorActivoNombre = partes[4];
+            }
+
+            ReiniciarSeleccionCanvas();
+
+            MensajeInteraccion = HerramientaActivaModo switch
+            {
+                "Canvas" when HerramientaActivaDatoExtra == "Edentulo" =>
+                    "Haz clic en cualquier pieza del maxilar que quieras marcar como edéntulo total.",
+                "Canvas" =>
+                    "Selecciona la pieza INICIAL del hallazgo de arco; después selecciona la pieza FINAL.",
+                "Borrador" =>
+                    "Haz clic en una cara para limpiarla. Un clic en el centro limpia la pieza y, si corresponde, el último trazo de arco asociado.",
+                "Ninguno" =>
+                    "Cursor normal activo. Selecciona un hallazgo para continuar.",
+                _ =>
+                    $"{HerramientaActivaNombre}: haz clic en la superficie o centro de la pieza donde corresponda."
+            };
+        }
+
         public void RegistrarClicParaCanvas(int numeroPieza)
         {
-            if (HerramientaActivaModo != "Canvas") return;
+            if (HerramientaActivaModo != "Canvas")
+                return;
 
-            // Si estamos esperando el primer clic
+            bool esSuperior = EsPiezaSuperior(numeroPieza);
+
+            if (HerramientaActivaDatoExtra == "Edentulo")
+            {
+                // Evita superponer el mismo edentulismo varias veces en el mismo maxilar.
+                _hallazgosCanvas.RemoveAll(x =>
+                    x.Tipo == "Edentulo" && x.EsSuperior == esSuperior);
+
+                RegistrarHallazgoCanvas(new HallazgoCanvasPersistido
+                {
+                    Tipo = "Edentulo",
+                    Inicio = numeroPieza,
+                    Fin = numeroPieza,
+                    EsSuperior = esSuperior,
+                    ColorHex = AzulNorma
+                });
+
+                TieneCambiosSinGuardar = true;
+                MensajeInteraccion = esSuperior
+                    ? "Maxilar superior marcado como edéntulo total."
+                    : "Maxilar inferior marcado como edéntulo total.";
+                SeleccionarHerramienta("Ninguno||Cursor normal");
+                return;
+            }
+
             if (!_esperandoSegundoClic)
             {
                 _primerDienteClickeadoParaCanvas = numeroPieza;
                 _esperandoSegundoClic = true;
-                MessageBox.Show($"Pieza {numeroPieza} seleccionada. Ahora haz clic en el diente FINAL para completar el trazo.", "Selección", MessageBoxButton.OK, MessageBoxImage.Information);
+                MarcarPiezaCanvas(numeroPieza, true);
+                MensajeInteraccion = $"Inicio: pieza {numeroPieza}. Ahora selecciona la pieza FINAL del hallazgo.";
                 return;
             }
 
-            // Si estamos en el segundo clic
-            if (_esperandoSegundoClic && _primerDienteClickeadoParaCanvas.HasValue)
+            if (!_primerDienteClickeadoParaCanvas.HasValue)
             {
-                int inicio = _primerDienteClickeadoParaCanvas.Value;
-                int fin = numeroPieza;
+                ReiniciarSeleccionCanvas();
+                return;
+            }
 
-                // Determinar si los dientes están en el mismo maxilar (Superior: 1x, 2x. Inferior: 3x, 4x)
-                bool inicioEsSuperior = inicio < 30;
-                bool finEsSuperior = fin < 30;
+            int inicio = _primerDienteClickeadoParaCanvas.Value;
+            bool inicioEsSuperior = EsPiezaSuperior(inicio);
+            MarcarPiezaCanvas(inicio, false);
 
-                if (inicioEsSuperior != finEsSuperior)
+            if (inicioEsSuperior != esSuperior)
+            {
+                ReiniciarSeleccionCanvas();
+                MostrarAdvertencia("El hallazgo debe comenzar y terminar en el mismo maxilar.");
+                MensajeInteraccion = "Selección cancelada. Vuelve a elegir la pieza inicial.";
+                return;
+            }
+
+            int indiceInicio = ObtenerIndicePieza(inicio, esSuperior);
+            int indiceFin = ObtenerIndicePieza(numeroPieza, esSuperior);
+
+            if (indiceInicio < 0 || indiceFin < 0 || indiceInicio == indiceFin)
+            {
+                ReiniciarSeleccionCanvas();
+                MostrarAdvertencia("Selecciona dos piezas diferentes para completar este hallazgo.");
+                return;
+            }
+
+            if ((HerramientaActivaDatoExtra == "Diastema" ||
+                 HerramientaActivaDatoExtra == "ContactoAbierto") &&
+                Math.Abs(indiceInicio - indiceFin) != 1)
+            {
+                ReiniciarSeleccionCanvas();
+                MostrarAdvertencia("Este hallazgo se registra entre dos piezas adyacentes.");
+                MensajeInteraccion = "Selecciona nuevamente dos piezas contiguas.";
+                return;
+            }
+
+            string tipo = HerramientaActivaDatoExtra;
+            RegistrarHallazgoCanvas(new HallazgoCanvasPersistido
+            {
+                Tipo = tipo,
+                Inicio = inicio,
+                Fin = numeroPieza,
+                EsSuperior = esSuperior,
+                ColorHex = ColorActivoHex
+            });
+
+            ReiniciarSeleccionCanvas();
+            TieneCambiosSinGuardar = true;
+            MensajeInteraccion = $"{HerramientaActivaNombre} registrado entre las piezas {inicio} y {numeroPieza}.";
+            DeshacerUltimoTrazoCommand.NotificarCanExecuteChanged();
+        }
+
+        public void NotificarPiezaModificada(int numeroPieza)
+        {
+            TieneCambiosSinGuardar = true;
+            MensajeInteraccion = $"Pieza {numeroPieza} actualizada. Los cambios se conservarán al guardar una nueva evolución.";
+        }
+
+        public void BorrarHallazgoCanvasEnPieza(int numeroPieza)
+        {
+            if (_hallazgosCanvas.Count == 0)
+                return;
+
+            bool esSuperior = EsPiezaSuperior(numeroPieza);
+            int indicePieza = ObtenerIndicePieza(numeroPieza, esSuperior);
+            if (indicePieza < 0)
+                return;
+
+            for (int i = _hallazgosCanvas.Count - 1; i >= 0; i--)
+            {
+                HallazgoCanvasPersistido hallazgo = _hallazgosCanvas[i];
+                if (hallazgo.EsSuperior != esSuperior)
+                    continue;
+
+                if (hallazgo.Tipo == "Edentulo")
                 {
-                    MessageBox.Show("Ambos dientes deben pertenecer al mismo maxilar.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    _primerDienteClickeadoParaCanvas = null;
-                    _esperandoSegundoClic = false;
+                    _hallazgosCanvas.RemoveAt(i);
+                    ReconstruirFigurasCanvas();
+                    DeshacerUltimoTrazoCommand.NotificarCanExecuteChanged();
                     return;
                 }
 
-                // Asegurar que el inicio sea menor que el fin para el cálculo de coordenadas
-                if (inicio > fin) { int temp = inicio; inicio = fin; fin = temp; }
+                int a = ObtenerIndicePieza(hallazgo.Inicio, esSuperior);
+                int b = ObtenerIndicePieza(hallazgo.Fin, esSuperior);
+                if (a < 0 || b < 0)
+                    continue;
 
-                // Llamar al motor de dibujo correspondiente
-                switch (HerramientaActivaDatoExtra)
+                int min = Math.Min(a, b);
+                int max = Math.Max(a, b);
+                if (indicePieza >= min && indicePieza <= max)
                 {
-                    case "Puente":
-                        DibujarPuenteFijo(inicio, fin, inicioEsSuperior);
-                        break;
-                    case "Diastema":
-                        DibujarDiastema(inicio, fin, inicioEsSuperior);
-                        break;
-                    case "OrthoRem":
-                        DibujarOrtodonciaRemovible(inicio, fin, inicioEsSuperior);
-                        break;
-                    case "OrthoFijo":
-                        DibujarOrtodonciaFija(inicio, fin, inicioEsSuperior);
-                        break;
+                    _hallazgosCanvas.RemoveAt(i);
+                    ReconstruirFigurasCanvas();
+                    DeshacerUltimoTrazoCommand.NotificarCanExecuteChanged();
+                    return;
                 }
-
-                // Resetear estado
-                _primerDienteClickeadoParaCanvas = null;
-                _esperandoSegundoClic = false;
             }
         }
 
-        // =========================================================================
-        // 🎨 MOTORES DE DIBUJO GEOMÉTRICO PARA EL CANVAS
-        // =========================================================================
-
-        private int ObtenerPosicionX(int numeroPieza, bool esSuperior)
+        private void DeshacerUltimoTrazo(object? parameter)
         {
-            // Cada diente mide 50px + 4px de margen = 54px por espacio.
-            // Hay 16 dientes por maxilar. El índice va de 0 a 15.
-            var lista = esSuperior ? DientesSuperiores : DientesInferiores;
-            int indice = lista.IndexOf(lista.FirstOrDefault(d => d.NumeroPieza == numeroPieza));
+            if (_hallazgosCanvas.Count == 0)
+                return;
 
-            if (indice == -1) return 0;
-
-            // Retorna el centro exacto de la pieza en el Canvas X
-            return (indice * 54) + 27;
+            _hallazgosCanvas.RemoveAt(_hallazgosCanvas.Count - 1);
+            ReconstruirFigurasCanvas();
+            TieneCambiosSinGuardar = true;
+            MensajeInteraccion = "Se eliminó el último hallazgo de arco.";
+            DeshacerUltimoTrazoCommand.NotificarCanExecuteChanged();
         }
 
-        private void DibujarPuenteFijo(int inicio, int fin, bool esSuperior)
+        private void RegistrarHallazgoCanvas(HallazgoCanvasPersistido hallazgo)
         {
-            int x1 = ObtenerPosicionX(inicio, esSuperior);
-            int x2 = ObtenerPosicionX(fin, esSuperior);
-
-            // Un puente es una línea curva (Bezier) sobre los dientes.
-            var geometria = new PathGeometry();
-            var figura = new PathFigure { StartPoint = new Point(x1, 100) }; // Empezar cerca del cuello
-            figura.Segments.Add(new BezierSegment(new Point(x1, 60), new Point(x2, 60), new Point(x2, 100), true));
-            geometria.Figures.Add(figura);
-
-            AgregarFiguraCanvas(geometria, (Brush)new BrushConverter().ConvertFromString(ColorActivoHex), 3, null, esSuperior);
+            _hallazgosCanvas.Add(hallazgo);
+            RenderizarHallazgoCanvas(hallazgo);
+            DeshacerUltimoTrazoCommand.NotificarCanExecuteChanged();
         }
 
-        private void DibujarDiastema(int inicio, int fin, bool esSuperior)
+        private void RenderizarHallazgoCanvas(HallazgoCanvasPersistido hallazgo)
         {
-            int x1 = ObtenerPosicionX(inicio, esSuperior);
-            int x2 = ObtenerPosicionX(fin, esSuperior);
-            int xCentro = (x1 + x2) / 2; // El medio de los dos dientes
-
-            // Símbolo )( en el medio
-            var geometria = new PathGeometry();
-            var figuraIzquierda = new PathFigure { StartPoint = new Point(xCentro - 5, 20) };
-            figuraIzquierda.Segments.Add(new ArcSegment(new Point(xCentro - 5, 50), new Size(10, 15), 0, false, SweepDirection.Counterclockwise, true));
-
-            var figuraDerecha = new PathFigure { StartPoint = new Point(xCentro + 5, 20) };
-            figuraDerecha.Segments.Add(new ArcSegment(new Point(xCentro + 5, 50), new Size(10, 15), 0, false, SweepDirection.Clockwise, true));
-
-            geometria.Figures.Add(figuraIzquierda);
-            geometria.Figures.Add(figuraDerecha);
-
-            AgregarFiguraCanvas(geometria, (Brush)new BrushConverter().ConvertFromString("#3498DB"), 3, null, esSuperior); // El manual dice Azul
-        }
-
-        private void DibujarOrtodonciaRemovible(int inicio, int fin, bool esSuperior)
-        {
-            int x1 = ObtenerPosicionX(inicio, esSuperior);
-            int x2 = ObtenerPosicionX(fin, esSuperior);
-
-            var geometria = new PathGeometry();
-            var figura = new PathFigure { StartPoint = new Point(x1, 105) };
-            figura.Segments.Add(new LineSegment(new Point(x2, 105), true));
-            geometria.Figures.Add(figura);
-
-            // DoubleCollection para el efecto Zig-Zag o punteado
-            DoubleCollection zigZag = new DoubleCollection { 2, 2 };
-
-            AgregarFiguraCanvas(geometria, (Brush)new BrushConverter().ConvertFromString(ColorActivoHex), 3, zigZag, esSuperior);
-        }
-
-        private void DibujarOrtodonciaFija(int inicio, int fin, bool esSuperior)
-        {
-            int x1 = ObtenerPosicionX(inicio, esSuperior);
-            int x2 = ObtenerPosicionX(fin, esSuperior);
-
-            // Línea recta cruzando todos los dientes
-            var geometria = new PathGeometry();
-            var figuraLínea = new PathFigure { StartPoint = new Point(x1, 45) };
-            figuraLínea.Segments.Add(new LineSegment(new Point(x2, 45), true));
-            geometria.Figures.Add(figuraLínea);
-
-            // Cuadritos (brackets) en cada diente intermedio
-            var lista = esSuperior ? DientesSuperiores : DientesInferiores;
-            int idxInicio = lista.IndexOf(lista.FirstOrDefault(d => d.NumeroPieza == inicio));
-            int idxFin = lista.IndexOf(lista.FirstOrDefault(d => d.NumeroPieza == fin));
-
-            for (int i = idxInicio; i <= idxFin; i++)
+            switch (hallazgo.Tipo)
             {
-                int xBracket = (i * 54) + 27;
-                var rect = new RectangleGeometry(new Rect(xBracket - 4, 41, 8, 8));
-                geometria.AddGeometry(rect);
+                case "Puente":
+                    DibujarPuenteFijo(hallazgo);
+                    break;
+                case "Diastema":
+                    DibujarDiastema(hallazgo);
+                    break;
+                case "ContactoAbierto":
+                    DibujarContactoAbierto(hallazgo);
+                    break;
+                case "OrthoRem":
+                    DibujarOrtodonciaRemovible(hallazgo);
+                    break;
+                case "OrthoFijo":
+                    DibujarOrtodonciaFija(hallazgo);
+                    break;
+                case "Edentulo":
+                    DibujarEdentuloTotal(hallazgo);
+                    break;
+                case "Transposicion":
+                    DibujarTransposicion(hallazgo);
+                    break;
+                case "PPR":
+                    DibujarProtesisParcialRemovible(hallazgo);
+                    break;
+            }
+        }
+
+        private void ReconstruirFigurasCanvas()
+        {
+            FigurasSuperiores.Clear();
+            FigurasInferiores.Clear();
+
+            foreach (HallazgoCanvasPersistido hallazgo in _hallazgosCanvas)
+            {
+                RenderizarHallazgoCanvas(hallazgo);
+            }
+        }
+
+        private void DibujarPuenteFijo(HallazgoCanvasPersistido hallazgo)
+        {
+            (int min, int max, int x1, int x2) = ObtenerRangoVisual(hallazgo);
+            if (min < 0)
+                return;
+
+            var geometria = new PathGeometry();
+            var arco = new PathFigure { StartPoint = new Point(x1, 91) };
+            arco.Segments.Add(new BezierSegment(
+                new Point(x1, 58),
+                new Point(x2, 58),
+                new Point(x2, 91),
+                true));
+            geometria.Figures.Add(arco);
+
+            for (int i = min; i <= max; i++)
+            {
+                int x = ObtenerXPorIndice(i);
+                geometria.AddGeometry(new EllipseGeometry(new Rect(x - 18, 29, 36, 42)));
             }
 
-            AgregarFiguraCanvas(geometria, (Brush)new BrushConverter().ConvertFromString(ColorActivoHex), 2, null, esSuperior);
+            AgregarFiguraCanvas(
+                geometria,
+                CrearBrush(hallazgo.ColorHex),
+                2.5,
+                null,
+                hallazgo.EsSuperior);
         }
 
-        private void DibujarEdentuloTotal(bool EsSuperior)
+        private void DibujarDiastema(HallazgoCanvasPersistido hallazgo)
+        {
+            (_, _, int x1, int x2) = ObtenerRangoVisual(hallazgo);
+            int xCentro = (x1 + x2) / 2;
+
+            var geometria = new PathGeometry();
+            var izquierda = new PathFigure { StartPoint = new Point(xCentro - 5, 27) };
+            izquierda.Segments.Add(new ArcSegment(
+                new Point(xCentro - 5, 61),
+                new Size(10, 17),
+                0,
+                false,
+                SweepDirection.Counterclockwise,
+                true));
+
+            var derecha = new PathFigure { StartPoint = new Point(xCentro + 5, 27) };
+            derecha.Segments.Add(new ArcSegment(
+                new Point(xCentro + 5, 61),
+                new Size(10, 17),
+                0,
+                false,
+                SweepDirection.Clockwise,
+                true));
+
+            geometria.Figures.Add(izquierda);
+            geometria.Figures.Add(derecha);
+
+            AgregarFiguraCanvas(geometria, CrearBrush(AzulNorma), 3, null, hallazgo.EsSuperior);
+        }
+
+        private void DibujarContactoAbierto(HallazgoCanvasPersistido hallazgo)
+        {
+            (_, _, int x1, int x2) = ObtenerRangoVisual(hallazgo);
+            int xCentro = (x1 + x2) / 2;
+
+            var geometria = new PathGeometry();
+            var izquierda = new PathFigure { StartPoint = new Point(xCentro - 12, 37) };
+            izquierda.Segments.Add(new LineSegment(new Point(xCentro - 3, 46), true));
+            izquierda.Segments.Add(new LineSegment(new Point(xCentro - 12, 55), true));
+
+            var derecha = new PathFigure { StartPoint = new Point(xCentro + 12, 37) };
+            derecha.Segments.Add(new LineSegment(new Point(xCentro + 3, 46), true));
+            derecha.Segments.Add(new LineSegment(new Point(xCentro + 12, 55), true));
+
+            geometria.Figures.Add(izquierda);
+            geometria.Figures.Add(derecha);
+
+            AgregarFiguraCanvas(geometria, CrearBrush(RojoNorma), 3, null, hallazgo.EsSuperior);
+        }
+
+        private void DibujarOrtodonciaRemovible(HallazgoCanvasPersistido hallazgo)
+        {
+            (_, _, int x1, int x2) = ObtenerRangoVisual(hallazgo);
+            var geometria = CrearZigZag(x1, x2, 79, 6, 12);
+
+            AgregarFiguraCanvas(
+                geometria,
+                CrearBrush(hallazgo.ColorHex),
+                2.5,
+                null,
+                hallazgo.EsSuperior);
+        }
+
+        private void DibujarOrtodonciaFija(HallazgoCanvasPersistido hallazgo)
+        {
+            (int min, int max, int x1, int x2) = ObtenerRangoVisual(hallazgo);
+            if (min < 0)
+                return;
+
+            var geometria = new PathGeometry();
+            var linea = new PathFigure { StartPoint = new Point(x1, 48) };
+            linea.Segments.Add(new LineSegment(new Point(x2, 48), true));
+            geometria.Figures.Add(linea);
+
+            for (int i = min; i <= max; i++)
+            {
+                int xBracket = ObtenerXPorIndice(i);
+                geometria.AddGeometry(new RectangleGeometry(new Rect(xBracket - 4, 44, 8, 8)));
+            }
+
+            AgregarFiguraCanvas(
+                geometria,
+                CrearBrush(hallazgo.ColorHex),
+                2,
+                null,
+                hallazgo.EsSuperior);
+        }
+
+        private void DibujarEdentuloTotal(HallazgoCanvasPersistido hallazgo)
         {
             var geometria = new PathGeometry();
-            var figura = new PathFigure { StartPoint = new Point(10, 10) }; // Cerca del ápice
-            figura.Segments.Add(new LineSegment(new Point(850, 10), true));
-            geometria.Figures.Add(figura);
+            var linea = new PathFigure { StartPoint = new Point(10, 9) };
+            linea.Segments.Add(new LineSegment(new Point(854, 9), true));
+            geometria.Figures.Add(linea);
 
-            AgregarFiguraCanvas(geometria, (Brush)new BrushConverter().ConvertFromString("#3498DB"), 4, null, EsSuperior); // El manual dice Azul
+            AgregarFiguraCanvas(geometria, CrearBrush(AzulNorma), 4, null, hallazgo.EsSuperior);
         }
 
-        private void AgregarFiguraCanvas(PathGeometry geo, Brush color, double grosor, DoubleCollection patron, bool esSuperior)
+        private void DibujarTransposicion(HallazgoCanvasPersistido hallazgo)
+        {
+            (_, _, int x1, int x2) = ObtenerRangoVisual(hallazgo);
+            int medio = (x1 + x2) / 2;
+
+            var geometria = new PathGeometry();
+            var superior = new PathFigure { StartPoint = new Point(x1, 75) };
+            superior.Segments.Add(new BezierSegment(
+                new Point(medio, 52),
+                new Point(medio, 52),
+                new Point(x2, 75),
+                true));
+
+            var inferior = new PathFigure { StartPoint = new Point(x2, 88) };
+            inferior.Segments.Add(new BezierSegment(
+                new Point(medio, 104),
+                new Point(medio, 104),
+                new Point(x1, 88),
+                true));
+
+            geometria.Figures.Add(superior);
+            geometria.Figures.Add(inferior);
+
+            AgregarFiguraCanvas(geometria, CrearBrush(AzulNorma), 2.5, null, hallazgo.EsSuperior);
+        }
+
+        private void DibujarProtesisParcialRemovible(HallazgoCanvasPersistido hallazgo)
+        {
+            (_, _, int x1, int x2) = ObtenerRangoVisual(hallazgo);
+            int medio = (x1 + x2) / 2;
+
+            var geometria = new PathGeometry();
+            var baseCurva = new PathFigure { StartPoint = new Point(x1, 88) };
+            baseCurva.Segments.Add(new BezierSegment(
+                new Point(medio - 40, 103),
+                new Point(medio + 40, 103),
+                new Point(x2, 88),
+                true));
+            geometria.Figures.Add(baseCurva);
+
+            var ganchoInicio = new PathFigure { StartPoint = new Point(x1 - 7, 78) };
+            ganchoInicio.Segments.Add(new ArcSegment(
+                new Point(x1 + 7, 78),
+                new Size(8, 8),
+                0,
+                false,
+                SweepDirection.Clockwise,
+                true));
+            geometria.Figures.Add(ganchoInicio);
+
+            var ganchoFin = new PathFigure { StartPoint = new Point(x2 - 7, 78) };
+            ganchoFin.Segments.Add(new ArcSegment(
+                new Point(x2 + 7, 78),
+                new Size(8, 8),
+                0,
+                false,
+                SweepDirection.Clockwise,
+                true));
+            geometria.Figures.Add(ganchoFin);
+
+            AgregarFiguraCanvas(
+                geometria,
+                CrearBrush(hallazgo.ColorHex),
+                2.5,
+                null,
+                hallazgo.EsSuperior);
+        }
+
+        private static PathGeometry CrearZigZag(int x1, int x2, double y, double amplitud, int paso)
+        {
+            int inicio = Math.Min(x1, x2);
+            int fin = Math.Max(x1, x2);
+            var geometria = new PathGeometry();
+            var figura = new PathFigure { StartPoint = new Point(inicio, y) };
+
+            bool arriba = true;
+            for (int x = inicio + paso; x < fin; x += paso)
+            {
+                figura.Segments.Add(new LineSegment(
+                    new Point(x, y + (arriba ? -amplitud : amplitud)),
+                    true));
+                arriba = !arriba;
+            }
+
+            figura.Segments.Add(new LineSegment(new Point(fin, y), true));
+            geometria.Figures.Add(figura);
+            return geometria;
+        }
+
+        private void AgregarFiguraCanvas(
+            PathGeometry geometria,
+            Brush color,
+            double grosor,
+            DoubleCollection? patron,
+            bool esSuperior)
         {
             var figura = new FiguraCanvas
             {
-                Geometria = geo,
+                Geometria = geometria,
                 ColorTrazo = color,
                 GrosorTrazo = grosor,
                 PatronGuiones = patron,
                 EsMaxilarSuperior = esSuperior
             };
 
-            if (esSuperior) FigurasSuperiores.Add(figura);
-            else FigurasInferiores.Add(figura);
+            if (esSuperior)
+                FigurasSuperiores.Add(figura);
+            else
+                FigurasInferiores.Add(figura);
         }
 
-        // =========================================================================
-
-        private void LimpiarTodoSinAviso()
+        private (int min, int max, int x1, int x2) ObtenerRangoVisual(HallazgoCanvasPersistido hallazgo)
         {
-            foreach (var d in DientesSuperiores.Concat(DientesInferiores)) d.LimpiarPieza();
-            FigurasSuperiores.Clear();
-            FigurasInferiores.Clear();
+            int indiceInicio = ObtenerIndicePieza(hallazgo.Inicio, hallazgo.EsSuperior);
+            int indiceFin = ObtenerIndicePieza(hallazgo.Fin, hallazgo.EsSuperior);
+            if (indiceInicio < 0 || indiceFin < 0)
+                return (-1, -1, 0, 0);
+
+            int min = Math.Min(indiceInicio, indiceFin);
+            int max = Math.Max(indiceInicio, indiceFin);
+            return (min, max, ObtenerXPorIndice(min), ObtenerXPorIndice(max));
+        }
+
+        private int ObtenerIndicePieza(int numeroPieza, bool esSuperior)
+        {
+            ObservableCollection<PiezaDentalViewModel> lista = esSuperior
+                ? DientesSuperiores
+                : DientesInferiores;
+
+            for (int i = 0; i < lista.Count; i++)
+            {
+                if (lista[i].NumeroPieza == numeroPieza)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        private static int ObtenerXPorIndice(int indice) =>
+            (indice * AnchoPasoPieza) + CentroPieza;
+
+        private static bool EsPiezaSuperior(int numeroPieza) => numeroPieza < 30;
+
+        private void MarcarPiezaCanvas(int numeroPieza, bool seleccionado)
+        {
+            PiezaDentalViewModel? pieza = DientesSuperiores
+                .Concat(DientesInferiores)
+                .FirstOrDefault(x => x.NumeroPieza == numeroPieza);
+            pieza?.MarcarSeleccionCanvas(seleccionado);
+        }
+
+        private void ReiniciarSeleccionCanvas()
+        {
+            if (_primerDienteClickeadoParaCanvas.HasValue)
+            {
+                MarcarPiezaCanvas(_primerDienteClickeadoParaCanvas.Value, false);
+            }
+
             _primerDienteClickeadoParaCanvas = null;
             _esperandoSegundoClic = false;
         }
 
-        private void LimpiarTodo(object? parameter)
-        {
-            if (MessageBox.Show("¿Seguro que deseas borrar TODO el mapa y empezar de cero?", "Limpiar", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-            {
-                LimpiarTodoSinAviso();
-                FechaSeleccionada = null;
-                SeleccionarHerramienta("Ninguno||Cursor Normal");
-            }
-        }
-
-        private async Task CargarFechasAsync()
+        private static Brush CrearBrush(string colorHex)
         {
             try
             {
-                var fechas = await _odontogramaRepo.ListarFechasEvolucionesAsync(_idPaciente);
-                FechasGuardadas = new ObservableCollection<DateTime>(fechas);
-                if (FechasGuardadas.Any()) FechaSeleccionada = FechasGuardadas.First();
+                return (Brush)new BrushConverter().ConvertFromString(colorHex)!;
             }
-            catch (Exception ex) { MessageBox.Show("Error al cargar historial: " + ex.Message); }
+            catch
+            {
+                return Brushes.DodgerBlue;
+            }
+        }
+
+        private void LimpiarTodoSinAviso()
+        {
+            foreach (PiezaDentalViewModel diente in DientesSuperiores.Concat(DientesInferiores))
+            {
+                diente.LimpiarPieza();
+            }
+
+            _hallazgosCanvas.Clear();
+            FigurasSuperiores.Clear();
+            FigurasInferiores.Clear();
+            ReiniciarSeleccionCanvas();
+            DeshacerUltimoTrazoCommand.NotificarCanExecuteChanged();
+        }
+
+        private void LimpiarTodo(object? parameter)
+        {
+            if (!_messageService.Confirmar(
+                    "¿Deseas limpiar todo el odontograma visible? La evolución guardada no se modifica; el mapa quedará listo para registrar una nueva evolución desde cero.",
+                    "Limpiar odontograma"))
+            {
+                return;
+            }
+
+            LimpiarTodoSinAviso();
+            AsignarFechaInternamente(null);
+            TieneCambiosSinGuardar = true;
+            SeleccionarHerramienta("Ninguno||Cursor normal");
+            MensajeInteraccion = "Mapa limpio. Registra los hallazgos actuales y guarda una nueva evolución.";
+        }
+
+        private async Task RefrescarFechasAsync()
+        {
+            IEnumerable<DateTime> fechas = await _odontogramaRepo.ListarFechasEvolucionesAsync(_idPaciente);
+            FechasGuardadas = new ObservableCollection<DateTime>(fechas);
         }
 
         private async Task CargarOdontogramaPorFechaAsync(DateTime fecha)
         {
+            if (EstaCargando)
+                return;
+
             EstaCargando = true;
-            LimpiarTodoSinAviso();
+            LimpiarMensaje();
+
             try
             {
-                var historial = await _odontogramaRepo.ObtenerOdontogramaPorFechaAsync(_idPaciente, fecha);
-                if (historial != null && historial.Any())
-                {
-                    foreach (var registro in historial)
-                    {
-                        var p = DientesSuperiores.Concat(DientesInferiores).FirstOrDefault(d => d.NumeroPieza == registro.NumeroPieza);
-                        if (p != null && !string.IsNullOrEmpty(registro.Observaciones))
-                        {
-                            var caras = registro.Observaciones.Split('|');
-                            foreach (var cara in caras)
-                            {
-                                var claveValor = cara.Split(':');
-                                if (claveValor.Length == 2)
-                                {
-                                    switch (claveValor[0])
-                                    {
-                                        case "CA": p.ColorArriba = claveValor[1]; break;
-                                        case "CB": p.ColorAbajo = claveValor[1]; break;
-                                        case "CI": p.ColorIzquierda = claveValor[1]; break;
-                                        case "CD": p.ColorDerecha = claveValor[1]; break;
-                                        case "CC": p.ColorCentro = claveValor[1]; break;
-                                        case "CRZ": p.ColorCruz = claveValor[1]; break;
-                                        case "CIR": p.ColorCirculo = claveValor[1]; break;
-                                        case "CDG": p.ColorDiagonal = claveValor[1]; break;
-                                        case "CRA": p.ColorRaiz = claveValor[1]; break;
-                                        case "SIG": p.Siglas = claveValor[1]; break;
-                                        case "CSG": p.ColorSiglas = claveValor[1]; break;
-                                        case "IMP": p.ColorImpactadoRojo = claveValor[1]; break;
-                                        case "RRL": p.ColorRemanenteLineas = claveValor[1]; break;
-                                        case "CFR": p.ColorFurca = claveValor[1]; break;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                IEnumerable<OdontogramaModel> registros =
+                    await _odontogramaRepo.ObtenerOdontogramaPorFechaAsync(_idPaciente, fecha);
+                List<OdontogramaModel> historial = registros.ToList();
 
-                    // NOTA: Para una implementación real completa de base de datos, 
-                    // también deberías cargar las líneas del Canvas desde otro String o Tabla aquí.
+                LimpiarTodoSinAviso();
+
+                string? payloadCanvas = null;
+                foreach (OdontogramaModel registro in historial)
+                {
+                    PiezaDentalViewModel? pieza = DientesSuperiores
+                        .Concat(DientesInferiores)
+                        .FirstOrDefault(d => d.NumeroPieza == registro.NumeroPieza);
+
+                    if (pieza is null || string.IsNullOrWhiteSpace(registro.Observaciones))
+                        continue;
+
+                    AplicarObservacionesPieza(pieza, registro.Observaciones, ref payloadCanvas);
+                }
+
+                if (!string.IsNullOrWhiteSpace(payloadCanvas))
+                {
+                    CargarHallazgosCanvas(payloadCanvas);
+                }
+
+                TieneCambiosSinGuardar = false;
+                MensajeInteraccion = historial.Count == 0
+                    ? "La evolución seleccionada no contiene piezas registradas."
+                    : $"Evolución del {fecha:dd/MM/yyyy hh:mm tt} cargada. Cualquier cambio que guardes generará una nueva evolución.";
+            }
+            catch (Exception ex)
+            {
+                MostrarError(_exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible cargar la evolución seleccionada."));
+            }
+            finally
+            {
+                EstaCargando = false;
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        private void AplicarObservacionesPieza(
+            PiezaDentalViewModel pieza,
+            string observaciones,
+            ref string? payloadCanvas)
+        {
+            foreach (string token in observaciones.Split('|', StringSplitOptions.RemoveEmptyEntries))
+            {
+                int separador = token.IndexOf(':');
+                if (separador < 0)
+                    continue;
+
+                string clave = token[..separador];
+                string valor = token[(separador + 1)..];
+
+                switch (clave)
+                {
+                    case "CA": pieza.ColorArriba = valor; break;
+                    case "CB": pieza.ColorAbajo = valor; break;
+                    case "CI": pieza.ColorIzquierda = valor; break;
+                    case "CD": pieza.ColorDerecha = valor; break;
+                    case "CC": pieza.ColorCentro = valor; break;
+                    case "CRZ": pieza.ColorCruz = valor; break;
+                    case "CIR": pieza.ColorCirculo = valor; break;
+                    case "CDG": pieza.ColorDiagonal = valor; break;
+                    case "CRA": pieza.ColorRaiz = valor; break;
+                    case "SIG": pieza.Siglas = valor; break;
+                    case "CSG": pieza.ColorSiglas = valor; break;
+                    case "IMP": pieza.ColorImpactadoRojo = valor; break;
+                    case "RRL": pieza.ColorRemanenteLineas = valor; break;
+                    case "CFR": pieza.ColorFurca = valor; break;
+                    case "FRA": pieza.ColorFractura = valor; break;
+                    case "RDE": pieza.ColorDesbordante = valor; break;
+                    case "MOV": pieza.SimboloMovimiento = valor; break;
+                    case "CMV": pieza.ColorMovimiento = valor; break;
+                    case "CVS": payloadCanvas = valor; break;
                 }
             }
-            catch (Exception ex) { MessageBox.Show("Error al cargar el mapa: " + ex.Message); }
-            finally { EstaCargando = false; }
+        }
+
+        private void CargarHallazgosCanvas(string payload)
+        {
+            try
+            {
+                byte[] bytes = Convert.FromBase64String(payload);
+                string json = Encoding.UTF8.GetString(bytes);
+                List<HallazgoCanvasPersistido>? hallazgos =
+                    JsonSerializer.Deserialize<List<HallazgoCanvasPersistido>>(json);
+
+                if (hallazgos is null)
+                    return;
+
+                _hallazgosCanvas.Clear();
+                _hallazgosCanvas.AddRange(hallazgos.Where(x => !string.IsNullOrWhiteSpace(x.Tipo)));
+                ReconstruirFigurasCanvas();
+                DeshacerUltimoTrazoCommand.NotificarCanExecuteChanged();
+            }
+            catch
+            {
+                // Compatibilidad: las evoluciones antiguas no tenían persistencia de Canvas.
+                _hallazgosCanvas.Clear();
+                FigurasSuperiores.Clear();
+                FigurasInferiores.Clear();
+                MensajeInteraccion = "La evolución fue cargada, pero contiene trazos de arco de una versión anterior que no podían conservarse.";
+            }
         }
 
         private async Task GuardarOdontogramaAsync()
         {
+            if (EstaCargando)
+                return;
+
             EstaCargando = true;
+            LimpiarMensaje();
+
             try
             {
-                var listaGuardar = new List<Models.OdontogramaModel>();
+                int idEstadoBase = await _odontogramaRepo.ObtenerIdEstadoBaseAsync();
                 DateTime fechaExacta = DateTime.Now;
+                string payloadCanvas = SerializarHallazgosCanvas();
 
-                foreach (var p in DientesSuperiores.Concat(DientesInferiores))
+                var listaGuardar = new List<OdontogramaModel>();
+                List<PiezaDentalViewModel> piezas = DientesSuperiores
+                    .Concat(DientesInferiores)
+                    .ToList();
+
+                for (int i = 0; i < piezas.Count; i++)
                 {
-                    // Se agregaron las variables de la Fase 1 a la cadena de guardado
-                    string serial = $"CA:{p.ColorArriba}|CB:{p.ColorAbajo}|CI:{p.ColorIzquierda}|CD:{p.ColorDerecha}|CC:{p.ColorCentro}|CRZ:{p.ColorCruz}|CIR:{p.ColorCirculo}|CDG:{p.ColorDiagonal}|CRA:{p.ColorRaiz}|SIG:{p.Siglas}|CSG:{p.ColorSiglas}|IMP:{p.ColorImpactadoRojo}|RRL:{p.ColorRemanenteLineas}|CFR:{p.ColorFurca}";
+                    PiezaDentalViewModel pieza = piezas[i];
+                    string serial = SerializarPieza(pieza);
 
-                    listaGuardar.Add(new Models.OdontogramaModel
+                    // El payload se guarda una sola vez dentro de la misma evolución.
+                    // Así se aprovecha Observaciones (NVARCHAR(MAX)) sin alterar la estructura de BD.
+                    if (i == 0)
+                    {
+                        serial += $"|VER:{VersionSerializacion}|CVS:{payloadCanvas}";
+                    }
+
+                    listaGuardar.Add(new OdontogramaModel
                     {
                         IdPaciente = _idPaciente,
-                        NumeroPieza = p.NumeroPieza,
-                        IdEstadoDental = 1,
+                        NumeroPieza = pieza.NumeroPieza,
+                        IdEstadoDental = idEstadoBase,
                         Observaciones = serial,
                         FechaRegistro = fechaExacta
                     });
                 }
-                await _odontogramaRepo.GuardarOdontogramaAsync(listaGuardar);
-                MessageBox.Show("¡Evolución Clínica guardada con éxito!", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                await CargarFechasAsync();
+                await _odontogramaRepo.GuardarOdontogramaAsync(listaGuardar);
+                await RefrescarFechasAsync();
+
+                DateTime fechaGuardada = FechasGuardadas.FirstOrDefault();
+                if (fechaGuardada != default)
+                {
+                    AsignarFechaInternamente(fechaGuardada);
+                }
+
+                TieneCambiosSinGuardar = false;
+                MostrarExito("Evolución odontológica guardada correctamente. El registro anterior se mantiene intacto.");
+                MensajeInteraccion = "Evolución guardada. Puedes continuar registrando cambios para crear la siguiente evolución.";
             }
-            catch (Exception ex) { MessageBox.Show("Error: " + ex.Message); }
-            finally { EstaCargando = false; }
+            catch (Exception ex)
+            {
+                MostrarError(_exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible guardar la evolución odontológica."));
+            }
+            finally
+            {
+                EstaCargando = false;
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        private static string SerializarPieza(PiezaDentalViewModel pieza)
+        {
+            return string.Join('|', new[]
+            {
+                $"CA:{pieza.ColorArriba}",
+                $"CB:{pieza.ColorAbajo}",
+                $"CI:{pieza.ColorIzquierda}",
+                $"CD:{pieza.ColorDerecha}",
+                $"CC:{pieza.ColorCentro}",
+                $"CRZ:{pieza.ColorCruz}",
+                $"CIR:{pieza.ColorCirculo}",
+                $"CDG:{pieza.ColorDiagonal}",
+                $"CRA:{pieza.ColorRaiz}",
+                $"SIG:{pieza.Siglas}",
+                $"CSG:{pieza.ColorSiglas}",
+                $"IMP:{pieza.ColorImpactadoRojo}",
+                $"RRL:{pieza.ColorRemanenteLineas}",
+                $"CFR:{pieza.ColorFurca}",
+                $"FRA:{pieza.ColorFractura}",
+                $"RDE:{pieza.ColorDesbordante}",
+                $"MOV:{pieza.SimboloMovimiento}",
+                $"CMV:{pieza.ColorMovimiento}"
+            });
+        }
+
+        private string SerializarHallazgosCanvas()
+        {
+            string json = JsonSerializer.Serialize(_hallazgosCanvas);
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
         }
 
         private async Task EliminarOdontogramaAsync()
         {
-            if (FechaSeleccionada.HasValue && MessageBox.Show("¿Seguro que deseas ELIMINAR esta evolución?", "Eliminar", MessageBoxButton.YesNo, MessageBoxImage.Error) == MessageBoxResult.Yes)
+            if (!FechaSeleccionada.HasValue)
+                return;
+
+            DateTime fecha = FechaSeleccionada.Value;
+            if (!_messageService.Confirmar(
+                    $"¿Deseas eliminar la evolución del {fecha:dd/MM/yyyy hh:mm tt}? Esta acción elimina ese registro histórico completo.",
+                    "Eliminar evolución"))
             {
-                try
+                return;
+            }
+
+            EstaCargando = true;
+            LimpiarMensaje();
+
+            try
+            {
+                await _odontogramaRepo.EliminarOdontogramaAsync(_idPaciente, fecha);
+                await RefrescarFechasAsync();
+
+                LimpiarTodoSinAviso();
+                TieneCambiosSinGuardar = false;
+
+                if (FechasGuardadas.Count > 0)
                 {
-                    await _odontogramaRepo.EliminarOdontogramaAsync(_idPaciente, FechaSeleccionada.Value);
-                    FechaSeleccionada = null;
-                    LimpiarTodoSinAviso();
-                    await CargarFechasAsync();
-                    MessageBox.Show("Registro eliminado.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DateTime siguiente = FechasGuardadas[0];
+                    AsignarFechaInternamente(siguiente);
+                    EstaCargando = false;
+                    await CargarOdontogramaPorFechaAsync(siguiente);
                 }
-                catch (Exception ex) { MessageBox.Show("Error al eliminar: " + ex.Message); }
+                else
+                {
+                    AsignarFechaInternamente(null);
+                    MensajeInteraccion = "No quedan evoluciones guardadas para este paciente.";
+                }
+
+                MostrarExito("Evolución eliminada correctamente.");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(_exceptionHandler.ObtenerMensajeUsuario(
+                    ex,
+                    "No fue posible eliminar la evolución odontológica."));
+            }
+            finally
+            {
+                EstaCargando = false;
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        private void AsignarFechaInternamente(DateTime? fecha)
+        {
+            _cambioFechaInterno = true;
+            try
+            {
+                if (SetProperty(ref _fechaSeleccionada, fecha, nameof(FechaSeleccionada)))
+                {
+                    OnPropertyChanged(nameof(FechaSeleccionadaTexto));
+                    EliminarOdontogramaCommand.NotificarCanExecuteChanged();
+                }
+            }
+            finally
+            {
+                _cambioFechaInterno = false;
             }
         }
 
         private void AbrirManualPdf(object? parameter)
         {
-            try { Process.Start(new ProcessStartInfo { FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "como-llenar-odontograma4.pdf"), UseShellExecute = true }); }
-            catch { MessageBox.Show("No se encontró el manual."); }
+            try
+            {
+                string ruta = Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "como-llenar-odontograma4.pdf");
+
+                if (!File.Exists(ruta))
+                {
+                    _messageService.MostrarAdvertencia(
+                        "No se encontró el manual clínico del odontograma en la carpeta de la aplicación.");
+                    return;
+                }
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = ruta,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _messageService.MostrarError(
+                    _exceptionHandler.ObtenerMensajeUsuario(
+                        ex,
+                        "No fue posible abrir el manual del odontograma."));
+            }
         }
 
         private void AbrirInstruccionesUso(object? parameter)
         {
-            string instrucciones = "🦷 GUÍA RÁPIDA DEL ODONTOGRAMA DIGITAL 🦷\n\n" +
-                                   "PASO 1: SELECCIONA EL COLOR\n" +
-                                   " • Azul: Tratamientos definitivos o buen estado.\n" +
-                                   " • Rojo: Caries, patologías o mal estado.\n" +
-                                   " • Verde/Naranja: Tratamientos temporales o resinas.\n\n" +
-                                   "PASO 2: SELECCIONA LA HERRAMIENTA O SIGLA\n" +
-                                   " • Haz clic en el botón de lo que deseas dibujar (Caras, Corona, TCC, etc.).\n\n" +
-                                   "PASO 3: APLICA EN EL DIENTE\n" +
-                                   " • Haz clic directamente sobre la pieza dental o en la cara específica para pintar.\n\n" +
-                                   "PASO 4: HALLAZGOS COMPLEJOS (Puentes, Ortodoncia, Diastemas)\n" +
-                                   " • Selecciona la herramienta (Ej. Puente Fijo).\n" +
-                                   " • Haz clic en el diente INICIAL.\n" +
-                                   " • Haz clic en el diente FINAL. El programa unirá ambos dientes automáticamente.\n\n" +
-                                   "PASO 5: CORREGIR ERRORES\n" +
-                                   " • Selecciona la herramienta 'Borrador' y haz clic en la cara o diente que deseas limpiar.";
+            const string instrucciones =
+                "GUÍA RÁPIDA DEL ODONTOGRAMA DIGITAL\n\n" +
+                "1. Selecciona un hallazgo clínico. Los presets fijos ya aplican el color indicado por la simbología UNAH-VS.\n\n" +
+                "2. Para caries, amalgama, resina u obturación temporal, haz clic directamente en cada superficie afectada.\n\n" +
+                "3. Para siglas y tratamientos pulpares/coronas, usa el botón correspondiente y haz clic en el centro de la pieza.\n\n" +
+                "4. Para puentes, ortodoncia, diastemas, transposición, contacto abierto o PPR: selecciona primero la pieza INICIAL y luego la FINAL.\n\n" +
+                "5. Edéntulo total se aplica haciendo clic en cualquier pieza del maxilar correspondiente.\n\n" +
+                "6. El borrador limpia una superficie; al pulsar el centro limpia toda la pieza y el último trazo de arco asociado. También puedes usar 'Deshacer trazo'.\n\n" +
+                "7. Guardar crea una NUEVA evolución y mantiene intactos los registros anteriores.";
 
-            MessageBox.Show(instrucciones, "Instrucciones de Uso del Software", MessageBoxButton.OK, MessageBoxImage.Information);
+            _messageService.MostrarInformacion(instrucciones, "Uso del odontograma digital");
         }
     }
 }

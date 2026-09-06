@@ -48,6 +48,24 @@
                     <iconPacks:PackIconMaterial Kind="Refresh" Width="19" Height="19"/>
                 </Button>
 
+                <Button Command="{Binding VistaPreviaExpedienteCommand}" Width="42" Height="42"
+                        Padding="0" Margin="0,0,10,0"
+                        Background="Transparent"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                        ToolTip="Vista previa del expediente">
+                    <iconPacks:PackIconMaterial Kind="Eye" Width="20" Height="20"
+                                                Foreground="{StaticResource AccentBrush}"/>
+                </Button>
+
+                <Button Command="{Binding ExportarExpedienteCommand}" Width="42" Height="42"
+                        Padding="0" Margin="0,0,10,0"
+                        Background="Transparent"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                        ToolTip="Exportar expediente a PDF">
+                    <iconPacks:PackIconMaterial Kind="FilePdfBox" Width="20" Height="20"
+                                                Foreground="#E74C3C"/>
+                </Button>
+
                 <Button Command="{Binding EditarPacienteCommand}" Height="42"
                         Background="Transparent" Foreground="{StaticResource TextPrimaryBrush}"
                         BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"

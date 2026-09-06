@@ -54,6 +54,21 @@ namespace ClinicaDentalMario.Repositories
             return cantidad > 0;
         }
 
+        public async Task<int> ContarCitasFuturasAsync(int idDoctor)
+        {
+            using IDbConnection db = DatabaseConnection.GetConnection();
+
+            const string query = @"
+                SELECT COUNT(1)
+                FROM Agenda.Citas c
+                INNER JOIN Catalogos.EstadosCita e ON c.IdEstado = e.IdEstado
+                WHERE c.IdDoctor = @IdDoctor
+                  AND c.FechaHora >= GETDATE()
+                  AND e.Nombre NOT IN ('Cancelada', 'Atendida', 'No Asistió');";
+
+            return await db.ExecuteScalarAsync<int>(query, new { IdDoctor = idDoctor });
+        }
+
         public async Task CrearDoctorAsync(DoctorModel doctor)
         {
             using IDbConnection db = DatabaseConnection.GetConnection();

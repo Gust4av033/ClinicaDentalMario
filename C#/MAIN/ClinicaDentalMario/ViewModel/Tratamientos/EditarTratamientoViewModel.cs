@@ -127,7 +127,10 @@ namespace ClinicaDentalMario.ViewModel.Tratamientos
                 return;
 
             if (resultado)
+            {
                 ventana.DialogResult = true;
+                return;
+            }
 
             ventana.Close();
         }

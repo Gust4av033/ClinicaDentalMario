@@ -21,13 +21,8 @@
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bdr" Property="Background" Value="{StaticResource BgControlHoverBrush}"/>
-                                <Setter TargetName="bdr" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="bdr" Property="Background" Value="#1A252F"/>
-                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="bdr" Property="Background" Value="{StaticResource BgControlHoverBrush}"/><Setter TargetName="bdr" Property="BorderBrush" Value="{StaticResource AccentBrush}"/></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="bdr" Property="Background" Value="#1A252F"/></Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -35,12 +30,8 @@
         </Style>
     </UserControl.Resources>
 
-    <!-- Vista general reutilizada por el expediente del paciente.
-         Aquí solo se resuelve composición/adaptación visual; la lógica clínica del
-         odontograma se continuará y cerrará en su módulo específico. -->
-    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                  VerticalScrollBarVisibility="Disabled"
-                  PanningMode="HorizontalOnly">
+    <!-- Vista general para el expediente. La lógica clínica completa se cerrará en el módulo Odontograma. -->
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" PanningMode="HorizontalOnly">
         <Grid Margin="10" MinWidth="980">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="320" MinWidth="270" MaxWidth="420"/>
@@ -49,48 +40,27 @@
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Background="{StaticResource BgCardBrush}" CornerRadius="12" Padding="18,20" Margin="0,0,8,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#000000" Opacity="0.5"/>
-                </Border.Effect>
+                <Border.Effect><DropShadowEffect BlurRadius="15" ShadowDepth="2" Color="#000000" Opacity="0.5"/></Border.Effect>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,8,0">
                     <StackPanel>
-
                         <TextBlock Text="Kit Clínico UNAH-VS" FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,20"/>
 
                         <Button Command="{Binding AbrirManualCommand}" Background="#F39C12" Foreground="White" BorderThickness="0" Height="40" Cursor="Hand" Margin="0,0,0,20">
-                            <Button.Resources>
-                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
-                            </Button.Resources>
-                            <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="FilePdfBox" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
-                                <TextBlock Text="Consultar Manual UNAH-VS" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/>
-                            </StackPanel>
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources>
+                            <StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="FilePdfBox" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/><TextBlock Text="Consultar Manual UNAH-VS" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/></StackPanel>
                         </Button>
 
                         <Button Command="{Binding AbrirInstruccionesUsoCommand}" Background="#8E44AD" Foreground="White" BorderThickness="0" Height="40" Cursor="Hand" Margin="0,0,0,20">
-                            <Button.Resources>
-                                <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
-                            </Button.Resources>
-                            <StackPanel Orientation="Horizontal">
-                                <iconPacks:PackIconMaterial Kind="HelpCircleOutline" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
-                                <TextBlock Text="¿Cómo usar este Odontograma?" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/>
-                            </StackPanel>
+                            <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources>
+                            <StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="HelpCircleOutline" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/><TextBlock Text="¿Cómo usar este Odontograma?" VerticalAlignment="Center" FontWeight="Bold" Foreground="White"/></StackPanel>
                         </Button>
 
                         <TextBlock Text="1. Estado / Color" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold" FontSize="11" Margin="0,0,0,10"/>
                         <WrapPanel Margin="0,0,0,15">
-                            <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#E74C3C|Rojo (Mal Estado / Caries / PC-M2-PMA)" Style="{StaticResource KitButtonUnah}">
-                                <StackPanel Orientation="Horizontal"><Ellipse Width="15" Height="15" Fill="#E74C3C" Margin="0,0,8,0"/><TextBlock Text="Rojo (Caries/PC)" FontWeight="SemiBold"/></StackPanel>
-                            </Button>
-                            <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#3498DB|Azul (Buen Estado / Definitivo / TCC-M1-CC-PP)" Style="{StaticResource KitButtonUnah}">
-                                <StackPanel Orientation="Horizontal"><Ellipse Width="15" Height="15" Fill="#3498DB" Margin="0,0,8,0"/><TextBlock Text="Azul (Sano/Definitivo)" FontWeight="SemiBold"/></StackPanel>
-                            </Button>
-                            <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#27AE60|Verde (Temporal / Preventivo / CT-Ausente)" Style="{StaticResource KitButtonUnah}">
-                                <StackPanel Orientation="Horizontal"><Ellipse Width="15" Height="15" Fill="#27AE60" Margin="0,0,8,0"/><TextBlock Text="Verde (Temporal/Prev)" FontWeight="SemiBold"/></StackPanel>
-                            </Button>
-                            <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#E67E22|Naranja (Resina)" Style="{StaticResource KitButtonUnah}">
-                                <StackPanel Orientation="Horizontal"><Ellipse Width="15" Height="15" Fill="#E67E22" Margin="0,0,8,0"/><TextBlock Text="Naranja (Resina)" FontWeight="SemiBold"/></StackPanel>
-                            </Button>
+                            <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#E74C3C|Rojo (Mal Estado / Caries / PC-M2-PMA)" Style="{StaticResource KitButtonUnah}"><StackPanel Orientation="Horizontal"><Ellipse Width="15" Height="15" Fill="#E74C3C" Margin="0,0,8,0"/><TextBlock Text="Rojo (Caries/PC)" FontWeight="SemiBold"/></StackPanel></Button>
+                            <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#3498DB|Azul (Buen Estado / Definitivo / TCC-M1-CC-PP)" Style="{StaticResource KitButtonUnah}"><StackPanel Orientation="Horizontal"><Ellipse Width="15" Height="15" Fill="#3498DB" Margin="0,0,8,0"/><TextBlock Text="Azul (Sano/Definitivo)" FontWeight="SemiBold"/></StackPanel></Button>
+                            <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#27AE60|Verde (Temporal / Preventivo / CT-Ausente)" Style="{StaticResource KitButtonUnah}"><StackPanel Orientation="Horizontal"><Ellipse Width="15" Height="15" Fill="#27AE60" Margin="0,0,8,0"/><TextBlock Text="Verde (Temporal/Prev)" FontWeight="SemiBold"/></StackPanel></Button>
+                            <Button Command="{Binding SeleccionarColorCommand}" CommandParameter="#E67E22|Naranja (Resina)" Style="{StaticResource KitButtonUnah}"><StackPanel Orientation="Horizontal"><Ellipse Width="15" Height="15" Fill="#E67E22" Margin="0,0,8,0"/><TextBlock Text="Naranja (Resina)" FontWeight="SemiBold"/></StackPanel></Button>
                         </WrapPanel>
 
                         <TextBlock Text="2. Hallazgos Individuales (Diente/Raíz)" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold" FontSize="11" Margin="0,0,0,10"/>
@@ -145,20 +115,13 @@
                         </WrapPanel>
 
                         <Border Background="#1A252F" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="ACCIÓN CLÍNICA SELECCIONADA:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold"/>
-                                <TextBlock Text="{Binding TextoHerramienta}" FontSize="15" Foreground="#2ECC71" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/>
-                            </StackPanel>
+                            <StackPanel><TextBlock Text="ACCIÓN CLÍNICA SELECCIONADA:" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" FontWeight="Bold"/><TextBlock Text="{Binding TextoHerramienta}" FontSize="15" Foreground="#2ECC71" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/></StackPanel>
                         </Border>
 
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Borrador||Borrador (Borrar Caras/Formas)" Style="{StaticResource KitButtonUnah}" Margin="0,0,5,0" Padding="15,10">
-                                <StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="Eraser" Margin="0,0,8,0" VerticalAlignment="Center"/><TextBlock Text="Borrador" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
-                            </Button>
-                            <Button Grid.Column="1" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Ninguno||Cursor Normal" Style="{StaticResource KitButtonUnah}" Margin="5,0,0,0" Padding="15,10">
-                                <StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="CursorDefaultOutline" Margin="0,0,8,0" VerticalAlignment="Center"/><TextBlock Text="Soltar" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
-                            </Button>
+                            <Button Grid.Column="0" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Borrador||Borrador (Borrar Caras/Formas)" Style="{StaticResource KitButtonUnah}" Margin="0,0,5,0" Padding="15,10"><StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="Eraser" Margin="0,0,8,0" VerticalAlignment="Center"/><TextBlock Text="Borrador" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel></Button>
+                            <Button Grid.Column="1" Command="{Binding SeleccionarHerramientaCommand}" CommandParameter="Ninguno||Cursor Normal" Style="{StaticResource KitButtonUnah}" Margin="5,0,0,0" Padding="15,10"><StackPanel Orientation="Horizontal"><iconPacks:PackIconMaterial Kind="CursorDefaultOutline" Margin="0,0,8,0" VerticalAlignment="Center"/><TextBlock Text="Soltar" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel></Button>
                         </Grid>
 
                         <Button Command="{Binding LimpiarTodoCommand}" Background="#E74C3C" Foreground="White" BorderThickness="0" Height="40" Cursor="Hand" Margin="0,15,0,0">
@@ -180,9 +143,7 @@
                         <Border DockPanel.Dock="Right" Background="#F4F6F7" CornerRadius="8" Padding="10" BorderBrush="#BDC3C7" BorderThickness="1" Margin="12,0,0,0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="Evoluciones:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#7F8C8D" Margin="0,0,10,0"/>
-                                <ComboBox ItemsSource="{Binding FechasGuardadas}" SelectedItem="{Binding FechaSeleccionada}" FontSize="13" Padding="5" Width="180">
-                                    <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding StringFormat=dd/MM/yyyy hh:mm tt}" FontWeight="Bold" Foreground="#2980B9"/></DataTemplate></ComboBox.ItemTemplate>
-                                </ComboBox>
+                                <ComboBox ItemsSource="{Binding FechasGuardadas}" SelectedItem="{Binding FechaSeleccionada}" FontSize="13" Padding="5" Width="180"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding StringFormat=dd/MM/yyyy hh:mm tt}" FontWeight="Bold" Foreground="#2980B9"/></DataTemplate></ComboBox.ItemTemplate></ComboBox>
                                 <Button Command="{Binding EliminarOdontogramaCommand}" Background="Transparent" Foreground="#E74C3C" BorderThickness="0" Margin="10,0,0,0" ToolTip="Eliminar fecha"><iconPacks:PackIconMaterial Kind="TrashCan"/></Button>
                             </StackPanel>
                         </Border>

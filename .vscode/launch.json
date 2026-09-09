@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ClinicaDentalMario (WPF)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build ClinicaDentalMario",
+      "program": "${workspaceFolder}/C#/MAIN/ClinicaDentalMario/bin/Debug/net8.0-windows/ClinicaDentalMario.dll",
+      "cwd": "${workspaceFolder}/C#/MAIN/ClinicaDentalMario",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}

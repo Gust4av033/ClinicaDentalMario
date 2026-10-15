@@ -46,6 +46,14 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
             OnPropertyChanged(nameof(PacienteRegistrado));
             NombrePaciente = value?.NombreCompleto ?? "";
             DocumentoIdentidad = value?.DUI ?? "";
+            TipoDocumento = string.IsNullOrWhiteSpace(value?.DUI) ? "" : "DUI";
+            SexoPaciente = value?.Sexo ?? "";
+            DireccionPaciente = value?.Direccion ?? "";
+            TelefonoPaciente = value?.Telefono ?? "";
+            Departamento = Municipio = NumeroAfiliacion = "";
+            TipoTrabajador = TipoAfiliacion = Riesgo = Destinatario = "";
+            TipoIncapacidad = "Inicial";
+            FechaAccidente = FechaHospitalizacion = FechaAlta = null;
             ConsultaSeleccionada = null;
             Diagnostico = "";
             Indicaciones = "";
@@ -85,8 +93,37 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
     public string NombrePaciente { get => _nombrePaciente; set => SetProperty(ref _nombrePaciente, value); }
     private string _documentoIdentidad = "";
     public string DocumentoIdentidad { get => _documentoIdentidad; set => SetProperty(ref _documentoIdentidad, value); }
+    private string _tipoDocumento = "";
+    public string TipoDocumento { get => _tipoDocumento; set => SetProperty(ref _tipoDocumento, value); }
+    private string _sexoPaciente = "";
+    public string SexoPaciente { get => _sexoPaciente; set => SetProperty(ref _sexoPaciente, value); }
+    private string _direccionPaciente = "";
+    public string DireccionPaciente { get => _direccionPaciente; set => SetProperty(ref _direccionPaciente, value); }
+    private string _telefonoPaciente = "";
+    public string TelefonoPaciente { get => _telefonoPaciente; set => SetProperty(ref _telefonoPaciente, value); }
+    private string _departamento = "";
+    public string Departamento { get => _departamento; set => SetProperty(ref _departamento, value); }
+    private string _municipio = "";
+    public string Municipio { get => _municipio; set => SetProperty(ref _municipio, value); }
+    private string _numeroAfiliacion = "";
+    public string NumeroAfiliacion { get => _numeroAfiliacion; set => SetProperty(ref _numeroAfiliacion, value); }
+    public IReadOnlyList<string> TiposIncapacidad { get; } = ["Inicial", "Prórroga"];
+    private string _tipoIncapacidad = "Inicial";
+    public string TipoIncapacidad { get => _tipoIncapacidad; set => SetProperty(ref _tipoIncapacidad, value); }
+    private string _riesgo = "";
+    public string Riesgo { get => _riesgo; set => SetProperty(ref _riesgo, value); }
+    private string _tipoTrabajador = "";
+    public string TipoTrabajador { get => _tipoTrabajador; set => SetProperty(ref _tipoTrabajador, value); }
+    private string _tipoAfiliacion = "";
+    public string TipoAfiliacion { get => _tipoAfiliacion; set => SetProperty(ref _tipoAfiliacion, value); }
+    private DateTime? _fechaAccidente;
+    public DateTime? FechaAccidente { get => _fechaAccidente; set => SetProperty(ref _fechaAccidente, value); }
+    private DateTime? _fechaHospitalizacion;
+    public DateTime? FechaHospitalizacion { get => _fechaHospitalizacion; set => SetProperty(ref _fechaHospitalizacion, value); }
+    private DateTime? _fechaAlta;
+    public DateTime? FechaAlta { get => _fechaAlta; set => SetProperty(ref _fechaAlta, value); }
     private string _numeroJVPO = "";
-    public string NumeroJVPO { get => _numeroJVPO; set => SetProperty(ref _numeroJVPO, value); }
+    public string NumeroJVPO { get => _numeroJVPO; private set => SetProperty(ref _numeroJVPO, value); }
     private string _clinica = "";
     public string Clinica { get => _clinica; set => SetProperty(ref _clinica, value); }
     private string _direccionClinica = "";
@@ -219,6 +256,8 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
         if (!FechaEmision.HasValue || !Desde.HasValue || !Hasta.HasValue)
             throw new ArgumentException("Completa la fecha de emisión y las fechas de inicio y fin del reposo.");
         if (DoctorSeleccionado is null) throw new ArgumentException("Selecciona el odontólogo tratante.");
+        if (string.IsNullOrWhiteSpace(DoctorSeleccionado.NumeroJVPO))
+            throw new ArgumentException("La ficha del odontólogo no tiene un registro JVPO. Registra y verifica su número real desde Configuración antes de emitir.");
         var consulta = ConsultaSeleccionada?.Consulta;
         var documento = new IncapacidadDocumento
         {
@@ -227,7 +266,13 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
             FechaConsulta = consulta?.FechaConsulta,
             IdDoctor = DoctorSeleccionado.IdDoctor,
             Paciente = NombrePaciente.Trim(), DocumentoIdentidad = DocumentoIdentidad.Trim(),
-            Doctor = DoctorSeleccionado.NombreCompleto, NumeroJVPO = NumeroJVPO.Trim(),
+            TipoDocumento = TipoDocumento.Trim(), SexoPaciente = SexoPaciente.Trim(),
+            DireccionPaciente = DireccionPaciente.Trim(), TelefonoPaciente = TelefonoPaciente.Trim(),
+            Departamento = Departamento.Trim(), Municipio = Municipio.Trim(), NumeroAfiliacion = NumeroAfiliacion.Trim(),
+            TipoIncapacidad = TipoIncapacidad.Trim(), Riesgo = Riesgo.Trim(),
+            TipoTrabajador = TipoTrabajador.Trim(), TipoAfiliacion = TipoAfiliacion.Trim(),
+            FechaAccidente = FechaAccidente?.Date, FechaHospitalizacion = FechaHospitalizacion?.Date, FechaAlta = FechaAlta?.Date,
+            Doctor = DoctorSeleccionado.NombreCompleto, NumeroJVPO = DoctorSeleccionado.NumeroJVPO.Trim(),
             Clinica = Clinica.Trim(), DireccionClinica = DireccionClinica.Trim(), TelefonoClinica = TelefonoClinica.Trim(),
             Diagnostico = Diagnostico.Trim(), Indicaciones = Indicaciones.Trim(), Destinatario = Destinatario.Trim(),
             FechaEmision = FechaEmision.Value.Date, Desde = Desde.Value.Date, Hasta = Hasta.Value.Date,

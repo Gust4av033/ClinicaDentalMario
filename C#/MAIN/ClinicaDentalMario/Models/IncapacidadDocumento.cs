@@ -5,6 +5,8 @@ public sealed record IncapacidadDocumento
 {
     public int Version { get; init; } = 1;
     public Guid Id { get; init; } = Guid.NewGuid();
+    // Nombre conservado por compatibilidad con el archivo JSON existente.
+    // Es una referencia interna del sistema, nunca un número oficial del ISSS ni un registro profesional.
     public string Folio => $"INC-{CreadoEl:yyyyMMdd}-{Id:N}";
     public DateTimeOffset CreadoEl { get; init; } = DateTimeOffset.Now;
     public DateTime FechaEmision { get; init; } = DateTime.Today;
@@ -14,6 +16,20 @@ public sealed record IncapacidadDocumento
     public int? IdDoctor { get; init; }
     public string Paciente { get; init; } = "";
     public string DocumentoIdentidad { get; init; } = "";
+    public string TipoDocumento { get; init; } = "";
+    public string SexoPaciente { get; init; } = "";
+    public string DireccionPaciente { get; init; } = "";
+    public string TelefonoPaciente { get; init; } = "";
+    public string Departamento { get; init; } = "";
+    public string Municipio { get; init; } = "";
+    public string NumeroAfiliacion { get; init; } = "";
+    public string TipoIncapacidad { get; init; } = "";
+    public string Riesgo { get; init; } = "";
+    public string TipoTrabajador { get; init; } = "";
+    public string TipoAfiliacion { get; init; } = "";
+    public DateTime? FechaAccidente { get; init; }
+    public DateTime? FechaHospitalizacion { get; init; }
+    public DateTime? FechaAlta { get; init; }
     public string Doctor { get; init; } = "";
     public string NumeroJVPO { get; init; } = "";
     public string Clinica { get; init; } = "";
@@ -44,6 +60,17 @@ public sealed record IncapacidadDocumento
         Requerido(NumeroJVPO, "El número de JVPO", 30);
         Requerido(Clinica, "El nombre de la clínica", 150);
         Requerido(Diagnostico, "El diagnóstico", 3000);
+        Opcional(TipoDocumento, 50);
+        Opcional(SexoPaciente, 20);
+        Opcional(DireccionPaciente, 250);
+        Opcional(TelefonoPaciente, 50);
+        Opcional(Departamento, 100);
+        Opcional(Municipio, 100);
+        Opcional(NumeroAfiliacion, 50);
+        Opcional(TipoIncapacidad, 50);
+        Opcional(Riesgo, 100);
+        Opcional(TipoTrabajador, 100);
+        Opcional(TipoAfiliacion, 100);
         if (Indicaciones is null || DocumentoIdentidad is null || Destinatario is null ||
             DireccionClinica is null || TelefonoClinica is null)
             throw new ArgumentException("Los campos opcionales no pueden contener valores nulos.");
@@ -56,6 +83,12 @@ public sealed record IncapacidadDocumento
     {
         if (string.IsNullOrWhiteSpace(valor)) throw new ArgumentException($"{campo} es obligatorio.");
         if (valor.Length > longitud) throw new ArgumentException($"{campo} admite hasta {longitud} caracteres.");
+    }
+
+    private static void Opcional(string valor, int longitud)
+    {
+        if (valor is null || valor.Length > longitud)
+            throw new ArgumentException("Uno de los datos complementarios no es válido o supera su longitud permitida.");
     }
 }
 

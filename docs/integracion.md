@@ -41,7 +41,7 @@ No es necesario fusionar las ramas de cada módulo manualmente: sus avances ya e
 
 - Confirmar que las puntas indicadas en la tabla son antecesoras de la rama integrada.
 - Confirmar ausencia de cambios en scripts SQL y en `DatabaseInitializer.cs` respecto a `main`.
-- Ejecutar las 23 comprobaciones de Documentos clínicos sin conexión SQL.
+- Ejecutar las 31 comprobaciones de Documentos clínicos sin conexión SQL.
 - Compilar WPF en Windows mediante el workflow del PR.
 - Probar en Windows dashboard y sus accesos, apertura/edición/carga del odontograma, reportes, nueva consulta, emisión de incapacidad y reimpresión.
 

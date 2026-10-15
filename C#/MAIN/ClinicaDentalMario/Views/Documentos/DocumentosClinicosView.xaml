@@ -21,7 +21,7 @@
             <Button Content="Abrir carpeta" Command="{Binding AbrirCarpetaCommand}" Margin="0,0,0,6"/>
         </WrapPanel>
         <StackPanel Grid.Row="2" Margin="0,0,0,12">
-            <TextBlock Text="Buscar por paciente, documento de identidad o folio" Margin="0,0,0,5"/>
+            <TextBlock Text="Buscar por paciente, documento de identidad o referencia interna" Margin="0,0,0,5"/>
             <TextBox Text="{Binding Busqueda, UpdateSourceTrigger=PropertyChanged}"/>
             <TextBlock Text="{Binding Mensaje}" TextWrapping="Wrap" Foreground="{StaticResource AccentBrush}" Margin="0,8,0,0"/>
         </StackPanel>

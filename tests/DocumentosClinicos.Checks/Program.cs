@@ -20,10 +20,21 @@ var ejemplo = new IncapacidadDocumento
     Clinica = "Clínica Dental CDMario", DireccionClinica = "Dirección de demostración", TelefonoClinica = "0000-0000",
     Diagnostico = "Diagnóstico de demostración para validar el formato.",
     Indicaciones = "Indicaciones de demostración. Documento de prueba sin datos de pacientes reales.",
+    TipoDocumento = "DUI", DocumentoIdentidad = "00000000-0", NumeroAfiliacion = "DEMOSTRACIÓN",
+    SexoPaciente = "Femenino", DireccionPaciente = "Dirección ficticia para revisar el formato del documento.",
+    Departamento = "San Salvador", Municipio = "San Salvador Centro", TelefonoPaciente = "0000-0000",
+    TipoIncapacidad = "Inicial", Riesgo = "Enfermedad común", TipoTrabajador = "No especificado",
+    TipoAfiliacion = "No especificada", Destinatario = "Empresa de demostración",
     Desde = new DateTime(2026, 10, 13), Hasta = new DateTime(2026, 10, 15), FechaEmision = new DateTime(2026, 10, 13)
 };
 ejemplo.Validar();
 Verificar(ejemplo.TotalDias == 3, "Deben incluirse ambos días extremos.");
+Verificar(IncapacidadPdfService.CantidadEnLetras(3) == "TRES", "Total en letras.");
+Verificar(IncapacidadPdfService.CantidadEnLetras(31) == "TREINTA Y UNO", "Total en letras con decenas.");
+Verificar(IncapacidadPdfService.CantidadEnLetras(100) == "CIEN", "Centena exacta.");
+Verificar(IncapacidadPdfService.CantidadEnLetras(101) == "CIENTO UNO", "Centena compuesta.");
+Verificar(IncapacidadPdfService.CantidadEnLetras(21_000) == "VEINTIÚN MIL", "Apócope en millares.");
+Verificar(IncapacidadPdfService.CantidadEnLetras(1_000_000) == "UN MILLÓN", "Períodos extensos.");
 Verificar((ejemplo with { Hasta = ejemplo.Desde }).TotalDias == 1, "Reposo de un día.");
 Verificar((ejemplo with { Desde = new DateTime(2028, 2, 28), Hasta = new DateTime(2028, 3, 1) }).TotalDias == 3, "Año bisiesto.");
 Rechazar(() => (ejemplo with { Hasta = ejemplo.Desde.AddDays(-1) }).Validar(), "Rechazar fechas invertidas.");
@@ -45,6 +56,15 @@ try
     Verificar(File.Exists(ruta) && archivo.Listar().Documentos.Count == 1, "Emisión persistida.");
     Verificar(new ArchivoDocumentosClinicos(carpeta).Listar().Documentos.Single().Diagnostico == ejemplo.Diagnostico,
         "El historial sobrevive al reinicio.");
+    Verificar(new ArchivoDocumentosClinicos(carpeta).Listar().Documentos.Single().DireccionPaciente == ejemplo.DireccionPaciente,
+        "Datos complementarios del paciente conservados en la instantánea.");
+    var legado = System.Text.Json.Nodes.JsonNode.Parse(System.Text.Json.JsonSerializer.Serialize(ejemplo))!.AsObject();
+    foreach (string campo in new[] { "TipoDocumento", "SexoPaciente", "DireccionPaciente", "TelefonoPaciente", "Departamento",
+        "Municipio", "NumeroAfiliacion", "TipoIncapacidad", "Riesgo", "TipoTrabajador", "TipoAfiliacion", "FechaAccidente",
+        "FechaHospitalizacion", "FechaAlta" }) legado.Remove(campo);
+    var antiguo = System.Text.Json.JsonSerializer.Deserialize<IncapacidadDocumento>(legado.ToJsonString())!;
+    antiguo.Validar();
+    Verificar(antiguo.DireccionPaciente == "" && antiguo.FechaAccidente is null, "Compatibilidad con emisiones anteriores al rediseño.");
     Verificar(archivo.Listar(99).Documentos.Count == 0, "Filtro por paciente.");
     var vinculado = ejemplo with { Id = Guid.NewGuid(), IdPaciente = 99, IdConsulta = 7, FechaConsulta = ejemplo.Desde };
     archivo.Emitir(vinculado, PdfSimulado);

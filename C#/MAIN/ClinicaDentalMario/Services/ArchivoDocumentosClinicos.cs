@@ -90,14 +90,17 @@ public sealed class ArchivoDocumentosClinicos
     public ConfiguracionDocumentos LeerConfiguracion()
     {
         string ruta = Path.Combine(Carpeta, "clinica.json");
-        return File.Exists(ruta)
+        var configuracion = File.Exists(ruta)
             ? JsonSerializer.Deserialize<ConfiguracionDocumentos>(File.ReadAllText(ruta))
                 ?? throw new InvalidDataException("La configuración de clínica está vacía.")
             : new ConfiguracionDocumentos();
+        configuracion.Validar();
+        return configuracion;
     }
 
     public void GuardarConfiguracion(ConfiguracionDocumentos configuracion)
     {
+        configuracion.Validar();
         Directory.CreateDirectory(Carpeta);
         string temporal = Path.Combine(Carpeta, $"{Guid.NewGuid():N}.tmp");
         try

@@ -3,6 +3,7 @@ using ClinicaDentalMario.Models;
 using ClinicaDentalMario.Repositories;
 using ClinicaDentalMario.Services;
 using ClinicaDentalMario.ViewModel.Base;
+using ClinicaDentalMario.ViewModel.Configuracion;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -32,6 +33,7 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
     public AsyncRelayCommand EmitirCommand { get; }
     public ICommand SinConsultaCommand { get; }
     public ICommand PacienteManualCommand { get; }
+    public DatosClinicaViewModel DatosClinica { get; }
     private bool _documentoEmitido;
     public bool DocumentoEmitido { get => _documentoEmitido; private set => SetProperty(ref _documentoEmitido, value); }
 
@@ -124,12 +126,6 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
     public DateTime? FechaAlta { get => _fechaAlta; set => SetProperty(ref _fechaAlta, value); }
     private string _numeroJVPO = "";
     public string NumeroJVPO { get => _numeroJVPO; private set => SetProperty(ref _numeroJVPO, value); }
-    private string _clinica = "";
-    public string Clinica { get => _clinica; set => SetProperty(ref _clinica, value); }
-    private string _direccionClinica = "";
-    public string DireccionClinica { get => _direccionClinica; set => SetProperty(ref _direccionClinica, value); }
-    private string _telefonoClinica = "";
-    public string TelefonoClinica { get => _telefonoClinica; set => SetProperty(ref _telefonoClinica, value); }
     private string _diagnostico = "";
     public string Diagnostico { get => _diagnostico; set => SetProperty(ref _diagnostico, value); }
     private string _indicaciones = "";
@@ -158,6 +154,7 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
 
     public EmitirIncapacidadViewModel(PacienteModel? paciente = null, HistorialClinicoModel? consulta = null)
     {
+        DatosClinica = new DatosClinicaViewModel(_archivo);
         _pacienteInicial = paciente;
         _consultaInicial = consulta;
         Titulo = "Emitir incapacidad / reposo";
@@ -176,16 +173,6 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
         EstaCargando = true;
         try
         {
-            ConfiguracionDocumentos configuracion;
-            try { configuracion = _archivo.LeerConfiguracion(); }
-            catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException or UnauthorizedAccessException)
-            {
-                configuracion = new ConfiguracionDocumentos();
-                Mensaje = "No se pudieron recuperar los datos de la clínica. Revísalos antes de emitir.";
-            }
-            Clinica = configuracion.Clinica ?? "";
-            DireccionClinica = configuracion.Direccion ?? "";
-            TelefonoClinica = configuracion.Telefono ?? "";
             var pacientesTask = new PacienteRepository().ObtenerTodosAsync();
             var doctoresTask = new DoctorRepository().ObtenerDoctoresActivosAsync();
             await Task.WhenAll(pacientesTask, doctoresTask);
@@ -273,7 +260,7 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
             TipoTrabajador = TipoTrabajador.Trim(), TipoAfiliacion = TipoAfiliacion.Trim(),
             FechaAccidente = FechaAccidente?.Date, FechaHospitalizacion = FechaHospitalizacion?.Date, FechaAlta = FechaAlta?.Date,
             Doctor = DoctorSeleccionado.NombreCompleto, NumeroJVPO = DoctorSeleccionado.NumeroJVPO.Trim(),
-            Clinica = Clinica.Trim(), DireccionClinica = DireccionClinica.Trim(), TelefonoClinica = TelefonoClinica.Trim(),
+            Clinica = DatosClinica.Clinica.Trim(), DireccionClinica = DatosClinica.Direccion.Trim(), TelefonoClinica = DatosClinica.Telefono.Trim(),
             Diagnostico = Diagnostico.Trim(), Indicaciones = Indicaciones.Trim(), Destinatario = Destinatario.Trim(),
             FechaEmision = FechaEmision.Value.Date, Desde = Desde.Value.Date, Hasta = Hasta.Value.Date,
             EmitidoPor = UsuarioActual.NombreUsuario
@@ -297,7 +284,7 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
                 DocumentoEmitido = true;
                 try
                 {
-                    _archivo.GuardarConfiguracion(new ConfiguracionDocumentos(Clinica.Trim(), DireccionClinica.Trim(), TelefonoClinica.Trim()));
+                    _archivo.GuardarConfiguracion(new ConfiguracionDocumentos(documento.Clinica, documento.DireccionClinica, documento.TelefonoClinica));
                     Mensaje = $"Documento emitido: {documento.Folio}. Disponible en Documentos clínicos.";
                 }
                 catch

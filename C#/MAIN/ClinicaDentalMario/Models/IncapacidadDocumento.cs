@@ -93,6 +93,16 @@ public sealed record IncapacidadDocumento
 }
 
 public sealed record ConfiguracionDocumentos(string Clinica = "Clínica Dental CDMario",
-    string Direccion = "", string Telefono = "");
+    string Direccion = "", string Telefono = "")
+{
+    public void Validar()
+    {
+        if (string.IsNullOrWhiteSpace(Clinica))
+            throw new ArgumentException("Ingresa el nombre de la clínica.");
+        if (Clinica.Length > 150 || Direccion is null || Direccion.Length > 250 ||
+            Telefono is null || Telefono.Length > 50)
+            throw new ArgumentException("Revisa los datos de la clínica: nombre hasta 150 caracteres, dirección hasta 250 y teléfono hasta 50.");
+    }
+}
 
 public sealed record LecturaDocumentos(IReadOnlyList<IncapacidadDocumento> Documentos, int ArchivosOmitidos);

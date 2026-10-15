@@ -8,6 +8,8 @@ La emisión pertenece a **Documentos clínicos**, separado de los reportes admin
 
 ## Uso
 
+Antes de emitir, abrir **Configuración → Datos de la clínica**, completar nombre, dirección y teléfono, y pulsar **Guardar datos de la clínica**. También se puede usar el mismo botón dentro del formulario de incapacidad, sin seleccionar un paciente ni emitir. Las ventanas nuevas cargan automáticamente el perfil guardado, incluso después de reiniciar la aplicación. **Recargar guardados** recupera el perfil si se cambió desde otra ventana; reemplaza los valores que se están editando en ese formulario. Los datos corresponden al usuario de Windows y computadora actuales.
+
 1. Abrir **Documentos clínicos → Nueva incapacidad / reposo**. Se puede seleccionar un paciente registrado o pulsar **Sin expediente** e ingresar sus datos para este documento. Esto no crea un paciente en SQL.
 2. Opcionalmente elegir una consulta. Se carga su diagnóstico, fecha y odontólogo para revisión. **Sin consulta** permite emitir de forma independiente.
 3. Revisar el odontólogo, registro JVPO, diagnóstico, fechas, indicaciones y datos de la clínica. El documento de identidad es opcional para permitir pacientes menores sin DUI.
@@ -23,7 +25,7 @@ Administración y odontólogos pueden emitir. Recepción puede consultar, abrir,
 - Se conserva el paciente, odontólogo, JVPO, diagnóstico, período, clínica, usuario emisor y contexto de consulta tal como estaban al emitir. Las reimpresiones usan esa instantánea y no los datos actuales del expediente. Si falta el PDF, se regenera con los datos archivados.
 - Se calcula el total con ambos extremos incluidos: del 13 al 15 son tres días; el mismo día equivale a uno. Se rechazan fechas invertidas y datos obligatorios vacíos.
 - El SP de inserción de consultas existente no devuelve su identificador. En la emisión inmediata se conserva paciente, odontólogo y fecha de la consulta guardada, con `IdConsulta` nulo. Al seleccionar una consulta del historial también se conserva su identificador. No se busca “la última consulta” para inferir un ID.
-- Los datos de la clínica se recuerdan en `clinica.json`. Los borradores se crean en la carpeta temporal del usuario de Windows y no figuran como emitidos.
+- Los datos de la clínica se recuerdan en `clinica.json`, compatible con los perfiles guardados por versiones anteriores. Se pueden guardar de forma independiente desde Configuración o el emisor. También se mantiene el guardado después de una emisión exitosa; una vista previa no guarda el perfil por sí sola. Un perfil vacío o con longitudes inválidas no reemplaza el anterior. Cambiar el perfil afecta a emisiones nuevas; las anteriores conservan su instantánea. Los borradores se crean en la carpeta temporal del usuario de Windows y no figuran como emitidos.
 - El historial corresponde al perfil de Windows y computadora donde se emite; no se sincroniza por SQL con otros equipos o perfiles. Incluir **toda** la carpeta `DocumentosClinicos` en los respaldos, junto con la base de datos. **Abrir carpeta** muestra su ubicación efectiva, incluyendo posibles redirecciones de Documentos/OneDrive. Para restaurarlo se copia la carpeta completa al perfil que usa la aplicación.
 - Las emisiones no se editan ni se reemplazan desde la interfaz. Una corrección se emite como otro documento con nuevo folio.
 

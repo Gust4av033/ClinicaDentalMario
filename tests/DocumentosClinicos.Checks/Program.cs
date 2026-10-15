@@ -51,6 +51,14 @@ string carpeta = Path.Combine(Path.GetTempPath(), $"CDMario-checks-{Guid.NewGuid
 try
 {
     var archivo = new ArchivoDocumentosClinicos(carpeta);
+    var configuracion = new ConfiguracionDocumentos("Clínica de prueba", "Dirección", "1234");
+    archivo.GuardarConfiguracion(configuracion);
+    Verificar(new ArchivoDocumentosClinicos(carpeta).LeerConfiguracion() == configuracion &&
+        archivo.Listar().Documentos.Count == 0, "La clínica se guarda y recupera antes de emitir documentos.");
+    Rechazar(() => archivo.GuardarConfiguracion(configuracion with { Clinica = " " }), "Rechazar clínica sin nombre.");
+    Rechazar(() => archivo.GuardarConfiguracion(configuracion with { Direccion = new string('x', 251) }), "Rechazar dirección demasiado larga.");
+    Rechazar(() => archivo.GuardarConfiguracion(configuracion with { Telefono = null! }), "Rechazar teléfono nulo.");
+    Verificar(archivo.LeerConfiguracion() == configuracion, "Un guardado inválido no reemplaza la clínica anterior.");
     void PdfSimulado(IncapacidadDocumento d, string ruta) => File.WriteAllText(ruta, $"PDF de {d.Paciente}");
     string ruta = archivo.Emitir(ejemplo, PdfSimulado);
     Verificar(File.Exists(ruta) && archivo.Listar().Documentos.Count == 1, "Emisión persistida.");
@@ -89,9 +97,11 @@ try
     File.WriteAllText(Path.Combine(carpeta, idInvalido.ToString("N"), "datos.json"), "{truncado");
     Verificar(archivo.Listar().ArchivosOmitidos == 1 && archivo.Listar().Documentos.Count == 2,
         "Un archivo dañado no oculta los demás documentos.");
-    var configuracion = new ConfiguracionDocumentos("Clínica de prueba", "Dirección", "1234");
-    archivo.GuardarConfiguracion(configuracion);
-    Verificar(new ArchivoDocumentosClinicos(carpeta).LeerConfiguracion() == configuracion, "Datos de clínica persistidos.");
+    var actualizada = configuracion with { Clinica = "Clínica actualizada", Telefono = "5678" };
+    archivo.GuardarConfiguracion(actualizada);
+    Verificar(new ArchivoDocumentosClinicos(carpeta).LeerConfiguracion() == actualizada, "Los cambios de clínica sobreviven al reinicio.");
+    Verificar(archivo.Listar().Documentos.Single(d => d.Id == ejemplo.Id).Clinica == ejemplo.Clinica,
+        "Cambiar la clínica no altera certificados ya emitidos.");
     var permisos = new PermissionService();
     Verificar(!permisos.TienePermiso(PermisoSistema.EmitirDocumentosClinicos), "Sin sesión no se emite.");
     UsuarioActual.IniciarSesion(new UsuarioModel(), RolesSistema.Recepcionista);

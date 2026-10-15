@@ -41,4 +41,30 @@ namespace ClinicaDentalMario.ViewModel.Base
             CommandManager.InvalidateRequerySuggested();
         }
     }
+
+    /// <summary>
+    /// Permite solicitar una reevaluación de CanExecute aunque una propiedad de comando
+    /// esté expuesta como ICommand. Conserva la abstracción de la vista sin obligar a
+    /// convertir cada comando al tipo concreto antes de notificar cambios.
+    /// </summary>
+    public static class CommandExtensions
+    {
+        public static void NotificarCanExecuteChanged(this ICommand command)
+        {
+            ArgumentNullException.ThrowIfNull(command);
+
+            switch (command)
+            {
+                case RelayCommand relayCommand:
+                    relayCommand.NotificarCanExecuteChanged();
+                    break;
+                case AsyncRelayCommand asyncRelayCommand:
+                    asyncRelayCommand.NotificarCanExecuteChanged();
+                    break;
+                default:
+                    CommandManager.InvalidateRequerySuggested();
+                    break;
+            }
+        }
+    }
 }

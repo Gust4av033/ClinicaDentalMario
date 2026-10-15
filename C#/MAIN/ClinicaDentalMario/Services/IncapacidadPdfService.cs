@@ -30,7 +30,7 @@ public sealed class IncapacidadPdfService
                     });
                 });
                 col.Item().PaddingTop(8).AlignCenter().Text(documento.Clinica.ToUpper(cultura)).FontSize(11).Bold();
-                col.Item().AlignCenter().Text("CONSTANCIA ODONTOLÓGICA DE REPOSO").FontSize(11).Bold();
+                col.Item().AlignCenter().Text("CERTIFICADO DE INCAPACIDAD TEMPORAL").FontSize(11).Bold();
                 col.Item().AlignCenter().Text("DOCUMENTO EMITIDO POR LA CLÍNICA TRATANTE").FontSize(9).Bold();
                 if (!string.IsNullOrWhiteSpace(documento.DireccionClinica) || !string.IsNullOrWhiteSpace(documento.TelefonoClinica))
                     col.Item().PaddingTop(3).AlignCenter().Text(string.Join("  |  ", new[]

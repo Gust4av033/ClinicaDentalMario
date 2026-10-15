@@ -9,7 +9,7 @@
         </Grid.RowDefinitions>
         <StackPanel Margin="0,0,0,16">
             <TextBlock Text="Incapacidad / reposo odontológico" FontSize="24" FontWeight="Bold"/>
-            <TextBlock Text="Constancia privada para firma y sello del odontólogo. La referencia interna permite localizar el archivo."
+            <TextBlock Text="Certificado de la clínica tratante para firma y sello del odontólogo. La referencia interna permite localizar el archivo."
                        TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
         </StackPanel>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,12,0">

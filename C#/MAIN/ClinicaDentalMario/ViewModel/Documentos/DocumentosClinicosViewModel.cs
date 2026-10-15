@@ -24,6 +24,8 @@ public sealed class DocumentosClinicosViewModel : ViewModelBase
     public AsyncRelayCommand ExportarCommand { get; }
     public ICommand NuevoCommand { get; }
     public ICommand AbrirCarpetaCommand { get; }
+    public ICommand VolverCommand { get; }
+    public bool PuedeVolver { get; }
     public string CarpetaArchivo => _archivo.Carpeta;
     public bool PuedeEmitir => new PermissionService().TienePermiso(PermisoSistema.EmitirDocumentosClinicos);
     private string _busqueda = "";
@@ -31,10 +33,12 @@ public sealed class DocumentosClinicosViewModel : ViewModelBase
     private string _mensaje = "";
     public string Mensaje { get => _mensaje; private set => SetProperty(ref _mensaje, value); }
 
-    public DocumentosClinicosViewModel(PacienteModel? paciente = null)
+    public DocumentosClinicosViewModel(PacienteModel? paciente = null, Action? volver = null)
     {
         _paciente = paciente;
         _idPaciente = paciente?.IdPaciente;
+        PuedeVolver = volver is not null;
+        VolverCommand = new RelayCommand(_ => volver?.Invoke(), _ => PuedeVolver);
         Titulo = paciente is null ? "Documentos clínicos" : $"Documentos de {paciente.NombreCompleto}";
         RecargarCommand = new AsyncRelayCommand(CargarAsync, () => !EstaCargando);
         AbrirCommand = new AsyncRelayCommand(p => AbrirAsync(p, false), p => !EstaCargando && p is IncapacidadDocumento);

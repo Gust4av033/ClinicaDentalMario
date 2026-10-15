@@ -50,6 +50,8 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
             Diagnostico = "";
             Indicaciones = "";
             Consultas.Clear();
+            Desde = Hasta = DateTime.Today;
+            DoctorSeleccionado = Doctores.Count == 1 ? Doctores[0] : null;
             if (!_inicializando) _ = CargarConsultasAsync();
         }
     }
@@ -144,9 +146,9 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
                 configuracion = new ConfiguracionDocumentos();
                 Mensaje = "No se pudieron recuperar los datos de la clínica. Revísalos antes de emitir.";
             }
-            Clinica = configuracion.Clinica;
-            DireccionClinica = configuracion.Direccion;
-            TelefonoClinica = configuracion.Telefono;
+            Clinica = configuracion.Clinica ?? "";
+            DireccionClinica = configuracion.Direccion ?? "";
+            TelefonoClinica = configuracion.Telefono ?? "";
             var pacientesTask = new PacienteRepository().ObtenerTodosAsync();
             var doctoresTask = new DoctorRepository().ObtenerDoctoresActivosAsync();
             await Task.WhenAll(pacientesTask, doctoresTask);

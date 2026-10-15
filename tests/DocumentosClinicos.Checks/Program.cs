@@ -31,6 +31,8 @@ Rechazar(() => (ejemplo with { Diagnostico = " " }).Validar(), "Rechazar diagnó
 Rechazar(() => (ejemplo with { NumeroJVPO = "" }).Validar(), "Rechazar profesional sin registro.");
 Rechazar(() => (ejemplo with { FechaConsulta = DateTime.Now }).Validar(), "Rechazar consulta sin paciente.");
 Rechazar(() => (ejemplo with { IdConsulta = 1 }).Validar(), "Rechazar consulta sin fecha.");
+Rechazar(() => (ejemplo with { IdPaciente = 0 }).Validar(), "Rechazar referencia inválida de paciente.");
+Rechazar(() => (ejemplo with { Indicaciones = null! }).Validar(), "Rechazar datos nulos de un archivo dañado.");
 // Menores o pacientes sin expediente no requieren un DUI inventado.
 (ejemplo with { DocumentoIdentidad = "", IdPaciente = null }).Validar();
 
@@ -58,6 +60,10 @@ try
     catch (IOException) { fallo = true; }
     Verificar(fallo && archivo.Listar().Documentos.Count == 2 &&
         !Directory.EnumerateDirectories(carpeta, ".pendiente-*").Any(), "Rollback ante error de PDF.");
+    fallo = false;
+    try { archivo.Emitir(ejemplo with { Id = Guid.NewGuid() }, (_, _) => { }); }
+    catch (IOException) { fallo = true; }
+    Verificar(fallo && archivo.Listar().Documentos.Count == 2, "No se archiva una emisión sin PDF.");
     var idInvalido = Guid.NewGuid();
     Directory.CreateDirectory(Path.Combine(carpeta, idInvalido.ToString("N")));
     File.WriteAllText(Path.Combine(carpeta, idInvalido.ToString("N"), "datos.json"), "{truncado");

@@ -60,16 +60,17 @@ public sealed class IncapacidadPdfService
                     col.Item().Text("Indicaciones y observaciones").SemiBold();
                     col.Item().Text(documento.Indicaciones);
                 }
-                col.Item().PaddingTop(36).ShowEntire().Column(firma =>
+            });
+            page.Footer().Column(col =>
+            {
+                // En documentos extensos, la firma acompaña cada página y no queda sola en una hoja.
+                col.Item().PaddingTop(30).PaddingBottom(20).Column(firma =>
                 {
                     firma.Item().AlignCenter().Width(280).LineHorizontal(1);
                     firma.Item().AlignCenter().PaddingTop(6).Text(documento.Doctor).SemiBold();
                     firma.Item().AlignCenter().Text($"JVPO: {documento.NumeroJVPO}");
                     firma.Item().AlignCenter().Text("Firma y sello del odontólogo tratante").FontSize(9);
                 });
-            });
-            page.Footer().Column(col =>
-            {
                 col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                 col.Item().PaddingTop(6).Text("Documento emitido por la clínica tratante.").FontSize(9);
                 col.Item().AlignRight().Text(t => { t.Span("Página "); t.CurrentPageNumber(); t.Span(" de "); t.TotalPages(); });

@@ -190,7 +190,8 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 _ => !EstaCargando && new PermissionService().TienePermiso(Common.PermisoSistema.EmitirDocumentosClinicos));
             VerDocumentosClinicosCommand = new RelayCommand(_ => _cambiarVista(new Views.Documentos.DocumentosClinicosView
             {
-                DataContext = new ViewModel.Documentos.DocumentosClinicosViewModel(PacienteActual)
+                DataContext = new ViewModel.Documentos.DocumentosClinicosViewModel(PacienteActual,
+                    () => _cambiarVista(new HistorialPacienteView { DataContext = this }))
             }));
 
             _ = CargarExpedienteAsync();

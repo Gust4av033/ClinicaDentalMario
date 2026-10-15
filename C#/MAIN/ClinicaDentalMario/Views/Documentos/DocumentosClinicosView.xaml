@@ -9,6 +9,12 @@
                        Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,16"/>
         </StackPanel>
         <WrapPanel Grid.Row="1" Margin="0,0,0,14">
+            <Button Content="Volver al expediente" Command="{Binding VolverCommand}" Margin="0,0,10,6">
+                <Button.Style><Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers><DataTrigger Binding="{Binding PuedeVolver}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                </Style></Button.Style>
+            </Button>
             <Button Content="Nueva incapacidad / reposo" Command="{Binding NuevoCommand}"
                     Background="{StaticResource AccentBrush}" Foreground="White" Margin="0,0,10,6"/>
             <Button Content="Actualizar" Command="{Binding RecargarCommand}" Margin="0,0,10,6"/>

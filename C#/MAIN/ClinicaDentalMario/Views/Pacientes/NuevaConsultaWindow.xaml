@@ -88,6 +88,9 @@
                           VerticalScrollBarVisibility="Auto"
                           Padding="0,0,10,0">
                 <StackPanel>
+                    <CheckBox Content="Abrir incapacidad / reposo al guardar esta consulta"
+                              IsChecked="{Binding GenerarIncapacidadAlGuardar}" IsEnabled="{Binding PuedeEmitirDocumentos}"
+                              Margin="0,0,0,16"/>
                     <TextBlock Text="Doctor que atendió *"
                                Foreground="{StaticResource TextSecondaryBrush}"
                                FontWeight="SemiBold"

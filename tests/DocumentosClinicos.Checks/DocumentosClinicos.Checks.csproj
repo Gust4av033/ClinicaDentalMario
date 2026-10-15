@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="QuestPDF" Version="2026.7.2" />
+    <Compile Include="../../C#/MAIN/ClinicaDentalMario/Models/IncapacidadDocumento.cs" Link="IncapacidadDocumento.cs" />
+    <Compile Include="../../C#/MAIN/ClinicaDentalMario/Models/UsuarioModel.cs" Link="UsuarioModel.cs" />
+    <Compile Include="../../C#/MAIN/ClinicaDentalMario/Services/ArchivoDocumentosClinicos.cs" Link="ArchivoDocumentosClinicos.cs" />
+    <Compile Include="../../C#/MAIN/ClinicaDentalMario/Services/IncapacidadPdfService.cs" Link="IncapacidadPdfService.cs" />
+    <Compile Include="../../C#/MAIN/ClinicaDentalMario/Services/PermissionService.cs" Link="PermissionService.cs" />
+    <Compile Include="../../C#/MAIN/ClinicaDentalMario/Services/IPermissionService.cs" Link="IPermissionService.cs" />
+    <Compile Include="../../C#/MAIN/ClinicaDentalMario/Common/*.cs" Link="Common/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

@@ -2,7 +2,7 @@
 
 ## Rama y alcance
 
-`feature/incapacidades-csharp` parte de `dashboard` (`1400415`), el avance funcional más reciente del repositorio al revisar las ramas. `main` conserva la integración hasta Ajustes/Bitácora (`c1fbf59`). La rama posterior `chore/vscode-dev-setup` solo añade herramientas de VS Code. `odontograma-pro` mantiene mejoras propias que no están integradas en esta rama. No se mezclan esas ramas como parte de esta función.
+La rama consolidada para continuar el trabajo es **`integration/clinica-completa`**. Reúne `main`, `dashboard`, `odontograma-pro`, el historial de `reportes`, `chore/vscode-dev-setup` y las incapacidades de `feature/incapacidades-csharp`. La rama original de incapacidades partió de `dashboard`; la rama consolidada ya incorpora también el odontograma mejorado. Véase [integracion.md](integracion.md) para procedencia, comprobaciones y forma de actualizar la copia local.
 
 La emisión pertenece a **Documentos clínicos**, separado de los reportes administrativos. La misma ventana permite emitir desde el menú, desde el expediente y desde una consulta. El PDF es una constancia de la clínica con espacio para firma y sello del odontólogo; no reproduce logotipos, códigos de verificación ni firmas de documentos de otras instituciones. El archivo de referencia aportado no se incluye en el repositorio ni en las pruebas.
 

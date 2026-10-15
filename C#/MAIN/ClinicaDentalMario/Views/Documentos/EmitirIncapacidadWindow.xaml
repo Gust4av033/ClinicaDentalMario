@@ -1,0 +1,89 @@
+<Window x:Class="ClinicaDentalMario.Views.Documentos.EmitirIncapacidadWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Emitir incapacidad / reposo" Width="850" Height="780" MinWidth="680" MinHeight="600"
+        WindowStartupLocation="CenterOwner" Background="{StaticResource BgWindowBrush}">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="Incapacidad / reposo odontológico" FontSize="24" FontWeight="Bold"/>
+            <TextBlock Text="Revisa los datos, abre la vista previa y emite el documento para firma y sello."
+                       TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,12,0">
+            <StackPanel>
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding EstaCargando}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+                            <DataTrigger Binding="{Binding DocumentoEmitido}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <TextBlock Text="Paciente" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}"/>
+                <TextBlock Text="Seleccionar del expediente (opcional)" Margin="0,12,0,5"/>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Sin expediente" Command="{Binding PacienteManualCommand}" Margin="10,0,0,0"/>
+                    <ComboBox ItemsSource="{Binding Pacientes}" SelectedItem="{Binding PacienteSeleccionado}"
+                              DisplayMemberPath="NombreCompleto" IsTextSearchEnabled="True"/>
+                </DockPanel>
+                <TextBlock Text="Nombre completo *" Margin="0,12,0,5"/>
+                <TextBox Text="{Binding NombrePaciente, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" IsReadOnly="{Binding PacienteRegistrado}"/>
+                <TextBlock Text="Documento de identidad (opcional; admite menores sin DUI)" Margin="0,12,0,5"/>
+                <TextBox Text="{Binding DocumentoIdentidad, UpdateSourceTrigger=PropertyChanged}" MaxLength="100"/>
+                <TextBlock Text="Consulta de referencia (opcional)" Margin="0,12,0,5"/>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Sin consulta" Command="{Binding SinConsultaCommand}" Margin="10,0,0,0"/>
+                    <ComboBox ItemsSource="{Binding Consultas}" SelectedItem="{Binding ConsultaSeleccionada}" DisplayMemberPath="Descripcion"/>
+                </DockPanel>
+                <TextBlock Text="Puedes emitir sin consulta previa. Al elegir una consulta se carga su diagnóstico para revisión."
+                           Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="12" Margin="0,6,0,0"/>
+                <TextBlock Text="Atención e indicación de reposo" FontSize="17" FontWeight="SemiBold"
+                           Foreground="{StaticResource AccentBrush}" Margin="0,24,0,12"/>
+                <TextBlock Text="Odontólogo tratante *" Margin="0,0,0,5"/>
+                <ComboBox ItemsSource="{Binding Doctores}" SelectedItem="{Binding DoctorSeleccionado}" DisplayMemberPath="NombreCompleto"/>
+                <TextBlock Text="Número de JVPO *" Margin="0,12,0,5"/>
+                <TextBox Text="{Binding NumeroJVPO, UpdateSourceTrigger=PropertyChanged}" MaxLength="30"/>
+                <TextBlock Text="Diagnóstico *" Margin="0,12,0,5"/>
+                <TextBox Text="{Binding Diagnostico, UpdateSourceTrigger=PropertyChanged}" MaxLength="3000"
+                         MinHeight="85" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                <Grid Margin="0,14,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <StackPanel><TextBlock Text="Fecha de emisión *" Margin="0,0,0,5"/>
+                        <DatePicker SelectedDate="{Binding FechaEmision, UpdateSourceTrigger=PropertyChanged}" DateValidationError="FechaInvalida"/></StackPanel>
+                    <StackPanel Grid.Column="2"><TextBlock Text="Desde *" Margin="0,0,0,5"/>
+                        <DatePicker SelectedDate="{Binding Desde, UpdateSourceTrigger=PropertyChanged}" DateValidationError="FechaInvalida"/></StackPanel>
+                    <StackPanel Grid.Column="4"><TextBlock Text="Hasta *" Margin="0,0,0,5"/>
+                        <DatePicker SelectedDate="{Binding Hasta, UpdateSourceTrigger=PropertyChanged}" DateValidationError="FechaInvalida"/></StackPanel>
+                </Grid>
+                <Border Background="{StaticResource BgControlBrush}" CornerRadius="8" Padding="12" Margin="0,10,0,0">
+                    <TextBlock Text="{Binding ResumenPeriodo}" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}"/>
+                </Border>
+                <TextBlock Text="Indicaciones / observaciones" Margin="0,12,0,5"/>
+                <TextBox Text="{Binding Indicaciones, UpdateSourceTrigger=PropertyChanged}" MaxLength="3000"
+                         MinHeight="75" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                <TextBlock Text="Dirigido a / empresa (opcional)" Margin="0,12,0,5"/>
+                <TextBox Text="{Binding Destinatario, UpdateSourceTrigger=PropertyChanged}" MaxLength="250"/>
+                <TextBlock Text="Datos de la clínica" FontSize="17" FontWeight="SemiBold"
+                           Foreground="{StaticResource AccentBrush}" Margin="0,24,0,12"/>
+                <TextBlock Text="Nombre de la clínica *" Margin="0,0,0,5"/>
+                <TextBox Text="{Binding Clinica, UpdateSourceTrigger=PropertyChanged}" MaxLength="150"/>
+                <TextBlock Text="Dirección" Margin="0,12,0,5"/>
+                <TextBox Text="{Binding DireccionClinica, UpdateSourceTrigger=PropertyChanged}" MaxLength="250"/>
+                <TextBlock Text="Teléfono" Margin="0,12,0,5"/>
+                <TextBox Text="{Binding TelefonoClinica, UpdateSourceTrigger=PropertyChanged}" MaxLength="50"/>
+            </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="2" Margin="0,16,0,0">
+            <TextBlock Text="{Binding Mensaje}" TextWrapping="Wrap" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,10"/>
+            <WrapPanel HorizontalAlignment="Right">
+                <Button Content="Cerrar" Click="Cerrar_Click" Margin="0,0,10,0"/>
+                <Button Content="Vista previa" Command="{Binding VistaPreviaCommand}" Margin="0,0,10,0"/>
+                <Button Content="Emitir y guardar PDF" Command="{Binding EmitirCommand}"
+                        Background="{StaticResource AccentBrush}" Foreground="White"/>
+            </WrapPanel>
+        </StackPanel>
+    </Grid>
+</Window>

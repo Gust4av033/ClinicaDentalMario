@@ -17,6 +17,11 @@ namespace ClinicaDentalMario.Navigation
 {
     public sealed class ShellViewFactory : IShellViewFactory
     {
+        public object CrearDocumentosClinicos() => new Views.Documentos.DocumentosClinicosView
+        {
+            DataContext = new ViewModel.Documentos.DocumentosClinicosViewModel()
+        };
+
         public object CrearDashboard(Action<object> navegar)
         {
             return new DashboardView

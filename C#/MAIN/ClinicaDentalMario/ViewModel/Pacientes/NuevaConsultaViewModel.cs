@@ -144,6 +144,9 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
         public bool ConsultaGuardada { get; private set; }
         public bool DeseaAsignarTratamiento { get; private set; }
+        public bool GenerarIncapacidadAlGuardar { get; set; }
+        public HistorialClinicoModel? ConsultaRegistrada { get; private set; }
+        public bool PuedeEmitirDocumentos => new PermissionService().TienePermiso(Common.PermisoSistema.EmitirDocumentosClinicos);
 
         public AsyncRelayCommand GuardarConsultaCommand { get; }
         public AsyncRelayCommand GuardarYAsignarTratamientoCommand { get; }
@@ -248,6 +251,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 {
                     IdPaciente = IdPaciente,
                     IdDoctor = DoctorSeleccionado!.IdDoctor,
+                    Doctor = DoctorSeleccionado.NombreCompleto,
                     FechaConsulta = DateTime.Now,
                     MotivoConsulta = MotivoConsulta.Trim(),
                     AntecedentesMedicos = LimpiarOpcional(CambiosAntecedentesMedicos),
@@ -260,6 +264,7 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 await _historialRepo.InsertarConsultaAsync(nuevaConsulta);
 
                 ConsultaGuardada = true;
+                ConsultaRegistrada = nuevaConsulta;
                 DeseaAsignarTratamiento = asignarTratamiento;
 
                 _messageService.MostrarExito(

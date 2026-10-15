@@ -14,6 +14,8 @@ namespace ClinicaDentalMario.Common
         VerReportes,
         AdministrarConfiguracion,
         AdministrarUsuarios,
-        VerBitacora
+        VerBitacora,
+        VerDocumentosClinicos,
+        EmitirDocumentosClinicos
     }
 }

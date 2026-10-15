@@ -10,7 +10,7 @@ La emisión pertenece a **Documentos clínicos**, separado de los reportes admin
 
 Antes de emitir, abrir **Configuración → Datos de la clínica**, completar nombre, dirección y teléfono, y pulsar **Guardar datos de la clínica**. También se puede usar el mismo botón dentro del formulario de incapacidad, sin seleccionar un paciente ni emitir. Las ventanas nuevas cargan automáticamente el perfil guardado, incluso después de reiniciar la aplicación. **Recargar guardados** recupera el perfil si se cambió desde otra ventana; reemplaza los valores que se están editando en ese formulario. Los datos corresponden al usuario de Windows y computadora actuales.
 
-1. Abrir **Documentos clínicos → Nueva incapacidad / reposo**. Se puede seleccionar un paciente registrado o pulsar **Sin expediente** e ingresar sus datos para este documento. Esto no crea un paciente en SQL.
+1. Abrir **Documentos clínicos → Nueva incapacidad / reposo**. En **Buscar paciente por nombre** se puede escribir el inicio del nombre para autocompletar, sin distinguir mayúsculas, y seleccionar un paciente registrado. Para una persona no registrada, pulsar **Sin expediente** e ingresar sus datos para este documento. Esto no crea un paciente en SQL.
 2. Opcionalmente elegir una consulta. Se carga su diagnóstico, fecha y odontólogo para revisión. **Sin consulta** permite emitir de forma independiente.
 3. Revisar el odontólogo, registro JVPO, diagnóstico, fechas, indicaciones y datos de la clínica. El documento de identidad es opcional para permitir pacientes menores sin DUI.
 4. **Vista previa** abre un borrador sin incorporarlo al historial. **Emitir y guardar PDF** conserva una emisión independiente con folio único; el visor PDF permite imprimirla.

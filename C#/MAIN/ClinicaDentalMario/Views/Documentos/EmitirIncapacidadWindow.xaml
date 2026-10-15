@@ -24,12 +24,16 @@
                     </Style>
                 </StackPanel.Style>
                 <TextBlock Text="Paciente" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}"/>
-                <TextBlock Text="Seleccionar del expediente (opcional)" Margin="0,12,0,5"/>
+                <TextBlock Text="Buscar paciente por nombre (opcional)" Margin="0,12,0,5"/>
                 <DockPanel>
                     <Button DockPanel.Dock="Right" Content="Sin expediente" Command="{Binding PacienteManualCommand}" Margin="10,0,0,0"/>
                     <ComboBox ItemsSource="{Binding Pacientes}" SelectedItem="{Binding PacienteSeleccionado}"
-                              DisplayMemberPath="NombreCompleto" IsTextSearchEnabled="True"/>
+                              DisplayMemberPath="NombreCompleto" IsEditable="True" IsReadOnly="False"
+                              IsTextSearchEnabled="True" IsTextSearchCaseSensitive="False"
+                              TextSearch.TextPath="NombreCompleto" StaysOpenOnEdit="True"/>
                 </DockPanel>
+                <TextBlock Text="Escribe el inicio del nombre para autocompletar y selecciona al paciente. Si no tiene expediente, pulsa «Sin expediente» y completa su nombre abajo."
+                           Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" FontSize="12" Margin="0,6,0,0"/>
                 <TextBlock Text="Nombre completo *" Margin="0,12,0,5"/>
                 <TextBox Text="{Binding NombrePaciente, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" IsReadOnly="{Binding PacienteRegistrado}"/>
                 <TextBlock Text="Documento de identidad (opcional; admite menores sin DUI)" Margin="0,12,0,5"/>

@@ -46,3 +46,5 @@ No es necesario fusionar las ramas de cada módulo manualmente: sus avances ya e
 - Probar en Windows dashboard y sus accesos, apertura/edición/carga del odontograma, reportes, nueva consulta, emisión de incapacidad y reimpresión.
 
 En este entorno Linux se dispone además de comprobación de tipos de las fuentes C# con Roslyn y referencias oficiales de .NET 8/WPF; las declaraciones auxiliares de miembros XAML no reemplazan la compilación de XAML ni la prueba visual de la aplicación en Windows. La preparación de esta rama no instala cambios en la laptop de la clínica.
+
+Validación automatizada en Windows: [compilación WPF y comprobaciones aprobadas](https://github.com/Gust4av033/ClinicaDentalMario/actions/runs/38669247124), revisión de código `3f66daf`. El [PR #12](https://github.com/Gust4av033/ClinicaDentalMario/pull/12) conserva la integración en borrador; `main` permanece intacta.

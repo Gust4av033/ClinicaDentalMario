@@ -18,6 +18,7 @@ var ejemplo = new IncapacidadDocumento
 {
     Paciente = "Paciente de demostración", Doctor = "Odontólogo de demostración", NumeroJVPO = "DEMO-001",
     Clinica = "Clínica Dental CDMario", DireccionClinica = "Dirección de demostración", TelefonoClinica = "0000-0000",
+    LugarEmision = "Panchimalco",
     Diagnostico = "Diagnóstico de demostración para validar el formato.",
     Indicaciones = "Indicaciones de demostración. Documento de prueba sin datos de pacientes reales.",
     TipoDocumento = "DUI", DocumentoIdentidad = "00000000-0", NumeroAfiliacion = "DEMOSTRACIÓN",
@@ -28,6 +29,21 @@ var ejemplo = new IncapacidadDocumento
     Desde = new DateTime(2026, 10, 13), Hasta = new DateTime(2026, 10, 15), FechaEmision = new DateTime(2026, 10, 13)
 };
 ejemplo.Validar();
+string certificacion = IncapacidadPdfService.TextoCertificacion(ejemplo);
+Verificar(certificacion.Contains(ejemplo.Paciente) && certificacion.Contains(ejemplo.Doctor) &&
+    certificacion.Contains(ejemplo.NumeroJVPO) && certificacion.Contains(ejemplo.Diagnostico.TrimEnd('.')),
+    "El texto predefinido utiliza los datos de la emisión, sin nombres profesionales fijos.");
+Verificar(certificacion.Contains("3 (TRES) días") && certificacion.Contains("del 13 de octubre de 2026 al 15 de octubre de 2026"),
+    "El texto predefinido conserva el período real, sin asumir que inicia el día de emisión.");
+Verificar(!certificacion.Contains("expediente número"), "No se inventa expediente para un paciente no registrado.");
+Verificar(IncapacidadPdfService.TextoCertificacion(ejemplo with { IdPaciente = 42 }).Contains("expediente número 42"),
+    "El texto usa el identificador del expediente seleccionado.");
+Verificar(IncapacidadPdfService.TextoCertificacion(ejemplo with { Hasta = ejemplo.Desde }).Contains("1 (UNO) día,"),
+    "Redacción de incapacidad de un solo día.");
+Verificar(IncapacidadPdfService.TextoCierre(ejemplo with { FechaEmision = new DateTime(2026, 10, 18) })
+    .Contains("en Panchimalco, el 18 de octubre de 2026"), "El cierre usa el lugar configurado y la fecha de emisión.");
+Verificar(!IncapacidadPdfService.TextoCierre(ejemplo with { LugarEmision = "" }).Contains("Panchimalco"),
+    "No se atribuye un lugar de emisión que la clínica no ha configurado.");
 Verificar(ejemplo.TotalDias == 3, "Deben incluirse ambos días extremos.");
 Verificar(IncapacidadPdfService.CantidadEnLetras(3) == "TRES", "Total en letras.");
 Verificar(IncapacidadPdfService.CantidadEnLetras(31) == "TREINTA Y UNO", "Total en letras con decenas.");
@@ -51,7 +67,7 @@ string carpeta = Path.Combine(Path.GetTempPath(), $"CDMario-checks-{Guid.NewGuid
 try
 {
     var archivo = new ArchivoDocumentosClinicos(carpeta);
-    var configuracion = new ConfiguracionDocumentos("Clínica de prueba", "Dirección", "1234");
+    var configuracion = new ConfiguracionDocumentos("Clínica de prueba", "Dirección", "1234", "Panchimalco");
     archivo.GuardarConfiguracion(configuracion);
     Verificar(new ArchivoDocumentosClinicos(carpeta).LeerConfiguracion() == configuracion &&
         archivo.Listar().Documentos.Count == 0, "La clínica se guarda y recupera antes de emitir documentos.");
@@ -59,6 +75,12 @@ try
     Rechazar(() => archivo.GuardarConfiguracion(configuracion with { Direccion = new string('x', 251) }), "Rechazar dirección demasiado larga.");
     Rechazar(() => archivo.GuardarConfiguracion(configuracion with { Telefono = null! }), "Rechazar teléfono nulo.");
     Verificar(archivo.LeerConfiguracion() == configuracion, "Un guardado inválido no reemplaza la clínica anterior.");
+    var perfilLegado = new ArchivoDocumentosClinicos(Path.Combine(carpeta, "perfil-legado"));
+    Directory.CreateDirectory(perfilLegado.Carpeta);
+    File.WriteAllText(Path.Combine(perfilLegado.Carpeta, "clinica.json"),
+        "{\"Clinica\":\"Clínica anterior\",\"Direccion\":\"Dirección anterior\",\"Telefono\":\"1234\"}");
+    Verificar(perfilLegado.LeerConfiguracion().LugarEmision == "" && perfilLegado.LeerConfiguracion().Clinica == "Clínica anterior",
+        "Los perfiles anteriores cargan sin inventar un lugar de emisión.");
     void PdfSimulado(IncapacidadDocumento d, string ruta) => File.WriteAllText(ruta, $"PDF de {d.Paciente}");
     string ruta = archivo.Emitir(ejemplo, PdfSimulado);
     Verificar(File.Exists(ruta) && archivo.Listar().Documentos.Count == 1, "Emisión persistida.");
@@ -69,7 +91,7 @@ try
     var legado = System.Text.Json.Nodes.JsonNode.Parse(System.Text.Json.JsonSerializer.Serialize(ejemplo))!.AsObject();
     foreach (string campo in new[] { "TipoDocumento", "SexoPaciente", "DireccionPaciente", "TelefonoPaciente", "Departamento",
         "Municipio", "NumeroAfiliacion", "TipoIncapacidad", "Riesgo", "TipoTrabajador", "TipoAfiliacion", "FechaAccidente",
-        "FechaHospitalizacion", "FechaAlta" }) legado.Remove(campo);
+        "FechaHospitalizacion", "FechaAlta", "LugarEmision" }) legado.Remove(campo);
     var antiguo = System.Text.Json.JsonSerializer.Deserialize<IncapacidadDocumento>(legado.ToJsonString())!;
     antiguo.Validar();
     Verificar(antiguo.DireccionPaciente == "" && antiguo.FechaAccidente is null, "Compatibilidad con emisiones anteriores al rediseño.");

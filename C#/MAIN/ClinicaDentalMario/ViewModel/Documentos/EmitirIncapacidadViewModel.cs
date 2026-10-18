@@ -55,7 +55,6 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
             Departamento = Municipio = NumeroAfiliacion = "";
             TipoTrabajador = TipoAfiliacion = Riesgo = Destinatario = "";
             TipoIncapacidad = "Inicial";
-            FechaAccidente = FechaHospitalizacion = FechaAlta = null;
             ConsultaSeleccionada = null;
             Diagnostico = "";
             Indicaciones = "";
@@ -118,12 +117,6 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
     public string TipoTrabajador { get => _tipoTrabajador; set => SetProperty(ref _tipoTrabajador, value); }
     private string _tipoAfiliacion = "";
     public string TipoAfiliacion { get => _tipoAfiliacion; set => SetProperty(ref _tipoAfiliacion, value); }
-    private DateTime? _fechaAccidente;
-    public DateTime? FechaAccidente { get => _fechaAccidente; set => SetProperty(ref _fechaAccidente, value); }
-    private DateTime? _fechaHospitalizacion;
-    public DateTime? FechaHospitalizacion { get => _fechaHospitalizacion; set => SetProperty(ref _fechaHospitalizacion, value); }
-    private DateTime? _fechaAlta;
-    public DateTime? FechaAlta { get => _fechaAlta; set => SetProperty(ref _fechaAlta, value); }
     private string _numeroJVPO = "";
     public string NumeroJVPO { get => _numeroJVPO; private set => SetProperty(ref _numeroJVPO, value); }
     private string _diagnostico = "";
@@ -258,9 +251,9 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
             Departamento = Departamento.Trim(), Municipio = Municipio.Trim(), NumeroAfiliacion = NumeroAfiliacion.Trim(),
             TipoIncapacidad = TipoIncapacidad.Trim(), Riesgo = Riesgo.Trim(),
             TipoTrabajador = TipoTrabajador.Trim(), TipoAfiliacion = TipoAfiliacion.Trim(),
-            FechaAccidente = FechaAccidente?.Date, FechaHospitalizacion = FechaHospitalizacion?.Date, FechaAlta = FechaAlta?.Date,
             Doctor = DoctorSeleccionado.NombreCompleto, NumeroJVPO = DoctorSeleccionado.NumeroJVPO.Trim(),
             Clinica = DatosClinica.Clinica.Trim(), DireccionClinica = DatosClinica.Direccion.Trim(), TelefonoClinica = DatosClinica.Telefono.Trim(),
+            LugarEmision = DatosClinica.LugarEmision.Trim(),
             Diagnostico = Diagnostico.Trim(), Indicaciones = Indicaciones.Trim(), Destinatario = Destinatario.Trim(),
             FechaEmision = FechaEmision.Value.Date, Desde = Desde.Value.Date, Hasta = Hasta.Value.Date,
             EmitidoPor = UsuarioActual.NombreUsuario
@@ -284,7 +277,7 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
                 DocumentoEmitido = true;
                 try
                 {
-                    _archivo.GuardarConfiguracion(new ConfiguracionDocumentos(documento.Clinica, documento.DireccionClinica, documento.TelefonoClinica));
+                    _archivo.GuardarConfiguracion(new ConfiguracionDocumentos(documento.Clinica, documento.DireccionClinica, documento.TelefonoClinica, documento.LugarEmision));
                     Mensaje = $"Documento emitido: {documento.Folio}. Disponible en Documentos clínicos.";
                 }
                 catch

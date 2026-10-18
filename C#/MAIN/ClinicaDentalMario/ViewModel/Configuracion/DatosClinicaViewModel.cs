@@ -18,6 +18,8 @@ public sealed class DatosClinicaViewModel : ViewModelBase
     public string Direccion { get => _direccion; set => SetProperty(ref _direccion, value ?? ""); }
     private string _telefono = "";
     public string Telefono { get => _telefono; set => SetProperty(ref _telefono, value ?? ""); }
+    private string _lugarEmision = "";
+    public string LugarEmision { get => _lugarEmision; set => SetProperty(ref _lugarEmision, value ?? ""); }
     public RelayCommand GuardarCommand { get; }
     public RelayCommand RecargarCommand { get; }
 
@@ -41,6 +43,7 @@ public sealed class DatosClinicaViewModel : ViewModelBase
             Clinica = datos.Clinica;
             Direccion = datos.Direccion;
             Telefono = datos.Telefono;
+            LugarEmision = datos.LugarEmision;
             LimpiarMensaje();
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException or ArgumentException)
@@ -58,11 +61,12 @@ public sealed class DatosClinicaViewModel : ViewModelBase
         }
         try
         {
-            var datos = new ConfiguracionDocumentos(Clinica.Trim(), Direccion.Trim(), Telefono.Trim());
+            var datos = new ConfiguracionDocumentos(Clinica.Trim(), Direccion.Trim(), Telefono.Trim(), LugarEmision.Trim());
             _archivo.GuardarConfiguracion(datos);
             Clinica = datos.Clinica;
             Direccion = datos.Direccion;
             Telefono = datos.Telefono;
+            LugarEmision = datos.LugarEmision;
             MostrarExito("Datos guardados. Se cargarán automáticamente al abrir una nueva incapacidad, incluso después de cerrar la aplicación.");
         }
         catch (ArgumentException ex) { MostrarError(ex.Message); }

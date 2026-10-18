@@ -27,6 +27,7 @@ public sealed record IncapacidadDocumento
     public string Riesgo { get; init; } = "";
     public string TipoTrabajador { get; init; } = "";
     public string TipoAfiliacion { get; init; } = "";
+    // Conservadas para leer instantáneas anteriores; no se solicitan ni se imprimen en emisiones nuevas.
     public DateTime? FechaAccidente { get; init; }
     public DateTime? FechaHospitalizacion { get; init; }
     public DateTime? FechaAlta { get; init; }
@@ -35,6 +36,7 @@ public sealed record IncapacidadDocumento
     public string Clinica { get; init; } = "";
     public string DireccionClinica { get; init; } = "";
     public string TelefonoClinica { get; init; } = "";
+    public string LugarEmision { get; init; } = "";
     public string Diagnostico { get; init; } = "";
     public string Indicaciones { get; init; } = "";
     public string Destinatario { get; init; } = "";
@@ -71,6 +73,7 @@ public sealed record IncapacidadDocumento
         Opcional(Riesgo, 100);
         Opcional(TipoTrabajador, 100);
         Opcional(TipoAfiliacion, 100);
+        Opcional(LugarEmision, 100);
         if (Indicaciones is null || DocumentoIdentidad is null || Destinatario is null ||
             DireccionClinica is null || TelefonoClinica is null)
             throw new ArgumentException("Los campos opcionales no pueden contener valores nulos.");
@@ -93,15 +96,15 @@ public sealed record IncapacidadDocumento
 }
 
 public sealed record ConfiguracionDocumentos(string Clinica = "Clínica Dental CDMario",
-    string Direccion = "", string Telefono = "")
+    string Direccion = "", string Telefono = "", string LugarEmision = "")
 {
     public void Validar()
     {
         if (string.IsNullOrWhiteSpace(Clinica))
             throw new ArgumentException("Ingresa el nombre de la clínica.");
         if (Clinica.Length > 150 || Direccion is null || Direccion.Length > 250 ||
-            Telefono is null || Telefono.Length > 50)
-            throw new ArgumentException("Revisa los datos de la clínica: nombre hasta 150 caracteres, dirección hasta 250 y teléfono hasta 50.");
+            Telefono is null || Telefono.Length > 50 || LugarEmision is null || LugarEmision.Length > 100)
+            throw new ArgumentException("Revisa los datos de la clínica: nombre hasta 150 caracteres, dirección hasta 250, teléfono hasta 50 y lugar de emisión hasta 100.");
     }
 }
 

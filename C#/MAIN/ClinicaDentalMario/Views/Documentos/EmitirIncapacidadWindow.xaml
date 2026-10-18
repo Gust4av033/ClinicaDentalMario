@@ -10,7 +10,7 @@
         </Grid.RowDefinitions>
         <StackPanel Margin="0,0,0,16">
             <TextBlock Text="Incapacidad / reposo odontológico" FontSize="24" FontWeight="Bold"/>
-            <TextBlock Text="Certificado de la clínica tratante para firma y sello del odontólogo. La referencia interna permite localizar el archivo."
+            <TextBlock Text="Certificado de la clínica tratante con texto predefinido y datos del formulario. Revisa la vista previa antes de firmar y sellar."
                        TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0"/>
         </StackPanel>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,12,0">
@@ -99,12 +99,6 @@
                         <TextBox Text="{Binding Municipio, UpdateSourceTrigger=PropertyChanged}" MaxLength="100"/>
                         <TextBlock Text="Contacto del paciente" Margin="0,8,0,5"/>
                         <TextBox Text="{Binding TelefonoPaciente, UpdateSourceTrigger=PropertyChanged}" MaxLength="50"/>
-                        <TextBlock Text="Fecha de accidente" Margin="0,8,0,5"/>
-                        <DatePicker SelectedDate="{Binding FechaAccidente, UpdateSourceTrigger=PropertyChanged}" DateValidationError="FechaInvalida"/>
-                        <TextBlock Text="Fecha de hospitalización" Margin="0,8,0,5"/>
-                        <DatePicker SelectedDate="{Binding FechaHospitalizacion, UpdateSourceTrigger=PropertyChanged}" DateValidationError="FechaInvalida"/>
-                        <TextBlock Text="Fecha de alta" Margin="0,8,0,5"/>
-                        <DatePicker SelectedDate="{Binding FechaAlta, UpdateSourceTrigger=PropertyChanged}" DateValidationError="FechaInvalida"/>
                     </StackPanel>
                 </Expander>
                 <configuracion:DatosClinicaView DataContext="{Binding DatosClinica}" Margin="0,24,0,0"/>

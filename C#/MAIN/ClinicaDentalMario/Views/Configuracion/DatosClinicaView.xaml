@@ -13,6 +13,9 @@
                  TextWrapping="Wrap" MinHeight="50"/>
         <TextBlock Text="Teléfono" Margin="0,12,0,5"/>
         <TextBox Text="{Binding Telefono, UpdateSourceTrigger=PropertyChanged}" MaxLength="50" MinHeight="34"/>
+        <TextBlock Text="Lugar de emisión (opcional)" Margin="0,12,0,5"/>
+        <TextBox Text="{Binding LugarEmision, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" MinHeight="34"
+                 ToolTip="Ciudad o municipio que aparecerá en el cierre del certificado, por ejemplo: Panchimalco."/>
         <WrapPanel Margin="0,16,0,0">
             <Button Content="Guardar datos de la clínica" Command="{Binding GuardarCommand}"
                     Background="{StaticResource AccentBrush}" Foreground="White" Padding="12,8" Margin="0,0,10,8"/>

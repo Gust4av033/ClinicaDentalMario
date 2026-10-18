@@ -18,22 +18,14 @@ public sealed class IncapacidadPdfService
             page.Size(PageSizes.Letter);
             page.Margin(22);
             page.DefaultTextStyle(t => t.FontFamily("Lato").FontSize(8).FontColor(Colors.Black));
-            page.Header().PaddingBottom(9).Column(col =>
+            page.Header().PaddingBottom(12).AlignCenter().Text(texto =>
             {
-                col.Item().Row(row =>
-                {
-                    row.RelativeItem().Text("CDMARIO").FontSize(18).SemiBold().FontColor("#233653");
-                    row.RelativeItem(2).AlignRight().Column(c =>
-                    {
-                        c.Item().Text("Referencia interna: " + documento.Folio).FontSize(6).SemiBold();
-                        if (borrador) c.Item().AlignRight().Text("BORRADOR - VISTA PREVIA").FontSize(8).Bold();
-                    });
-                });
-                col.Item().PaddingTop(8).AlignCenter().Text(documento.Clinica.ToUpper(cultura)).FontSize(11).Bold();
-                col.Item().AlignCenter().Text("CERTIFICADO DE INCAPACIDAD TEMPORAL").FontSize(11).Bold();
-                col.Item().AlignCenter().Text("DOCUMENTO EMITIDO POR LA CLÍNICA TRATANTE").FontSize(9).Bold();
+                if (borrador) texto.Line("BORRADOR - VISTA PREVIA").FontSize(8).Bold();
+                texto.Line(documento.Clinica.ToUpper(cultura)).FontSize(13).Bold();
+                texto.Line("CERTIFICADO DE INCAPACIDAD TEMPORAL").FontSize(11).Bold();
+                texto.Line("DOCUMENTO EMITIDO POR LA CLÍNICA TRATANTE").FontSize(9).Bold();
                 if (!string.IsNullOrWhiteSpace(documento.DireccionClinica) || !string.IsNullOrWhiteSpace(documento.TelefonoClinica))
-                    col.Item().PaddingTop(3).AlignCenter().Text(string.Join("  |  ", new[]
+                    texto.Span(string.Join("  |  ", new[]
                     {
                         documento.DireccionClinica,
                         string.IsNullOrWhiteSpace(documento.TelefonoClinica) ? "" : "Tel. " + documento.TelefonoClinica
@@ -42,6 +34,8 @@ public sealed class IncapacidadPdfService
 
             page.Content().Column(col =>
             {
+                col.Item().PaddingTop(5).PaddingBottom(10).Text(TextoCertificacion(documento)).FontSize(10).LineHeight(1.4f);
+
                 Seccion(col, "Período de incapacidad", bloque => bloque.Column(c =>
                 {
                     c.Item().Table(t =>
@@ -68,21 +62,6 @@ public sealed class IncapacidadPdfService
                     Par(t, "Tipo de afiliación:", documento.TipoAfiliacion);
                 }));
 
-                Seccion(col, "Diagnóstico", bloque => bloque.Column(c =>
-                {
-                    c.Item().MinHeight(46).Padding(3).Row(row =>
-                    {
-                        row.ConstantItem(100).Text("Principal:");
-                        row.RelativeItem().Text(documento.Diagnostico);
-                    });
-                    c.Item().Table(t =>
-                    {
-                        Columnas(t);
-                        Par(t, "Odontólogo tratante:", documento.Doctor);
-                        Par(t, "JVPO:", documento.NumeroJVPO);
-                    });
-                }));
-
                 Seccion(col, "Datos del paciente", bloque => bloque.Table(t =>
                 {
                     Columnas(t);
@@ -103,19 +82,20 @@ public sealed class IncapacidadPdfService
                     Completa(t, "Nombre:", documento.Destinatario, 22);
                 }));
 
-                col.Item().PaddingTop(7).Text("Observaciones e indicaciones:").Bold();
-                col.Item().MinHeight(50).PaddingTop(4).Text(documento.Indicaciones);
+                col.Item().EnsureSpace(80).Column(observaciones =>
+                {
+                    observaciones.Item().PaddingTop(7).Text("Observaciones e indicaciones:").Bold();
+                    observaciones.Item().MinHeight(50).PaddingTop(4).Text(documento.Indicaciones);
+                });
 
                 Seccion(col, "Fechas", bloque => bloque.Table(t =>
                 {
                     Columnas(t);
                     Par(t, "Fecha de expedición:", documento.FechaEmision.ToString("dd/MM/yyyy", cultura));
-                    Par(t, "Fecha de accidente:", Fecha(documento.FechaAccidente));
                     Par(t, "Fecha de consulta:", Fecha(documento.FechaConsulta));
-                    Par(t, "Fecha de hospitalización:", Fecha(documento.FechaHospitalizacion));
-                    Par(t, "Fecha de alta:", Fecha(documento.FechaAlta));
-                    Par(t, "", "");
                 }));
+
+                col.Item().PaddingTop(14).Text(TextoCierre(documento)).FontSize(10).LineHeight(1.4f);
 
                 col.Item().PaddingTop(24).ShowEntire().Column(firma =>
                 {
@@ -126,20 +106,42 @@ public sealed class IncapacidadPdfService
                 });
             });
 
-            page.Footer().PaddingTop(10).Column(col =>
+            page.Footer().PaddingTop(10).AlignCenter().Text(texto =>
             {
-                col.Item().Text("Referencia interna de archivo: " + documento.Folio).FontSize(6).SemiBold();
-                col.Item().PaddingTop(3).Row(row =>
-                {
-                    row.RelativeItem().Text($"Fecha de expedición: {documento.FechaEmision:dd/MM/yyyy}").FontSize(7);
-                    row.RelativeItem().AlignCenter().Text(documento.Clinica).FontSize(7);
-                    row.ConstantItem(50).AlignRight().Text(t => { t.CurrentPageNumber(); t.Span(" de "); t.TotalPages(); });
-                });
+                texto.DefaultTextStyle(t => t.FontSize(7));
+                texto.Span($"{documento.Clinica}  |  Expedición: {documento.FechaEmision:dd/MM/yyyy}  |  Página ");
+                texto.CurrentPageNumber();
+                texto.Span(" de ");
+                texto.TotalPages();
             });
         })).GeneratePdf(destino);
     }
 
     private static string Fecha(DateTime? fecha) => fecha?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture) ?? "";
+
+    public static string TextoCertificacion(IncapacidadDocumento documento)
+    {
+        var cultura = CultureInfo.GetCultureInfo("es-SV");
+        string expediente = documento.IdPaciente.HasValue
+            ? $", con expediente número {documento.IdPaciente.Value.ToString(cultura)}" : "";
+        string consulta = documento.FechaConsulta.HasValue
+            ? $" el {documento.FechaConsulta.Value.ToString("dd 'de' MMMM 'de' yyyy", cultura)}" : "";
+        string dias = documento.TotalDias == 1 ? "día" : "días";
+        return $"Por este medio SE HACE CONSTAR QUE el(la) paciente {documento.Paciente}{expediente} " +
+            $"se presentó a esta clínica dental{consulta} y fue atendido(a) por {documento.Doctor} " +
+            $"(JVPO: {documento.NumeroJVPO}), con diagnóstico de {documento.Diagnostico.TrimEnd().TrimEnd('.')}. " +
+            $"Se indica incapacidad por {documento.TotalDias} ({CantidadEnLetras(documento.TotalDias)}) {dias}, " +
+            $"del {documento.Desde.ToString("dd 'de' MMMM 'de' yyyy", cultura)} " +
+            $"al {documento.Hasta.ToString("dd 'de' MMMM 'de' yyyy", cultura)}, ambas fechas inclusive.";
+    }
+
+    public static string TextoCierre(IncapacidadDocumento documento)
+    {
+        var cultura = CultureInfo.GetCultureInfo("es-SV");
+        string lugar = string.IsNullOrWhiteSpace(documento.LugarEmision) ? "" : $" en {documento.LugarEmision.Trim()}";
+        return "Y para los usos que convengan al(a la) interesado(a), se le extiende el presente certificado" +
+            $"{lugar}, el {documento.FechaEmision.ToString("dd 'de' MMMM 'de' yyyy", cultura)}.";
+    }
 
     private static void Seccion(ColumnDescriptor col, string titulo, Action<IContainer> contenido)
     {

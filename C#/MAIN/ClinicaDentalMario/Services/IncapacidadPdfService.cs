@@ -70,11 +70,8 @@ public sealed class IncapacidadPdfService
                     Completa(t, "N° de contacto:", documento.TelefonoPaciente);
                 }));
 
-                Seccion(col, "Datos del patrono / destinatario", bloque => bloque.Table(t =>
-                {
-                    Columnas(t);
-                    Completa(t, "Nombre:", documento.Destinatario, 22);
-                }));
+                Seccion(col, "Diagnóstico", bloque =>
+                    bloque.MinHeight(22).Padding(5).Text(documento.Diagnostico));
 
                 col.Item().EnsureSpace(80).Column(observaciones =>
                 {
@@ -126,7 +123,7 @@ public sealed class IncapacidadPdfService
             $"(JVPO: {documento.NumeroJVPO}), con diagnóstico de {documento.Diagnostico.TrimEnd().TrimEnd('.')}. " +
             $"Se indica incapacidad por {documento.TotalDias} ({CantidadEnLetras(documento.TotalDias)}) {dias}, " +
             $"del {documento.Desde.ToString("dd 'de' MMMM 'de' yyyy", cultura)} " +
-            $"al {documento.Hasta.ToString("dd 'de' MMMM 'de' yyyy", cultura)}, ambas fechas inclusive.";
+            $"al {documento.Hasta.ToString("dd 'de' MMMM 'de' yyyy", cultura)}.";
     }
 
     public static string TextoCierre(IncapacidadDocumento documento)

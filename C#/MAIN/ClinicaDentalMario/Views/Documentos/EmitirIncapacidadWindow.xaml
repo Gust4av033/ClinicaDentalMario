@@ -71,8 +71,6 @@
                 <TextBlock Text="Indicaciones / observaciones" Margin="0,12,0,5"/>
                 <TextBox Text="{Binding Indicaciones, UpdateSourceTrigger=PropertyChanged}" MaxLength="3000"
                          MinHeight="75" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
-                <TextBlock Text="Nombre del patrono / destinatario (opcional)" Margin="0,12,0,5"/>
-                <TextBox Text="{Binding Destinatario, UpdateSourceTrigger=PropertyChanged}" MaxLength="250"/>
                 <Expander Header="Datos del paciente y tipo de reposo" IsExpanded="True" Margin="0,20,0,0">
                     <StackPanel Margin="0,10,0,0">
                         <TextBlock Text="El nombre, DUI, sexo, dirección y teléfono se cargan automáticamente del expediente al seleccionar al paciente. Puedes completar los datos faltantes para este documento."

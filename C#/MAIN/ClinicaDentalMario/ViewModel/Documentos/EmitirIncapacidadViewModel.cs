@@ -52,7 +52,6 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
             SexoPaciente = value?.Sexo ?? "";
             DireccionPaciente = value?.Direccion ?? "";
             TelefonoPaciente = value?.Telefono ?? "";
-            Destinatario = "";
             TipoIncapacidad = "Inicial";
             ConsultaSeleccionada = null;
             Diagnostico = "";
@@ -110,8 +109,6 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
     public string Diagnostico { get => _diagnostico; set => SetProperty(ref _diagnostico, value); }
     private string _indicaciones = "";
     public string Indicaciones { get => _indicaciones; set => SetProperty(ref _indicaciones, value); }
-    private string _destinatario = "";
-    public string Destinatario { get => _destinatario; set => SetProperty(ref _destinatario, value); }
     private string _mensaje = "";
     public string Mensaje { get => _mensaje; private set => SetProperty(ref _mensaje, value); }
     private DateTime? _fechaEmision = DateTime.Today;
@@ -239,7 +236,7 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
             Doctor = DoctorSeleccionado.NombreCompleto, NumeroJVPO = DoctorSeleccionado.NumeroJVPO.Trim(),
             Clinica = DatosClinica.Clinica.Trim(), DireccionClinica = DatosClinica.Direccion.Trim(), TelefonoClinica = DatosClinica.Telefono.Trim(),
             LugarEmision = DatosClinica.LugarEmision.Trim(),
-            Diagnostico = Diagnostico.Trim(), Indicaciones = Indicaciones.Trim(), Destinatario = Destinatario.Trim(),
+            Diagnostico = Diagnostico.Trim(), Indicaciones = Indicaciones.Trim(),
             FechaEmision = FechaEmision.Value.Date, Desde = Desde.Value.Date, Hasta = Hasta.Value.Date,
             EmitidoPor = UsuarioActual.NombreUsuario
         };

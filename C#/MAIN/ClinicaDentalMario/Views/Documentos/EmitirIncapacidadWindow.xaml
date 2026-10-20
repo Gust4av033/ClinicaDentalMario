@@ -73,30 +73,18 @@
                          MinHeight="75" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
                 <TextBlock Text="Nombre del patrono / destinatario (opcional)" Margin="0,12,0,5"/>
                 <TextBox Text="{Binding Destinatario, UpdateSourceTrigger=PropertyChanged}" MaxLength="250"/>
-                <Expander Header="Datos complementarios del formato (opcionales)" Margin="0,20,0,0">
+                <Expander Header="Datos del paciente y tipo de reposo" IsExpanded="True" Margin="0,20,0,0">
                     <StackPanel Margin="0,10,0,0">
-                        <TextBlock Text="Los datos del expediente se cargan al seleccionar al paciente. Los cambios aquí se guardan solo en este documento."
+                        <TextBlock Text="El nombre, DUI, sexo, dirección y teléfono se cargan automáticamente del expediente al seleccionar al paciente. Puedes completar los datos faltantes para este documento."
                                    TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,10"/>
-                        <TextBlock Text="Tipo de incapacidad" Margin="0,8,0,5"/>
+                        <TextBlock Text="Tipo de reposo odontológico" Margin="0,8,0,5"/>
                         <ComboBox ItemsSource="{Binding TiposIncapacidad}" SelectedItem="{Binding TipoIncapacidad}"/>
-                        <TextBlock Text="Riesgo" Margin="0,8,0,5"/>
-                        <TextBox Text="{Binding Riesgo, UpdateSourceTrigger=PropertyChanged}" MaxLength="100"/>
-                        <TextBlock Text="Tipo de trabajador" Margin="0,8,0,5"/>
-                        <TextBox Text="{Binding TipoTrabajador, UpdateSourceTrigger=PropertyChanged}" MaxLength="100"/>
-                        <TextBlock Text="Tipo de afiliación" Margin="0,8,0,5"/>
-                        <TextBox Text="{Binding TipoAfiliacion, UpdateSourceTrigger=PropertyChanged}" MaxLength="100"/>
                         <TextBlock Text="Tipo de documento de identidad" Margin="0,8,0,5"/>
                         <TextBox Text="{Binding TipoDocumento, UpdateSourceTrigger=PropertyChanged}" MaxLength="50"/>
-                        <TextBlock Text="Número de afiliación" Margin="0,8,0,5"/>
-                        <TextBox Text="{Binding NumeroAfiliacion, UpdateSourceTrigger=PropertyChanged}" MaxLength="50"/>
                         <TextBlock Text="Sexo" Margin="0,8,0,5"/>
                         <TextBox Text="{Binding SexoPaciente, UpdateSourceTrigger=PropertyChanged}" MaxLength="20"/>
                         <TextBlock Text="Dirección del paciente" Margin="0,8,0,5"/>
                         <TextBox Text="{Binding DireccionPaciente, UpdateSourceTrigger=PropertyChanged}" MaxLength="250"/>
-                        <TextBlock Text="Departamento" Margin="0,8,0,5"/>
-                        <TextBox Text="{Binding Departamento, UpdateSourceTrigger=PropertyChanged}" MaxLength="100"/>
-                        <TextBlock Text="Municipio" Margin="0,8,0,5"/>
-                        <TextBox Text="{Binding Municipio, UpdateSourceTrigger=PropertyChanged}" MaxLength="100"/>
                         <TextBlock Text="Contacto del paciente" Margin="0,8,0,5"/>
                         <TextBox Text="{Binding TelefonoPaciente, UpdateSourceTrigger=PropertyChanged}" MaxLength="50"/>
                     </StackPanel>

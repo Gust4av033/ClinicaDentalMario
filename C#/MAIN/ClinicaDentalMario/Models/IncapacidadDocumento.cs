@@ -20,6 +20,7 @@ public sealed record IncapacidadDocumento
     public string SexoPaciente { get; init; } = "";
     public string DireccionPaciente { get; init; } = "";
     public string TelefonoPaciente { get; init; } = "";
+    // Compatibilidad con instantáneas anteriores. No se solicitan ni imprimen en el formato dental.
     public string Departamento { get; init; } = "";
     public string Municipio { get; init; } = "";
     public string NumeroAfiliacion { get; init; } = "";
@@ -95,7 +96,7 @@ public sealed record IncapacidadDocumento
     }
 }
 
-public sealed record ConfiguracionDocumentos(string Clinica = "Clínica Dental CDMario",
+public sealed record ConfiguracionDocumentos(string Clinica = "Clínica Dental Panchimalco",
     string Direccion = "", string Telefono = "", string LugarEmision = "")
 {
     public void Validar()

@@ -95,6 +95,9 @@ public sealed class ArchivoDocumentosClinicos
                 ?? throw new InvalidDataException("La configuración de clínica está vacía.")
             : new ConfiguracionDocumentos();
         configuracion.Validar();
+        // Actualiza el nombre predeterminado anterior solo en el perfil de nuevas emisiones.
+        if (configuracion.Clinica == "Clínica Dental CDMario")
+            configuracion = configuracion with { Clinica = new ConfiguracionDocumentos().Clinica };
         return configuracion;
     }
 

@@ -17,7 +17,7 @@ void Rechazar(Action accion, string mensaje)
 var ejemplo = new IncapacidadDocumento
 {
     Paciente = "Paciente de demostración", Doctor = "Odontólogo de demostración", NumeroJVPO = "DEMO-001",
-    Clinica = "Clínica Dental CDMario", DireccionClinica = "Dirección de demostración", TelefonoClinica = "0000-0000",
+    Clinica = "Clínica Dental Panchimalco", DireccionClinica = "Dirección de demostración", TelefonoClinica = "0000-0000",
     LugarEmision = "Panchimalco",
     Diagnostico = "Diagnóstico de demostración para validar el formato.",
     Indicaciones = "Indicaciones de demostración. Documento de prueba sin datos de pacientes reales.",
@@ -81,6 +81,9 @@ try
         "{\"Clinica\":\"Clínica anterior\",\"Direccion\":\"Dirección anterior\",\"Telefono\":\"1234\"}");
     Verificar(perfilLegado.LeerConfiguracion().LugarEmision == "" && perfilLegado.LeerConfiguracion().Clinica == "Clínica anterior",
         "Los perfiles anteriores cargan sin inventar un lugar de emisión.");
+    perfilLegado.GuardarConfiguracion(new ConfiguracionDocumentos("Clínica Dental CDMario", "Dirección conservada", "1234", "Panchimalco"));
+    Verificar(perfilLegado.LeerConfiguracion() == new ConfiguracionDocumentos("Clínica Dental Panchimalco", "Dirección conservada", "1234", "Panchimalco"),
+        "El nombre predeterminado anterior se actualiza sin perder los datos de la clínica.");
     void PdfSimulado(IncapacidadDocumento d, string ruta) => File.WriteAllText(ruta, $"PDF de {d.Paciente}");
     string ruta = archivo.Emitir(ejemplo, PdfSimulado);
     Verificar(File.Exists(ruta) && archivo.Listar().Documentos.Count == 1, "Emisión persistida.");

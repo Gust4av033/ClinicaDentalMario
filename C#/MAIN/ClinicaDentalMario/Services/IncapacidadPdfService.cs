@@ -53,13 +53,10 @@ public sealed class IncapacidadPdfService
                     });
                 }));
 
-                Seccion(col, "Datos de incapacidad", bloque => bloque.Table(t =>
+                Seccion(col, "Reposo odontológico", bloque => bloque.Table(t =>
                 {
                     Columnas(t);
-                    Par(t, "Tipo de incapacidad:", documento.TipoIncapacidad);
-                    Par(t, "Riesgo:", documento.Riesgo);
-                    Par(t, "Tipo de trabajador:", documento.TipoTrabajador);
-                    Par(t, "Tipo de afiliación:", documento.TipoAfiliacion);
+                    Completa(t, "Tipo de reposo:", documento.TipoIncapacidad);
                 }));
 
                 Seccion(col, "Datos del paciente", bloque => bloque.Table(t =>
@@ -68,11 +65,8 @@ public sealed class IncapacidadPdfService
                     Completa(t, "Nombre:", documento.Paciente);
                     Par(t, "Tipo de documento:", documento.TipoDocumento);
                     Par(t, "N° de documento:", documento.DocumentoIdentidad);
-                    Completa(t, "N° de afiliación:", documento.NumeroAfiliacion);
                     Completa(t, "Sexo:", documento.SexoPaciente);
                     Completa(t, "Dirección:", documento.DireccionPaciente, 28);
-                    Par(t, "Departamento:", documento.Departamento);
-                    Par(t, "Municipio:", documento.Municipio);
                     Completa(t, "N° de contacto:", documento.TelefonoPaciente);
                 }));
 

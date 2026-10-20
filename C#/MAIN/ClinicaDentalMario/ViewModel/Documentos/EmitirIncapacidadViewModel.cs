@@ -52,8 +52,7 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
             SexoPaciente = value?.Sexo ?? "";
             DireccionPaciente = value?.Direccion ?? "";
             TelefonoPaciente = value?.Telefono ?? "";
-            Departamento = Municipio = NumeroAfiliacion = "";
-            TipoTrabajador = TipoAfiliacion = Riesgo = Destinatario = "";
+            Destinatario = "";
             TipoIncapacidad = "Inicial";
             ConsultaSeleccionada = null;
             Diagnostico = "";
@@ -102,21 +101,9 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
     public string DireccionPaciente { get => _direccionPaciente; set => SetProperty(ref _direccionPaciente, value); }
     private string _telefonoPaciente = "";
     public string TelefonoPaciente { get => _telefonoPaciente; set => SetProperty(ref _telefonoPaciente, value); }
-    private string _departamento = "";
-    public string Departamento { get => _departamento; set => SetProperty(ref _departamento, value); }
-    private string _municipio = "";
-    public string Municipio { get => _municipio; set => SetProperty(ref _municipio, value); }
-    private string _numeroAfiliacion = "";
-    public string NumeroAfiliacion { get => _numeroAfiliacion; set => SetProperty(ref _numeroAfiliacion, value); }
     public IReadOnlyList<string> TiposIncapacidad { get; } = ["Inicial", "Prórroga"];
     private string _tipoIncapacidad = "Inicial";
     public string TipoIncapacidad { get => _tipoIncapacidad; set => SetProperty(ref _tipoIncapacidad, value); }
-    private string _riesgo = "";
-    public string Riesgo { get => _riesgo; set => SetProperty(ref _riesgo, value); }
-    private string _tipoTrabajador = "";
-    public string TipoTrabajador { get => _tipoTrabajador; set => SetProperty(ref _tipoTrabajador, value); }
-    private string _tipoAfiliacion = "";
-    public string TipoAfiliacion { get => _tipoAfiliacion; set => SetProperty(ref _tipoAfiliacion, value); }
     private string _numeroJVPO = "";
     public string NumeroJVPO { get => _numeroJVPO; private set => SetProperty(ref _numeroJVPO, value); }
     private string _diagnostico = "";
@@ -248,9 +235,7 @@ public sealed class EmitirIncapacidadViewModel : ViewModelBase
             Paciente = NombrePaciente.Trim(), DocumentoIdentidad = DocumentoIdentidad.Trim(),
             TipoDocumento = TipoDocumento.Trim(), SexoPaciente = SexoPaciente.Trim(),
             DireccionPaciente = DireccionPaciente.Trim(), TelefonoPaciente = TelefonoPaciente.Trim(),
-            Departamento = Departamento.Trim(), Municipio = Municipio.Trim(), NumeroAfiliacion = NumeroAfiliacion.Trim(),
-            TipoIncapacidad = TipoIncapacidad.Trim(), Riesgo = Riesgo.Trim(),
-            TipoTrabajador = TipoTrabajador.Trim(), TipoAfiliacion = TipoAfiliacion.Trim(),
+            TipoIncapacidad = TipoIncapacidad.Trim(),
             Doctor = DoctorSeleccionado.NombreCompleto, NumeroJVPO = DoctorSeleccionado.NumeroJVPO.Trim(),
             Clinica = DatosClinica.Clinica.Trim(), DireccionClinica = DatosClinica.Direccion.Trim(), TelefonoClinica = DatosClinica.Telefono.Trim(),
             LugarEmision = DatosClinica.LugarEmision.Trim(),

@@ -12,6 +12,7 @@ namespace ClinicaDentalMario.Navigation
         object CrearTratamientos(Action<object> navegar);
         object CrearPagos(Action<object> navegar);
         object CrearReportes(Action<object> navegar);
+        object CrearDocumentosClinicos();
         object CrearConfiguracion();
     }
 }

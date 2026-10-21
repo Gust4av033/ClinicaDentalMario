@@ -1,0 +1,25 @@
+Actualizacion de antecedentes - Clinica Dental Panchimalco
+
+Para la laptop del cliente que informa que falta Pacientes.AntecedentesPaciente.
+No necesita instalar Visual Studio, SSMS ni sqlcmd. Utiliza Windows PowerShell
+y la instancia LocalDB que ya usa la aplicacion.
+
+1. Extraiga todos los archivos del ZIP en una carpeta.
+2. Cierre la aplicacion de la clinica.
+3. Con el mismo usuario de Windows que usa la aplicacion, abra
+   ActualizarAntecedentes.cmd (doble clic). No cambie a otro usuario administrador.
+4. Escriba ACTUALIZAR cuando lo solicite.
+5. Espere el mensaje de actualizacion completada y vuelva a abrir la aplicacion.
+
+Antes de crear la tabla, se hace y verifica un respaldo completo de la base en:
+%LOCALAPPDATA%\CDMario\Respaldos
+Si el respaldo falla, no se ejecuta la actualizacion.
+La tabla se agrega vacia, sin borrar ni actualizar los registros existentes.
+Si ya existe, no se aplica la actualizacion. Puede conservar el ZIP para soporte.
+
+Si aparece un error, envie una foto del mensaje completo. No ejecute Script00.sql
+ni elimine la base: ese archivo es un instalador que recrea la base de datos.
+
+El lanzador usa ExecutionPolicy Bypass solo en este proceso de PowerShell;
+no cambia la politica permanente de Windows. Las politicas de la organizacion
+pueden impedir su ejecucion: en ese caso, consulte al responsable del equipo.

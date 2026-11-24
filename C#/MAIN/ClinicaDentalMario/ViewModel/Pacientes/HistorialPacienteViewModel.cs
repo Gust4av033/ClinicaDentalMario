@@ -137,6 +137,8 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
         public AsyncRelayCommand RecargarCommand { get; }
         public AsyncRelayCommand VistaPreviaExpedienteCommand { get; }
         public AsyncRelayCommand ExportarExpedienteCommand { get; }
+        public ICommand EmitirIncapacidadCommand { get; }
+        public ICommand VerDocumentosClinicosCommand { get; }
 
         public HistorialPacienteViewModel(PacienteModel paciente, Action<object> cambiarVista)
             : this(
@@ -183,6 +185,14 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
             RecargarCommand = new AsyncRelayCommand(_ => CargarExpedienteAsync());
             VistaPreviaExpedienteCommand = new AsyncRelayCommand(_ => AbrirVistaPreviaAsync());
             ExportarExpedienteCommand = new AsyncRelayCommand(_ => ExportarExpedienteAsync());
+            EmitirIncapacidadCommand = new RelayCommand(
+                p => AbrirIncapacidad(p as HistorialClinicoModel),
+                _ => !EstaCargando && new PermissionService().TienePermiso(Common.PermisoSistema.EmitirDocumentosClinicos));
+            VerDocumentosClinicosCommand = new RelayCommand(_ => _cambiarVista(new Views.Documentos.DocumentosClinicosView
+            {
+                DataContext = new ViewModel.Documentos.DocumentosClinicosViewModel(PacienteActual,
+                    () => _cambiarVista(new HistorialPacienteView { DataContext = this }))
+            }));
 
             _ = CargarExpedienteAsync();
         }
@@ -406,6 +416,11 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
 
                 _ = CargarExpedienteAsync();
 
+                if (vm.GenerarIncapacidadAlGuardar && vm.ConsultaRegistrada is not null)
+                {
+                    AbrirIncapacidad(vm.ConsultaRegistrada);
+                }
+
                 if (vm.DeseaAsignarTratamiento)
                 {
                     AbrirNuevoTratamiento();
@@ -438,6 +453,24 @@ namespace ClinicaDentalMario.ViewModel.Pacientes
                 MensajeError = _exceptionHandler.ObtenerMensajeUsuario(
                     ex,
                     "No fue posible abrir el registro de tratamiento.");
+            }
+        }
+
+        private void AbrirIncapacidad(HistorialClinicoModel? consulta)
+        {
+            try
+            {
+                if (!new PermissionService().TienePermiso(Common.PermisoSistema.EmitirDocumentosClinicos)) return;
+                var ventana = new Views.Documentos.EmitirIncapacidadWindow
+                {
+                    DataContext = new ViewModel.Documentos.EmitirIncapacidadViewModel(PacienteActual, consulta),
+                    Owner = System.Windows.Application.Current.MainWindow
+                };
+                ventana.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MensajeError = _exceptionHandler.ObtenerMensajeUsuario(ex, "No fue posible abrir la emisión de incapacidades.");
             }
         }
 

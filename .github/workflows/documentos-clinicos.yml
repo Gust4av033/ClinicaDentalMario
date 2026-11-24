@@ -1,0 +1,25 @@
+name: Documentos clinicos - build y pruebas
+
+on:
+  pull_request:
+    paths:
+      - 'C#/MAIN/ClinicaDentalMario/**'
+      - 'tests/DocumentosClinicos.Checks/**'
+      - '.github/workflows/documentos-clinicos.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compilar WPF
+        run: dotnet build "C#/MAIN/ClinicaDentalMario/ClinicaDentalMario.csproj" -c Release
+      - name: Comprobar documentos sin conexion a SQL
+        run: dotnet run --project tests/DocumentosClinicos.Checks -c Release -- artifacts/documentos-demo

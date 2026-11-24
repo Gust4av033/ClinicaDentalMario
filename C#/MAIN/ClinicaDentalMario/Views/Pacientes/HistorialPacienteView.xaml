@@ -90,6 +90,10 @@
 
         <!-- MENSAJES -->
         <StackPanel Grid.Row="1" Margin="0,0,0,14">
+            <WrapPanel Margin="0,0,0,10">
+                <Button Content="Emitir incapacidad / reposo" Command="{Binding EmitirIncapacidadCommand}" Margin="0,0,10,6"/>
+                <Button Content="Documentos del paciente" Command="{Binding VerDocumentosClinicosCommand}" Margin="0,0,0,6"/>
+            </WrapPanel>
             <Border Background="#3A1C1C" BorderBrush="{StaticResource DangerBrush}"
                     BorderThickness="1" CornerRadius="8" Padding="10">
                 <Border.Style>
@@ -298,6 +302,12 @@
                                                     Width="1.5*"/>
                                 <DataGridTextColumn Header="Diagnóstico" Binding="{Binding Diagnostico}"
                                                     Width="1.5*"/>
+                                <DataGridTemplateColumn Header="Reposo" Width="85">
+                                    <DataGridTemplateColumn.CellTemplate><DataTemplate>
+                                        <Button Content="Emitir" Padding="6,4" CommandParameter="{Binding}"
+                                                Command="{Binding DataContext.EmitirIncapacidadCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"/>
+                                    </DataTemplate></DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Header="Detalle" Width="85">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>

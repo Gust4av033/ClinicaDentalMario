@@ -1,0 +1,55 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "restore ClinicaDentalMario",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "restore",
+        "${workspaceFolder}/C#/MAIN/ClinicaDentalMario/ClinicaDentalMario.csproj"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "build ClinicaDentalMario",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/C#/MAIN/ClinicaDentalMario/ClinicaDentalMario.csproj",
+        "--configuration",
+        "Debug",
+        "--no-restore"
+      ],
+      "dependsOn": "restore ClinicaDentalMario",
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "run ClinicaDentalMario",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/C#/MAIN/ClinicaDentalMario/ClinicaDentalMario.csproj"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "clean ClinicaDentalMario",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "clean",
+        "${workspaceFolder}/C#/MAIN/ClinicaDentalMario/ClinicaDentalMario.csproj"
+      ],
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

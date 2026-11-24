@@ -10,6 +10,7 @@ namespace ClinicaDentalMario.ViewModel.Configuracion
 {
     public class ConfiguracionViewModel : ViewModelBase
     {
+        public DatosClinicaViewModel DatosClinica { get; } = new();
         private readonly CatalogoRepository _catalogoRepo;
         private readonly BitacoraRepository _bitacoraRepo;
         private readonly IPermissionService _permissionService;

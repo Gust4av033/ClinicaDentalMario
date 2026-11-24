@@ -35,6 +35,7 @@ namespace ClinicaDentalMario.ViewModel.Base
         public bool PuedeVerTratamientos => TienePermiso(PermisoSistema.GestionarTratamientos);
         public bool PuedeVerPagos => TienePermiso(PermisoSistema.GestionarPagos);
         public bool PuedeVerReportes => TienePermiso(PermisoSistema.VerReportes);
+        public bool PuedeVerDocumentosClinicos => TienePermiso(PermisoSistema.VerDocumentosClinicos);
         public bool PuedeVerConfiguracion => TienePermiso(PermisoSistema.AdministrarConfiguracion);
 
         public ICommand NavegarDashboardCommand { get; }
@@ -43,6 +44,7 @@ namespace ClinicaDentalMario.ViewModel.Base
         public ICommand NavegarTratamientosCommand { get; }
         public ICommand NavegarPagosCommand { get; }
         public ICommand NavegarReportesCommand { get; }
+        public ICommand NavegarDocumentosClinicosCommand { get; }
         public ICommand NavegarConfiguracionCommand { get; }
         public ICommand CerrarSesionCommand { get; }
 
@@ -109,6 +111,11 @@ namespace ClinicaDentalMario.ViewModel.Base
                 "Configuración");
 
             CerrarSesionCommand = new RelayCommand(_ => CerrarSesion());
+
+            NavegarDocumentosClinicosCommand = CrearComandoNavegacion(
+                PermisoSistema.VerDocumentosClinicos,
+                _viewFactory.CrearDocumentosClinicos,
+                "Documentos clínicos");
 
             NavegarInicial();
         }

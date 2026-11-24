@@ -27,6 +27,7 @@ namespace ClinicaDentalMario.Services
 
             return permiso switch
             {
+                PermisoSistema.EmitirDocumentosClinicos => UsuarioActual.EsDoctor,
                 PermisoSistema.AdministrarConfiguracion => false,
                 PermisoSistema.AdministrarUsuarios => false,
                 PermisoSistema.VerBitacora => false,
